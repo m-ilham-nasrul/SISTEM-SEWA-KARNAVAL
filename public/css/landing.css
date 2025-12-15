@@ -1,0 +1,43 @@
+body {
+    font-family: 'Poppins', sans-serif;
+}
+
+/* HERO SECTION */
+.hero-section {
+    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)), url('/img/background.jpg');
+    height: 100vh;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: white;
+}
+
+/* SERVICE CARD */
+.service-card {
+    transition: .3s;
+}
+.service-card:hover {
+    transform: translateY(-10px);
+}
+
+/* GALLERY */
+.gallery-img {
+    border-radius: 20px;
+    transition: .3s;
+}
+.gallery-img:hover {
+    transform: scale(1.05);
+}
+
+/* NAVBAR GRADIENT */
+.nav-custom {
+    background: linear-gradient(90deg, #1e3a8a, #2563eb);
+}
+
+/* SMOOTH SCROLL */
+html {
+    scroll-behavior: smooth;
+}
