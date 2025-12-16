@@ -9,7 +9,7 @@
     <div class="container mt-4">
         <h3 class="mb-4 fw-bold">Pilih Kostum untuk Disewa</h3>
         <form action="{{ route('penyewaan.create') }}" method="GET">
-                <div class="row g-4" style="max-height:560px; overflow-y: auto;">
+                <div class="row g-4">
 
                     @foreach ($kostums as $item)
                         <div class="col-lg-3 col-md-4 col-sm-6">

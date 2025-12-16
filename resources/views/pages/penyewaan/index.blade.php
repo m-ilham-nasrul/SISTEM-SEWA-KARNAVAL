@@ -30,7 +30,7 @@
                 <h6 class="m-0 font-weight-bold">Data Penyewaan</h6>
             </div>
             <div class="card-body">
-                <div class="table-responsive" style="max-height: 50vh; overflow-y: auto;">
+                <div class="table-responsive">
                     <table class="table table-bordered text-center" id="dataTable" width="100%" cellspacing="0">
                         <thead>
                             <tr>

@@ -80,7 +80,7 @@
                     </div>
                 </div>
 
-                <div class="table-responsive" style="max-height: 50vh; overflow-y: auto;">
+               <div class="table-responsive">
                     <table class="table table-bordered" id="dataTable" width="100%">
                         <thead class="text-center">
                             <tr>

@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'SEWA KARNAVAL | Dashboard')</title>
 
     <!-- Font dan CSS -->
@@ -25,25 +26,25 @@
 
     <div id="wrapper">
 
-        @include('layout.sidebar')
+       @include('layout.sidebar')
 
+        <!-- CONTENT WRAPPER -->
         <div id="content-wrapper" class="d-flex flex-column">
 
-            <div id="content">
+            @include('layout.topbar')
 
-                @include('layout.topbar')
-
+            <!-- AREA SCROLL -->
+            <div id="content" class="content-scroll">
                 <div class="container-fluid">
                     @yield('content')
                 </div>
-
             </div>
 
             <!-- Footer -->
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="text-center my-auto">
-                        <span>SISTEM SEWA KARNAVAL</span>
+                        <span>© 2025 Sistem Informasi Penyewaan Karnaval</span>
                     </div>
                 </div>
             </footer>

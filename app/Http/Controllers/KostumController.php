@@ -8,30 +8,36 @@ use Illuminate\Support\Facades\Storage;
 
 class KostumController extends Controller
 {
-
-    public function index()
+    /**
+     * INDEX
+     * - AJAX → DataTables (JSON)
+     * - Normal → Blade
+     */
+    public function index(Request $request)
     {
-        // Ambil semua data kostum dengan urutan terbaru
-        $kostumList = Kostum::orderBy('created_at', 'desc')->get();
+        if ($request->ajax()) {
+            return response()->json([
+                'data' => Kostum::orderBy('created_at', 'desc')->get()
+            ]);
+        }
 
-        // Kirim ke halaman index
-        return view('pages.kostum.index', [
-            'kostums' => $kostumList
-        ]);
+        return view('pages.kostum.index');
     }
 
     /**
-     * Menampilkan halaman form tambah data kostum baru.
+     * FORM TAMBAH (VIEW)
      */
     public function create()
     {
         return view('pages.kostum.create');
     }
 
+    /**
+     * SIMPAN DATA (AJAX / FORM)
+     */
     public function store(Request $request)
     {
-        // 1. VALIDASI INPUT
-        $validatedData = $request->validate([
+        $validated = $request->validate([
             'nama_kostum'  => 'required|string|max:255',
             'kategori'     => 'required|string|max:255',
             'harga'        => 'required|integer',
@@ -39,121 +45,86 @@ class KostumController extends Controller
             'image_kostum' => 'nullable|image|mimes:jpg,jpeg,png|max:6048',
         ]);
 
-        // 2. TAMBAHKAN STATUS DEFAULT
-        $validatedData['status'] = $request->input('status') ?? 0;
+        $validated['status'] = 1;
 
-        // 3. PROSES UPLOAD GAMBAR
         if ($request->hasFile('image_kostum')) {
-
-            $file = $request->file('image_kostum');              // ambil file
-            $folder = 'kostum';                                  // tentukan folder
-            $disk = 'public';                                    // tentukan disk penyimpanan
-
-            // simpan file ke storage/app/public/kostum
-            $uploadedPath = $file->store($folder, $disk);
-
-            // masukkan nama file ke database
-            $validatedData['image_kostum'] = $uploadedPath;
+            $validated['image_kostum'] =
+                $request->file('image_kostum')->store('kostum', 'public');
         }
 
-        // 4. SIMPAN KE DATABASE
-        Kostum::create($validatedData);
+        Kostum::create($validated);
 
-        // 5. KEMBALIKAN NOTIFIKASI
         return redirect()
             ->route('kostum.index')
-            ->with('success', 'Kostum berhasil ditambahkan!');
+            ->with('success', 'Kostum berhasil ditambahkan');
     }
 
     /**
-     * Menampilkan detail data kostum tertentu.
+     * DETAIL (VIEW)
      */
     public function show($id)
     {
-        // Ambil data berdasarkan ID
         $kostum = Kostum::findOrFail($id);
-
-        // Tampilkan detailnya
-        return view('pages.kostum.show', [
-            'kostum' => $kostum
-        ]);
+        return view('pages.kostum.show', compact('kostum'));
     }
 
     /**
-     * Menampilkan halaman form edit data kostum.
+     * FORM EDIT (VIEW)
      */
     public function edit($id)
     {
-        // Ambil data lama dari database
         $kostum = Kostum::findOrFail($id);
-
-        return view('pages.kostum.edit', [
-            'kostum' => $kostum
-        ]);
+        return view('pages.kostum.edit', compact('kostum'));
     }
 
+    /**
+     * UPDATE DATA
+     */
     public function update(Request $request, $id)
     {
-        // 1. Ambil data lama
         $kostum = Kostum::findOrFail($id);
 
-        // 2. VALIDASI
-        $validatedData = $request->validate([
+        $validated = $request->validate([
             'nama_kostum'  => 'required|string|max:255',
             'kategori'     => 'required|string|max:255',
             'harga'        => 'required|integer',
             'catatan'      => 'nullable|string',
-            'status'       => 'required|in:1,0',
+            'status'       => 'required|in:0,1',
             'image_kostum' => 'nullable|image|mimes:jpg,jpeg,png|max:6048',
         ]);
 
-        // 3. PROSES UPLOAD GAMBAR BARU (jika ada)
         if ($request->hasFile('image_kostum')) {
-
-            $oldImage = $kostum->image_kostum;
-
-            // Hapus file lama jika ada dan masih tersimpan
-            if ($oldImage && Storage::disk('public')->exists($oldImage)) {
-                Storage::disk('public')->delete($oldImage);
+            if ($kostum->image_kostum) {
+                Storage::disk('public')->delete($kostum->image_kostum);
             }
 
-            // Upload file baru
-            $fileBaru = $request->file('image_kostum');
-            $folder = 'kostum';
-            $disk = 'public';
-
-            $pathBaru = $fileBaru->store($folder, $disk);
-
-            // Simpan nama file baru ke validated data
-            $validatedData['image_kostum'] = $pathBaru;
+            $validated['image_kostum'] =
+                $request->file('image_kostum')->store('kostum', 'public');
         }
 
-        // 4. UPDATE DATABASE
-        $kostum->update($validatedData);
+        $kostum->update($validated);
 
         return redirect()
             ->route('kostum.index')
-            ->with('success', 'Data kostum berhasil diperbarui!');
+            ->with('success', 'Data kostum berhasil diperbarui');
     }
 
-
+    /**
+     * HAPUS DATA (AJAX)
+     */
     public function destroy($id)
     {
-        // Ambil data
         $kostum = Kostum::findOrFail($id);
 
-        // HAPUS FILE GAMBAR JIKA ADA
-        $gambar = $kostum->image_kostum;
-
-        if ($gambar && Storage::disk('public')->exists($gambar)) {
-            Storage::disk('public')->delete($gambar);
+        if ($kostum->image_kostum) {
+            Storage::disk('public')->delete($kostum->image_kostum);
         }
 
-        // HAPUS DATA KOSTUM
         $kostum->delete();
 
-        return redirect()
-            ->route('kostum.index')
-            ->with('success', 'Kostum berhasil dihapus!');
+        return response()->json([
+            'status' => true,
+            'message' => 'Kostum berhasil dihapus'
+        ]);
     }
 }

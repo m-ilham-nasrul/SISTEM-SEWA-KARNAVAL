@@ -9,16 +9,25 @@ use Illuminate\Support\Facades\Hash;
 class UserController extends Controller
 {
     /**
-     * Tampilkan semua user
+     * INDEX
+     * - AJAX → DataTables (JSON)
+     * - Normal → Blade
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::latest()->get();
-        return view('pages.user.index', compact('users'));
+        if ($request->ajax()) {
+            $users = User::latest()->get();
+
+            return response()->json([
+                'data' => $users
+            ]);
+        }
+
+        return view('pages.user.index');
     }
 
     /**
-     * Tampilkan form tambah user (karena modal dihapus)
+     * FORM TAMBAH USER
      */
     public function create()
     {
@@ -26,7 +35,7 @@ class UserController extends Controller
     }
 
     /**
-     * Simpan user baru
+     * SIMPAN USER BARU
      */
     public function store(Request $request)
     {
@@ -48,7 +57,7 @@ class UserController extends Controller
     }
 
     /**
-     * Tampilkan form edit user
+     * FORM EDIT USER
      */
     public function edit($id)
     {
@@ -57,7 +66,7 @@ class UserController extends Controller
     }
 
     /**
-     * Update data user
+     * UPDATE USER
      */
     public function update(Request $request, $id)
     {
@@ -82,12 +91,20 @@ class UserController extends Controller
     }
 
     /**
-     * Hapus user
+     * HAPUS USER (AJAX)
      */
     public function destroy($id)
     {
         $user = User::findOrFail($id);
         $user->delete();
+
+        // Jika request AJAX, kirim JSON
+        if (request()->ajax()) {
+            return response()->json([
+                'status' => true,
+                'message' => 'User berhasil dihapus'
+            ]);
+        }
 
         return redirect()->route('user.index')->with('success', 'User berhasil dihapus!');
     }

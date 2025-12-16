@@ -18,23 +18,12 @@
             @endif
         </div>
 
-        @if ($errors->any())
-            <div class="alert alert-danger alert-dismissible fade show">
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-
         <div class="card shadow mb-4">
             <div class="card-header py-3 bg-primary text-white">
                 <h6 class="m-0 font-weight-bold">Data Penyewa</h6>
             </div>
             <div class="card-body">
-                <div class="table-responsive" style="max-height: 50vh; overflow-y: auto;">
+                <div class="table-responsive">
                     <table class="table table-bordered text-center" id="dataTable" width="100%">
                         <thead>
                             <tr>
@@ -49,84 +38,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($penyewas as $penyewa)
-                                <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $penyewa->user?->name ?? '-' }}</td>
-                                    <td>{{ $penyewa->nama_penyewa }}</td>
-                                    <td>{{ $penyewa->no_telp }}</td>
-                                    <td>{{ $penyewa->alamat }}</td>
-
-                                    @if (Auth::user()->role === 'admin')
-                                        <td class="text-center">
-
-                                            <!-- Tombol Titik 3 -->
-                                            <div class="dropdown">
-                                                <button class="btn btn-light btn-sm" type="button"
-                                                    id="dropdownMenu{{ $penyewa->id }}" data-toggle="dropdown"
-                                                    aria-haspopup="true" aria-expanded="false"
-                                                    style="border-radius: 50%; width: 32px; height: 32px; padding: 0;">
-                                                    <i class="fas fa-ellipsis-v"></i>
-                                                </button>
-
-                                                <!-- Dropdown Menu -->
-                                                <div class="dropdown-menu"
-                                                    aria-labelledby="dropdownMenu{{ $penyewa->id }}">
-
-                                                    <!-- Edit -->
-                                                    <a class="dropdown-item"
-                                                        href="{{ route('penyewa.edit', $penyewa->id) }}">
-                                                        <i class="fas fa-edit mr-2"></i> Edit
-                                                    </a>
-
-                                                    <!-- Hapus (buka modal) -->
-                                                    <button class="dropdown-item text-danger" data-toggle="modal"
-                                                        data-target="#modalHapus{{ $penyewa->id }}">
-                                                        <i class="fas fa-trash mr-2"></i> Hapus
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                        </td>
-                                    @endif
-                                </tr>
-
-                                <!-- Modal Konfirmasi Hapus -->
-                                <div class="modal fade" id="modalHapus{{ $penyewa->id }}" tabindex="-1">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content">
-
-                                            <div class="modal-header bg-primary text-white">
-                                                <h5 class="modal-title">Konfirmasi Hapus</h5>
-                                                <button type="button" class="close text-white" data-dismiss="modal">
-                                                    <span>&times;</span>
-                                                </button>
-                                            </div>
-
-                                            <div class="modal-body">
-                                                Apakah Anda yakin ingin menghapus Data Penyewa
-                                                <strong>{{ $penyewa->nama_penyewa }}</strong>?
-                                            </div>
-
-                                            <div class="modal-footer">
-                                                <button class="btn btn-secondary" data-dismiss="modal">Batal</button>
-
-                                                <form action="{{ route('penyewa.destroy', $penyewa->id) }}" method="POST">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-danger">Hapus</button>
-                                                </form>
-                                            </div>
-
-                                        </div>
-                                    </div>
-                                </div>
-
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="text-center">Belum ada data penyewa</td>
-                                </tr>
-                            @endforelse
+                            {{-- AJAX DataTables --}}
                         </tbody>
                     </table>
                 </div>
@@ -143,15 +55,102 @@
 @push('addon-script')
     <script src="{{ asset('sbadmin2/vendor/datatables/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('sbadmin2/vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
-    <script src="{{ asset('sbadmin2/js/demo/datatables-demo.js') }}"></script>
 
-    @if (session('success'))
-        Swal.fire({
-        icon: 'success',
-        title: 'Berhasil',
-        text: "{{ session('success') }}",
-        timer: 1500,
-        showConfirmButton: false
+    <script>
+        $(document).ready(function() {
+            let table = $('#dataTable').DataTable({
+                processing: true,
+                serverSide: false,
+                ajax: "{{ route('penyewa.index') }}",
+                columns: [{
+                        data: null,
+                        render: (data, type, row, meta) => meta.row + 1
+                    },
+                    {
+                        data: 'user',
+                        render: data => data ? data.name : '-'
+                    },
+                    {
+                        data: 'nama_penyewa'
+                    },
+                    {
+                        data: 'no_telp'
+                    },
+                    {
+                        data: 'alamat'
+                    },
+                    @if (Auth::user()->role === 'admin')
+                        {
+                            data: 'id',
+                            orderable: false,
+                            searchable: false,
+                            render: function(id, type, row) {
+                                return `
+                <div class="dropdown">
+                    <button class="btn btn-light btn-sm" data-toggle="dropdown" style="border-radius:50%; width:32px; height:32px; padding:0;">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" href="/penyewa/${id}/edit">
+                            <i class="fas fa-edit mr-2"></i> Edit
+                        </a>
+                        <button class="dropdown-item text-danger btn-delete" data-id="${id}">
+                            <i class="fas fa-trash mr-2"></i> Hapus
+                        </button>
+                    </div>
+                </div>`;
+                            }
+                        }
+                    @endif
+                ]
+            });
+
+            // DELETE AJAX + SweetAlert
+            $(document).on('click', '.btn-delete', function() {
+                let id = $(this).data('id');
+                Swal.fire({
+                    title: 'Yakin?',
+                    text: 'Data penyewa akan dihapus permanen!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonText: 'Batal',
+                    confirmButtonText: 'Ya, hapus'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: `/penyewa/${id}`,
+                            type: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            },
+                            success: function(res) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil',
+                                    text: res.message,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                                table.ajax.reload(null, false);
+                            },
+                            error: function() {
+                                Swal.fire('Gagal', 'Data gagal dihapus', 'error');
+                            }
+                        });
+                    }
+                });
+            });
+
+            @if (session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: "{{ session('success') }}",
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            @endif
         });
-    @endif
+    </script>
 @endpush

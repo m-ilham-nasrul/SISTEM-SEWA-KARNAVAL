@@ -24,7 +24,7 @@
                 <h6 class="m-0 font-weight-bold">Data Pengembalian</h6>
             </div>
             <div class="card-body">
-                <div class="table-responsive" style="max-height: 50vh; overflow-y: auto;">
+                <div class="table-responsive">
                     <table class="table table-bordered text-center" id="dataTable" width="100%" cellspacing="0">
                         <thead>
                             <tr>
@@ -111,7 +111,7 @@
                                                     <i class="fas fa-eye mr-2"></i> Detail
                                                 </a>
 
-                                             
+
                                                 <!-- Nota (jika sudah bayar) -->
                                                 @if ($sewa->status_bayar)
                                                     <a class="dropdown-item"
@@ -128,17 +128,17 @@
                                                     </button>
                                                 @endif
                                             </div>
-                                               <!-- Tombol Kembalikan (jika belum kembali) -->
-                                                @if (!$sewa->status)
-                                                    <form action="{{ route('pengembalian.destroy', $sewa->id) }}"
-                                                        method="POST">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="dropdown-item">
-                                                            <i class="fas fa-undo mr-2"></i> Kembalikan
-                                                        </button>
-                                                    </form>
-                                                @endif
+                                            <!-- Tombol Kembalikan (jika belum kembali) -->
+                                            @if (!$sewa->status)
+                                                <form action="{{ route('pengembalian.destroy', $sewa->id) }}"
+                                                    method="POST">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="dropdown-item">
+                                                        <i class="fas fa-undo mr-2"></i> Kembalikan
+                                                    </button>
+                                                </form>
+                                            @endif
 
                                         </div>
 
