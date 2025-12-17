@@ -3,54 +3,88 @@
 namespace App\Http\Controllers;
 
 use App\Models\Sewa;
+use App\Models\Kostum;
 use Illuminate\Http\Request;
 
 class PembayaranController extends Controller
 {
-    // Menampilkan daftar pembayaran
+    /**
+     * INDEX
+     * - AJAX → DataTables (JSON)
+     * - Normal → Blade
+     */
     public function index(Request $request)
     {
+        // Filter status bayar
         $status = $request->input('status_bayar');
 
-        if ($status === '1') {
-            $statusTitle = 'Terbayar';
-            $sewas = Sewa::with('penyewa')->where('status_bayar', 1)->get();
-        } elseif ($status === '0') {
-            $statusTitle = 'Menunggu Pembayaran';
-            $sewas = Sewa::with('penyewa')->where('status_bayar', 0)->get();
-        } else {
-            $statusTitle = '';
-            $sewas = Sewa::with('penyewa')->get();
+        // Pendapatan
+        $pendapatan_hari = Sewa::whereDate('tanggal_sewa', now())
+            ->where('status_bayar', 1)
+            ->sum('total_biaya') +
+            Sewa::whereDate('tanggal_sewa', now())->sum('denda');
+
+        $pendapatan_bulan = Sewa::whereMonth('tanggal_sewa', now()->month)
+            ->where('status_bayar', 1)
+            ->sum('total_biaya') +
+            Sewa::whereMonth('tanggal_sewa', now()->month)->sum('denda');
+
+        if ($request->ajax()) {
+            $query = Sewa::with('penyewa')->orderBy('created_at', 'desc');
+
+            if ($status === '1') $query->where('status_bayar', 1);
+            elseif ($status === '0') $query->where('status_bayar', 0);
+
+            $sewas = $query->get();
+
+            $data = $sewas->map(function ($sewa) {
+                $kostums = [];
+                if ($sewa->kostum_id) {
+                    $kostumIds = json_decode($sewa->kostum_id, true);
+                    $kostums = Kostum::whereIn('id', $kostumIds)->get()->map(function ($k) {
+                        return ['id' => $k->id, 'nama_kostum' => $k->nama_kostum];
+                    });
+                }
+
+                return [
+                    'id' => $sewa->id,
+                    'kode_sewa' => $sewa->kode_sewa ?? 'SEWA-' . str_pad($sewa->id, 4, '0', STR_PAD_LEFT),
+                    'penyewa' => ['nama_penyewa' => $sewa->penyewa->nama_penyewa ?? null],
+                    'kostum_list' => $kostums,
+                    'tanggal_sewa' => $sewa->tanggal_sewa,
+                    'tanggal_kembali' => $sewa->tanggal_kembali,
+                    'denda' => $sewa->denda,
+                    'total_biaya' => $sewa->total_biaya,
+                    'status' => $sewa->status,
+                    'status_bayar' => $sewa->status_bayar,
+                ];
+            });
+
+            return response()->json(['data' => $data]);
         }
 
-        // Pendapatan hari ini
-        $pendapatan_hari =
-            Sewa::whereDate('tanggal_sewa', date('Y-m-d'))->where('status_bayar', 1)->sum('total_biaya')
-            +
-            Sewa::whereDate('tanggal_sewa', date('Y-m-d'))->sum('denda');
-
-        // Pendapatan bulan ini
-        $pendapatan_bulan =
-            Sewa::whereMonth('tanggal_sewa', date('m'))->where('status_bayar', 1)->sum('total_biaya')
-            +
-            Sewa::whereMonth('tanggal_sewa', date('m'))->sum('denda');
+        // Normal view
+        $statusTitle = $status === '1' ? 'Terbayar' : ($status === '0' ? 'Menunggu Pembayaran' : '');
 
         return view('pages.pembayaran.index', compact(
-            'sewas',
             'statusTitle',
             'pendapatan_hari',
             'pendapatan_bulan'
         ));
     }
 
-    // Form pembayaran
+    /**
+     * FORM BAYAR
+     */
     public function bayar($id)
     {
         $pengembalian = Sewa::with('penyewa')->findOrFail($id);
         return view('pages.pembayaran.bayar', compact('pengembalian'));
     }
 
-    // Proses pembayaran
+    /**
+     * PROSES BAYAR
+     */
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -61,42 +95,59 @@ class PembayaranController extends Controller
         ]);
 
         $sewa = Sewa::findOrFail($id);
-
         $sewa->denda = $request->denda ?? 0;
         $sewa->total_biaya = $request->total_biaya;
         $sewa->metode_pembayaran = $request->metode_pembayaran;
         $sewa->no_rekening = $request->no_rekening;
         $sewa->status_bayar = 1;
-
         $sewa->save();
 
         return redirect()->route('pembayaran.index')
             ->with('success', 'Pembayaran berhasil diproses.');
     }
 
-    // Cetak nota
+    /**
+     * CETAK NOTA
+     */
     public function nota($id)
     {
-        $sewa = Sewa::with('penyewa')->findOrFail($id);
+        $sewa = Sewa::with(['penyewa'])->findOrFail($id);
 
-        return view('pages.pembayaran.nota', compact('sewa'));
+        $kostumIds = json_decode($sewa->kostum_id, true) ?? [];
+        $kostums = Kostum::whereIn('id', $kostumIds)->get();
+
+        return view('pages.pembayaran.nota', compact('sewa', 'kostums'));
     }
 
-    // Hapus pembayaran
-    public function hapus($id)
-    {
-        $sewa = Sewa::findOrFail($id);
 
-        // Jika mau update status kostum menjadi tersedia, lakukan perulangan
-        if ($sewa->kostum_id) {
-            foreach ($sewa->kostum_list as $kostum) {
-                $kostum->status = 1; // Tersedia
-                $kostum->save();
-            }
+    /**
+     * HAPUS (AJAX)
+     */
+    public function destroy($id)
+    {
+        $sewa = Sewa::find($id);
+
+        if (!$sewa) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Data tidak ditemukan'
+            ], 404);
         }
 
+        // Kembalikan kostum ke tersedia
+        if ($sewa->kostum_id) {
+            $ids = json_decode($sewa->kostum_id, true);
+            Kostum::whereIn('id', $ids)->update([
+                'status' => 0
+            ]);
+        }
+
+        // HAPUS DATA
         $sewa->delete();
 
-        return redirect()->back()->with('success', 'Pembayaran berhasil dihapus!');
+        return response()->json([
+            'status' => true,
+            'message' => 'Data pengembalian berhasil dihapus'
+        ]);
     }
 }

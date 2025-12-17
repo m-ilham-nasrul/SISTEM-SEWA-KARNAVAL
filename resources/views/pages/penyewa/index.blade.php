@@ -87,8 +87,8 @@
                             render: function(id, type, row) {
                                 return `
                 <div class="dropdown">
-                    <button class="btn btn-light btn-sm" data-toggle="dropdown" style="border-radius:50%; width:32px; height:32px; padding:0;">
-                        <i class="fas fa-ellipsis-v"></i>
+                    <button class="btn btn-light btn-sm" data-toggle="dropdown">
+                            <i class="fas fa-ellipsis-v"></i>
                     </button>
                     <div class="dropdown-menu">
                         <a class="dropdown-item" href="/penyewa/${id}/edit">

@@ -4,31 +4,22 @@
 @section('content')
     <div class="container-fluid">
 
-        <!-- Page Heading -->
         <div class="d-sm-flex align-items-center justify-content-between mb-4">
             <h1 class="h3 mb-0 text-gray-800">Pengembalian Kostum</h1>
         </div>
-
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
 
         <div class="card shadow mb-4">
             <div class="card-header py-3 bg-primary text-white">
                 <h6 class="m-0 font-weight-bold">Data Pengembalian</h6>
             </div>
+
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-bordered text-center" id="dataTable" width="100%" cellspacing="0">
+                    <table class="table table-bordered text-center" id="dataTable" width="100%">
                         <thead>
                             <tr>
                                 <th>No</th>
+                                <th>Kode Sewa</th>
                                 <th>Nama Penyewa</th>
                                 <th>Nama Kostum</th>
                                 <th>Tanggal Sewa</th>
@@ -38,161 +29,12 @@
                                 <th>Aksi</th>
                             </tr>
                         </thead>
-
-                        <tbody>
-                            @foreach ($sewas as $sewa)
-                                <tr>
-                                    <td>{{ $loop->iteration }}</td>
-
-                                    {{-- Nama Penyewa --}}
-                                    <td>
-                                        {!! $sewa->penyewa->nama_penyewa ?? '<small>Data penyewa telah dihapus!</small>' !!}
-                                    </td>
-
-                                    {{-- Nama Kostum (bisa banyak) --}}
-                                    <td>
-                                        @if ($sewa->kostum_list->isNotEmpty())
-                                            @foreach ($sewa->kostum_list as $kostum)
-                                                <div>{{ $kostum->nama_kostum ?? 'Kostum telah dihapus' }}</div>
-                                            @endforeach
-                                        @else
-                                            <small>Data kostum telah dihapus!</small>
-                                        @endif
-                                    </td>
-
-                                    {{-- Tanggal Sewa --}}
-                                    <td>{{ date('d-F-Y', strtotime($sewa->tanggal_sewa)) }}</td>
-
-                                    {{-- Tanggal Kembali --}}
-                                    <td>{{ date('d-F-Y', strtotime($sewa->tanggal_kembali)) }}</td>
-
-                                    {{-- Total Bayar --}}
-                                    <td>Rp. {{ number_format($sewa->total_biaya) }}</td>
-
-                                    {{-- Status --}}
-                                    <td>
-                                        @if (!$sewa->status)
-                                            <span class="badge badge-secondary badge-pill">Masa Sewa
-                                                @if (date('Y-m-d') > $sewa->tanggal_kembali)
-                                                    - <span class="text-danger">Terlambat</span>
-                                                @elseif (date('Y-m-d') === $sewa->tanggal_kembali)
-                                                    - <span class="text-warning">Hari terakhir</span>
-                                                @endif
-                                            </span>
-                                        @else
-                                            <span class="badge badge-success badge-pill">Kembali</span>
-                                        @endif
-
-                                        <br>
-
-                                        {{-- Status Pembayaran --}}
-                                        @if ($sewa->status_bayar)
-                                            <span class="badge badge-pill badge-success mt-1">Telah Terbayar</span>
-                                        @else
-                                            <span class="badge badge-pill badge-danger mt-1">Belum Membayar</span>
-                                        @endif
-                                    </td>
-
-                                    {{-- Aksi --}}
-                                    <td class="text-center">
-                                        <div class="dropdown">
-                                            <button class="btn btn-light btn-sm" type="button"
-                                                id="dropdownMenu{{ $sewa->id }}" data-toggle="dropdown"
-                                                aria-haspopup="true" aria-expanded="false"
-                                                style="border-radius: 50%; width: 32px; height: 32px; padding: 0;">
-                                                <i class="fas fa-ellipsis-v"></i>
-                                            </button>
-
-                                            <!-- Dropdown Menu -->
-                                            <div class="dropdown-menu" aria-labelledby="dropdownMenu{{ $sewa->id }}">
-
-                                                <!-- Detail -->
-                                                <a class="dropdown-item" href="{{ route('penyewaan.show', $sewa->id) }}">
-                                                    <i class="fas fa-eye mr-2"></i> Detail
-                                                </a>
-
-
-                                                <!-- Nota (jika sudah bayar) -->
-                                                @if ($sewa->status_bayar)
-                                                    <a class="dropdown-item"
-                                                        href="{{ route('pembayaran.nota', $sewa->id) }}" target="_blank">
-                                                        <i class="fas fa-file-invoice mr-2"></i> Nota
-                                                    </a>
-                                                @endif
-
-                                                <!-- Hapus (Admin) -->
-                                                @if (Auth::user()->role === 'admin')
-                                                    <button class="dropdown-item text-danger" data-toggle="modal"
-                                                        data-target="#deleteModal{{ $sewa->id }}">
-                                                        <i class="fas fa-trash mr-2"></i> Hapus
-                                                    </button>
-                                                @endif
-                                            </div>
-                                            <!-- Tombol Kembalikan (jika belum kembali) -->
-                                            @if (!$sewa->status)
-                                                <form action="{{ route('pengembalian.destroy', $sewa->id) }}"
-                                                    method="POST">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="dropdown-item">
-                                                        <i class="fas fa-undo mr-2"></i> Kembalikan
-                                                    </button>
-                                                </form>
-                                            @endif
-
-                                        </div>
-
-                                        <!-- Modal Konfirmasi Hapus -->
-                                        @if (Auth::user()->role === 'admin')
-                                            <div class="modal fade" id="deleteModal{{ $sewa->id }}" tabindex="-1"
-                                                role="dialog" aria-labelledby="deleteModalLabel{{ $sewa->id }}"
-                                                aria-hidden="true">
-
-                                                <div class="modal-dialog modal-dialog-centered" role="document">
-                                                    <div class="modal-content">
-
-                                                        <div class="modal-header bg-primary text-white">
-                                                            <h5 class="modal-title"
-                                                                id="deleteModalLabel{{ $sewa->id }}">
-                                                                Konfirmasi Hapus
-                                                            </h5>
-                                                            <button type="button" class="close text-white"
-                                                                data-dismiss="modal" aria-label="Close">
-                                                                <span aria-hidden="true">&times;</span>
-                                                            </button>
-                                                        </div>
-
-                                                        <div class="modal-body">
-                                                            Apakah Anda yakin ingin menghapus Data Pengembalian
-                                                            <strong>{{ $sewa->penyewa->nama_penyewa ?? 'Penyewa Tidak Ditemukan' }}</strong>?
-                                                        </div>
-
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary"
-                                                                data-dismiss="modal">Batal</button>
-
-                                                            <form action="{{ route('pengembalian.hapus', $sewa->id) }}"
-                                                                method="POST" class="d-inline">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button type="submit" class="btn btn-danger">Hapus</button>
-                                                            </form>
-                                                        </div>
-
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-                                    </td>
-
-                                </tr>
-                            @endforeach
-                        </tbody>
+                        <tbody></tbody>
                     </table>
-
                 </div>
             </div>
         </div>
+
     </div>
 @endsection
 
@@ -203,25 +45,196 @@
 @push('addon-script')
     <script src="{{ asset('sbadmin2/vendor/datatables/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('sbadmin2/vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
-    <script src="{{ asset('sbadmin2/js/demo/datatables-demo.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
 
-    @if (session('success'))
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil',
-                text: "{{ session('success') }}",
-                timer: 1500,
-                showConfirmButton: false
+    <script>
+        $(function() {
+
+            let table = $('#dataTable').DataTable({
+                ajax: "{{ route('pengembalian.index') }}",
+                columns: [{
+                        data: null,
+                        render: (d, t, r, m) => m.row + 1
+                    },
+                    {
+                        data: 'kode_sewa'
+                    },
+                    {
+                        data: 'penyewa.nama_penyewa',
+                        defaultContent: '<small>Penyewa dihapus</small>'
+                    },
+                    {
+                        data: 'kostum_list',
+                        orderable: false,
+                        searchable: false,
+                        render: k => k.length ?
+                            k.map(x => x.nama_kostum).join('<br>') : '<small>Kostum dihapus</small>'
+                    },
+                    {
+                        data: 'tanggal_sewa',
+                        render: d => moment(d).format('DD-MMMM-YYYY')
+                    },
+                    {
+                        data: 'tanggal_kembali',
+                        render: d => moment(d).format('DD-MMMM-YYYY')
+                    },
+                    {
+                        data: 'total_biaya',
+                        render: d => `Rp. ${Number(d).toLocaleString()}`
+                    },
+                    {
+                        data: null,
+                        render: d => `
+                    <span class="badge badge-${d.status ? 'success' : 'secondary'}">
+                        ${d.status ? 'Kembali' : 'Masa Sewa'}
+                    </span><br>
+                    <span class="badge badge-${d.status_bayar ? 'success' : 'danger'} mt-1">
+                        ${d.status_bayar ? 'Terbayar' : 'Belum Bayar'}
+                    </span>
+                `
+                    },
+                {
+    data: null,
+    orderable: false,
+    searchable: false,
+    render: data => {
+        let id = data.id;
+        let isAdmin = '{{ Auth::user()->role }}' === 'admin';
+        // ===== NOTA =====
+        let notaBtn = '';
+        if (data.status_bayar) {
+            notaBtn = `
+                <a href="/pembayaran/${id}/nota"
+                   class="btn btn-info btn-sm mb-1 w-100">
+                    <i class="fas fa-file-invoice mr-1"></i> Nota
+                </a>
+            `;
+        }
+
+        // ===== KEMBALIKAN =====
+        let returnBtn = '';
+        if (!data.status) {
+            returnBtn = `
+                <button class="btn btn-warning btn-sm mb-1 w-100 btn-return"
+                        data-id="${id}">
+                    <i class="fas fa-undo mr-1"></i> Kembalikan
+                </button>
+            `;
+        }
+
+        return `
+            ${notaBtn}
+            ${returnBtn}
+
+            <div class="dropdown">
+                <button class="btn btn-light btn-sm w-100" data-toggle="dropdown">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <div class="dropdown-menu">
+                    <a href="/penyewaan/${id}" class="dropdown-item">
+                        <i class="fas fa-eye mr-2"></i> Detail
+                    </a>
+
+                    ${isAdmin ? `
+                        <a href="/penyewaan/${id}/edit" class="dropdown-item">
+                            <i class="fas fa-edit mr-2"></i> Edit
+                        </a>
+                        <button class="dropdown-item text-danger btn-delete"
+                                data-id="${id}">
+                            <i class="fas fa-trash mr-2"></i> Hapus
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }
+}
+
+
+                ]
             });
-        </script>
-    @elseif (session('error'))
-        <script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Gagal',
-                text: "{{ session('error') }}",
+
+            // KEMBALIKAN KOSTUM
+            $(document).on('click', '.btn-return', function() {
+    let id = $(this).data('id');
+
+    Swal.fire({
+        title: 'Kembalikan Kostum',
+        text: 'Pastikan kostum sudah diterima kembali.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, kembalikan',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d'
+    }).then(res => {
+        if (res.isConfirmed) {
+            $.ajax({
+                url: `/pengembalian/${id}`,
+                type: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(r) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: r.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    table.ajax.reload(null, false);
+                },
+                error: function(xhr) {
+                    Swal.fire(
+                        'Gagal',
+                        xhr.responseJSON?.message ?? 'Terjadi kesalahan',
+                        'error'
+                    );
+                }
             });
-        </script>
-    @endif
+        }
+    });
+});
+
+
+            // HAPUS DATA
+            $(document).on('click', '.btn-delete', function() {
+                let id = $(this).data('id');
+
+                Swal.fire({
+                    title: 'Hapus data pengembalian?',
+                    text: 'Data tidak bisa dikembalikan!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Ya, hapus',
+                    cancelButtonText: 'Batal'
+                }).then(res => {
+                    if (res.isConfirmed) {
+                        $.ajax({
+                            url: `/pengembalian/hapus/${id}`,
+                            type: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            },
+                            success: function(r) {
+                                Swal.fire('Berhasil', r.message, 'success');
+                                table.ajax.reload(null, false);
+                            },
+                            error: function(xhr) {
+                                Swal.fire(
+                                    'Gagal',
+                                    xhr.responseJSON?.message ??
+                                    'Terjadi kesalahan',
+                                    'error'
+                                );
+                            }
+                        });
+                    }
+                });
+            });
+
+        });
+    </script>
 @endpush

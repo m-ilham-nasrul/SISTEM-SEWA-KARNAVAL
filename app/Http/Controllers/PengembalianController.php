@@ -2,36 +2,74 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Kostum;
 use App\Models\Sewa;
+use App\Models\Kostum;
 use Illuminate\Http\Request;
 
 class PengembalianController extends Controller
 {
     /**
-     * Tampilkan semua data sewa untuk pengembalian
+     * INDEX
+     * - AJAX → DataTables
+     * - Normal → Blade
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Ambil semua data sewa beserta penyewa
-        $sewas = Sewa::with('penyewa')->get(); // kostum dipanggil via accessor
-        return view('pages.pengembalian.index', compact('sewas'));
+        if ($request->ajax()) {
+
+            $sewas = Sewa::with('penyewa')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            $data = $sewas->map(function ($sewa) {
+
+                $kostums = [];
+                if ($sewa->kostum_id) {
+                    $ids = json_decode($sewa->kostum_id, true);
+                    $kostums = Kostum::whereIn('id', $ids)->get()->map(function ($k) {
+                        return [
+                            'id' => $k->id,
+                            'nama_kostum' => $k->nama_kostum
+                        ];
+                    });
+                }
+
+                return [
+                    'id' => $sewa->id,
+                    'kode_sewa' => $sewa->kode_sewa ?? 'SEWA-' . str_pad($sewa->id, 4, '0', STR_PAD_LEFT),
+                    'penyewa' => [
+                        'nama_penyewa' => $sewa->penyewa->nama_penyewa ?? null
+                    ],
+                    'kostum_list' => $kostums,
+                    'tanggal_sewa' => $sewa->tanggal_sewa,
+                    'tanggal_kembali' => $sewa->tanggal_kembali,
+                    'total_biaya' => $sewa->total_biaya,
+                    'denda' => $sewa->denda,
+                    'status' => $sewa->status,
+                    'status_bayar' => $sewa->status_bayar,
+                ];
+            });
+
+            return response()->json(['data' => $data]);
+        }
+
+        return view('pages.pengembalian.index');
     }
 
     /**
-     * Halaman bayar / edit pembayaran
+     * FORM PEMBAYARAN
      */
-    public function edit(Sewa $pengembalian)
+    public function edit($id)
     {
+        $pengembalian = Sewa::with('penyewa')->findOrFail($id);
         return view('pages.pembayaran.bayar', compact('pengembalian'));
     }
 
     /**
-     * Proses pembayaran total biaya & denda
+     * PROSES PEMBAYARAN
      */
-    public function update(Request $request, Sewa $pengembalian)
+    public function update(Request $request, $id)
     {
-        // Validasi input
         $validated = $request->validate([
             'total_biaya' => 'required|numeric',
             'denda' => 'nullable|numeric',
@@ -42,8 +80,9 @@ class PengembalianController extends Controller
             'nomor_ewallet' => 'nullable|string',
         ]);
 
-        // Update data pembayaran
-        $pengembalian->update([
+        $sewa = Sewa::findOrFail($id);
+
+        $sewa->update([
             'total_biaya' => $validated['total_biaya'],
             'denda' => $validated['denda'] ?? 0,
             'metode_pembayaran' => $validated['metode_pembayaran'],
@@ -55,40 +94,71 @@ class PengembalianController extends Controller
         ]);
 
         return redirect()->route('pengembalian.index')
-            ->with('success', 'Pembayaran berhasil diperbarui');
+            ->with('success', 'Pembayaran berhasil diproses');
     }
 
     /**
-     * Proses pengembalian kostum (ubah status kostum menjadi tersedia)
+     * PROSES PENGEMBALIAN KOSTUM
      */
-    public function destroy(Sewa $pengembalian)
+    public function destroy($id)
     {
-        // Update semua kostum terkait menjadi tersedia (status = 0)
-        foreach ($pengembalian->kostum_list as $kostum) {
-            $kostum->update(['status' => 0]);
+        try {
+            $sewa = Sewa::findOrFail($id);
+
+            if ($sewa->status == 1) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Sewa sudah dikembalikan'
+                ], 400);
+            }
+
+            if ($sewa->kostum_id) {
+                $ids = json_decode($sewa->kostum_id, true);
+                Kostum::whereIn('id', $ids)->update([
+                    'status' => 0
+                ]);
+            }
+
+            $sewa->update([
+                'status' => 1
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Kostum berhasil dikembalikan'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Gagal mengembalikan kostum'
+            ], 500);
         }
-
-        // Tandai sewa sudah dikembalikan
-        $pengembalian->update(['status' => 1]);
-
-        return redirect()->route('pengembalian.index')
-            ->with('success', 'Kostum berhasil dikembalikan');
     }
 
-    /**
-     * Hapus data pembayaran & sewa
-     */
     public function hapus($id)
     {
-        $sewa = Sewa::findOrFail($id);
+        try {
+            $sewa = Sewa::findOrFail($id);
 
-        // Kembalikan status semua kostum terkait
-        foreach ($sewa->kostum_list as $kostum) {
-            $kostum->update(['status' => 1]);
+            // pastikan kostum kembali tersedia
+            if ($sewa->kostum_id) {
+                $ids = json_decode($sewa->kostum_id, true);
+                Kostum::whereIn('id', $ids)->update([
+                    'status' => 0
+                ]);
+            }
+
+            $sewa->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Data pengembalian berhasil dihapus'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Data gagal dihapus'
+            ], 500);
         }
-
-        $sewa->delete();
-
-        return redirect()->back()->with('success', 'Pembayaran berhasil dihapus!');
     }
 }

@@ -45,7 +45,7 @@ class KostumController extends Controller
             'image_kostum' => 'nullable|image|mimes:jpg,jpeg,png|max:6048',
         ]);
 
-        $validated['status'] = 1;
+        $validated['status'] = 0; // TERSEDIA
 
         if ($request->hasFile('image_kostum')) {
             $validated['image_kostum'] =
@@ -58,6 +58,7 @@ class KostumController extends Controller
             ->route('kostum.index')
             ->with('success', 'Kostum berhasil ditambahkan');
     }
+
 
     /**
      * DETAIL (VIEW)

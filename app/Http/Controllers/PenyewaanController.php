@@ -9,27 +9,63 @@ use Illuminate\Http\Request;
 
 class PenyewaanController extends Controller
 {
-    /** ------------------------------------------
-     *  Tampilkan Semua Data Penyewaan
-     * -------------------------------------------*/
-    public function index()
+    /**
+     * INDEX
+     * - AJAX → DataTables (JSON)
+     * - Normal → Blade
+     */
+    public function index(Request $request)
     {
-        $sewas = Sewa::orderBy('id', 'desc')->get();
-        return view('pages.penyewaan.index', compact('sewas'));
+        if ($request->ajax()) {
+
+            $sewas = Sewa::with('penyewa')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            $data = $sewas->map(function ($sewa) {
+
+                $kostums = [];
+                if ($sewa->kostum_id) {
+                    $ids = json_decode($sewa->kostum_id, true);
+                    $kostums = Kostum::whereIn('id', $ids)->get()->map(function ($k) {
+                        return [
+                            'id' => $k->id,
+                            'nama_kostum' => $k->nama_kostum
+                        ];
+                    });
+                }
+
+                return [
+                    'id' => $sewa->id,
+                    'status' => $sewa->status, // ⬅️ INI KUNCI
+                    'penyewa' => [
+                        'nama_penyewa' => $sewa->penyewa->nama_penyewa ?? null
+                    ],
+                    'kostum_list' => $kostums,
+                    'tanggal_sewa' => $sewa->tanggal_sewa,
+                    'tanggal_kembali' => $sewa->tanggal_kembali,
+                ];
+            });
+
+            return response()->json(['data' => $data]);
+        }
+
+        return view('pages.penyewaan.index');
     }
 
-    /** ------------------------------------------
-     *  HALAMAN PILIH KOSTUM (multi select)
-     * -------------------------------------------*/
+
+    /**
+     * FORM PILIH KOSTUM
+     */
     public function select()
     {
         $kostums = Kostum::all();
         return view('pages.penyewaan.select', compact('kostums'));
     }
 
-    /** ------------------------------------------
-     *  HALAMAN CREATE -> setelah pilih banyak kostum
-     * -------------------------------------------*/
+    /**
+     * FORM CREATE
+     */
     public function create(Request $request)
     {
         if (!$request->has('kostum_id')) {
@@ -45,10 +81,9 @@ class PenyewaanController extends Controller
         ]);
     }
 
-    /** ------------------------------------------
-     *  Store Penyewaan Baru (multi kostum)
-     *  - Otomatis update status kostum menjadi "Sedang Digunakan"
-     * -------------------------------------------*/
+    /**
+     * STORE PENYEWAAN
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -77,7 +112,6 @@ class PenyewaanController extends Controller
             'denda'           => 0,
         ]);
 
-        // --- Update status kostum menjadi "Sedang Digunakan"
         foreach ($kostumList as $kostum) {
             $kostum->status = 1;
             $kostum->save();
@@ -87,9 +121,9 @@ class PenyewaanController extends Controller
             ->with('success', 'Penyewaan berhasil ditambahkan!');
     }
 
-    /** ------------------------------------------
-     *  Tampilkan Detail Penyewaan
-     * -------------------------------------------*/
+    /**
+     * DETAIL
+     */
     public function show($id)
     {
         $sewa = Sewa::findOrFail($id);
@@ -102,9 +136,9 @@ class PenyewaanController extends Controller
         return view('pages.penyewaan.show', compact('sewa', 'kostums', 'hargaPaket', 'denda', 'total'));
     }
 
-    /** ------------------------------------------
-     *  Edit Penyewaan
-     * -------------------------------------------*/
+    /**
+     * EDIT
+     */
     public function edit($id)
     {
         $sewa = Sewa::findOrFail($id);
@@ -118,10 +152,9 @@ class PenyewaanController extends Controller
         ]);
     }
 
-    /** ------------------------------------------
-     *  Update Penyewaan
-     *  - Otomatis update status kostum sesuai sewa
-     * -------------------------------------------*/
+    /**
+     * UPDATE
+     */
     public function update(Request $request, $id)
     {
         $sewa = Sewa::findOrFail($id);
@@ -136,14 +169,12 @@ class PenyewaanController extends Controller
             'denda'            => 'nullable|integer|min:0',
         ]);
 
-        // --- Reset status kostum lama
         $oldIds = json_decode($sewa->kostum_id, true) ?? [];
         foreach (Kostum::whereIn('id', $oldIds)->get() as $kostum) {
             $kostum->status = 0;
             $kostum->save();
         }
 
-        // --- Hitung total biaya baru
         $newKostumList = Kostum::whereIn('id', $request->kostum_id)->get();
         $total = $newKostumList->sum('harga') + ($request->denda ?? 0);
 
@@ -158,7 +189,6 @@ class PenyewaanController extends Controller
             'total_biaya'     => $total,
         ]);
 
-        // --- Set status kostum baru
         foreach ($newKostumList as $kostum) {
             $kostum->status = 1;
             $kostum->save();
@@ -168,23 +198,35 @@ class PenyewaanController extends Controller
             ->with('success', 'Penyewaan berhasil diperbarui!');
     }
 
-    /** ------------------------------------------
-     *  Hapus / Batalkan Penyewaan
-     *  - Otomatis update status kostum jadi tersedia
-     * -------------------------------------------*/
+    /**
+     * DESTROY (AJAX)
+     */
     public function destroy($id)
     {
-        $sewa = Sewa::findOrFail($id);
+        try {
+            $sewa = Sewa::findOrFail($id);
 
-        // --- Reset status kostum menjadi tersedia
-        foreach ($sewa->kostum_list as $kostum) {
-            $kostum->status = 0;
-            $kostum->save();
+            // Kembalikan status kostum → TERSEDIA
+            if ($sewa->kostum_id) {
+                $ids = json_decode($sewa->kostum_id, true);
+
+                Kostum::whereIn('id', $ids)->update([
+                    'status' => 0 // TERSEDIA
+                ]);
+            }
+
+            // Hapus data sewa
+            $sewa->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Penyewaan berhasil dibatalkan'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Penyewaan gagal dibatalkan'
+            ], 500);
         }
-
-        $sewa->delete();
-
-        return redirect()->route('penyewaan.index')
-            ->with('success', 'Penyewaan berhasil dibatalkan!');
     }
 }
