@@ -57,6 +57,7 @@
 
             let table = $('#dataTable').DataTable({
                 processing: true,
+                serverSide: false,
                 ajax: "{{ route('kostum.index') }}",
                 columns: [{
                         data: null,

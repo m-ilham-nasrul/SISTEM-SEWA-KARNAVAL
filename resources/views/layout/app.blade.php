@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'SEWA KARNAVAL | Dashboard')</title>
 
     <!-- Font dan CSS -->
@@ -26,7 +26,7 @@
 
     <div id="wrapper">
 
-       @include('layout.sidebar')
+        @include('layout.sidebar')
 
         <!-- CONTENT WRAPPER -->
         <div id="content-wrapper" class="d-flex flex-column">
@@ -57,29 +57,45 @@
         <i class="fas fa-angle-up"></i>
     </a>
 
-    <!-- Logout Modal -->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title">Konfirmasi Logout</h5>
-                    <button class="close" type="button" data-dismiss="modal">
-                        <span>×</span>
-                    </button>
-                </div>
-                <div class="modal-body">Apakah Anda yakin ingin keluar dari sistem?</div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Batal</button>
+    <script>
+        function confirmLogout(e) {
+            e.preventDefault();
 
-                    <form action="{{ route('logout') }}" method="POST">
-                        @csrf
-                        <button type="submit" class="btn btn-primary">Logout</button>
-                    </form>
-
-                </div>
-            </div>
-        </div>
-    </div>
+            Swal.fire({
+                title: 'Yakin ingin logout?',
+                text: 'Anda akan keluar dari sistem',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Logout',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "{{ route('logout') }}",
+                        type: "POST",
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function() {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Logout berhasil',
+                                timer: 1200,
+                                showConfirmButton: false
+                            }).then(() => {
+                                window.location.href = "{{ route('login') }}";
+                            });
+                        },
+                        error: function() {
+                            Swal.fire('Gagal', 'Terjadi kesalahan saat logout', 'error');
+                        }
+                    });
+                }
+            });
+        }
+    </script>
 
     <!-- SBAdmin2 Scripts -->
     <script src="{{ asset('sbadmin2/vendor/jquery/jquery.min.js') }}"></script>

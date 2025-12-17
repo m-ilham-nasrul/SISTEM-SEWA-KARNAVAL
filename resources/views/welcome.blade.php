@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>Sewa Karnaval</title>
 
     <!-- Bootstrap 5 -->
@@ -16,7 +19,6 @@
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"> />
-
     <link rel="stylesheet" href="/css/landing.css">
 
 </head>
@@ -43,10 +45,7 @@
                 </ul>
                 @if (Auth::check())
                     <a href="/dashboard" class="btn btn-light ms-3 px-4">Dashboard</a>
-                    <form action="/logout" method="POST" class="d-inline">
-                        @csrf
-                        <button class="btn btn-danger ms-2 px-4">Logout</button>
-                    </form>
+                    <a href="#" class="btn btn-danger ms-2 px-4" onclick="confirmLogout(event)">Logout</a>
                 @else
                     <a href="{{ route('login') }}" class="btn btn-light ms-3 px-4">Login</a>
                     <a href="{{ route('register') }}" class="btn btn-warning ms-2 px-4">Sign Up</a>
@@ -142,6 +141,45 @@
         AOS.init();
     </script>
 
+    <script>
+        function confirmLogout(e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: 'Yakin ingin logout?',
+                text: 'Anda akan keluar dari sistem',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Logout',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "{{ route('logout') }}",
+                        type: "POST",
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function() {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Logout berhasil',
+                                timer: 1200,
+                                showConfirmButton: false
+                            }).then(() => {
+                                window.location.href = "{{ route('login') }}";
+                            });
+                        },
+                        error: function() {
+                            Swal.fire('Gagal', 'Terjadi kesalahan saat logout', 'error');
+                        }
+                    });
+                }
+            });
+        }
+    </script>
 </body>
 
 </html>

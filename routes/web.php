@@ -28,6 +28,7 @@ Route::middleware('CheckLogin')->group(function () {
 Route::middleware('CheckAuth')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/data', [DashboardController::class, 'ajaxData'])->name('dashboard.data');
 
     // PILIH KOSTUM HARUS DITARUH SEBELUM RESOURCE !!!
     Route::get('/penyewaan/pilih-kostum', [PenyewaanController::class, 'select'])

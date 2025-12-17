@@ -27,7 +27,7 @@
                 </a>
 
                 <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in">
-                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                    <a class="dropdown-item" href="#" onclick="confirmLogout(event)">
                         <i class="fa-solid fa-right-from-bracket fa-sm fa-fw mr-2 text-gray-400"></i>
                         Logout
                     </a>
