@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Penyewa;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PenyewaController extends Controller
 {
@@ -38,18 +39,26 @@ class PenyewaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'user_id'      => 'nullable|integer',
             'nama_penyewa' => 'required|string|max:255',
             'no_telp'      => 'required|string|max:20',
             'alamat'       => 'required|string',
         ]);
 
-        Penyewa::create($request->only(['user_id', 'nama_penyewa', 'no_telp', 'alamat']));
+        // Cegah duplikasi
+        if (Auth::user()->penyewa) {
+            return redirect()->route('penyewaan.select');
+        }
 
-        return redirect()->route('penyewa.index')
-            ->with('success', 'Penyewa berhasil ditambahkan!');
+        Penyewa::create([
+            'user_id'      => Auth::id(),
+            'nama_penyewa' => $request->nama_penyewa,
+            'no_telp'      => $request->no_telp,
+            'alamat'       => $request->alamat,
+        ]);
+
+        return redirect()->route('penyewaan.select')
+            ->with('success', 'Data penyewa berhasil disimpan');
     }
-
     /**
      * FORM EDIT VIEW
      */

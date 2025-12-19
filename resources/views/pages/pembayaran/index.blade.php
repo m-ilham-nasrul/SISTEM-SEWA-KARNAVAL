@@ -167,7 +167,7 @@
     searchable: false,
     render: data => {
         let id = data.id;
-        let isAdmin = '{{ Auth::user()->role }}' === 'admin';
+        let role = '{{ Auth::user()->role }}';
 
         // ===== BAYAR =====
         let bayarBtn = '';
@@ -191,40 +191,47 @@
             `;
         }
 
+        // ===== EDIT & HAPUS (ROLE-BASED) =====
+        let editBtn = '';
+        let deleteBtn = '';
+
+        if (role === 'admin' || (role === 'penyewa' && !data.status_bayar)) {
+            editBtn = `
+                <a href="/penyewaan/${id}/edit" class="dropdown-item">
+                    <i class="fas fa-edit mr-2"></i> Edit
+                </a>
+            `;
+            deleteBtn = `
+                <button class="dropdown-item text-danger btn-delete" data-id="${id}">
+                    <i class="fas fa-trash mr-2"></i> Batalkan
+                </button>
+            `;
+        }
+
         return `
             <div class="d-flex flex-column align-items-center">
                 ${bayarBtn}
                 ${notaBtn}
 
                 <div class="dropdown mt-1">
-                    <button class="btn btn-link text-dark p-0"
-                            data-toggle="dropdown"
-                            style="font-size:18px; line-height:1;">
+                    <button class="btn btn-light btn-sm w-100" data-toggle="dropdown">
                         <i class="fas fa-ellipsis-v"></i>
                     </button>
+
                     <div class="dropdown-menu dropdown-menu-right">
                         <a href="/penyewaan/${id}" class="dropdown-item">
                             <i class="fas fa-eye mr-2"></i> Detail
                         </a>
-
-                        ${isAdmin ? `
-                            <a href="/penyewaan/${id}/edit" class="dropdown-item">
-                                <i class="fas fa-edit mr-2"></i> Edit
-                            </a>
-                            <button class="dropdown-item text-danger btn-delete"
-                                    data-id="${id}">
-                                <i class="fas fa-trash mr-2"></i> Hapus
-                            </button>
-                        ` : ''}
+                        ${editBtn}
+                        ${deleteBtn}
                     </div>
                 </div>
             </div>
         `;
     }
 }
-
-                ]
-            });
+]
+    });
 
             // DELETE AJAX + SWEETALERT
             $(document).on('click', '.btn-delete', function() {

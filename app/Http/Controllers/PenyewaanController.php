@@ -6,6 +6,7 @@ use App\Models\Sewa;
 use App\Models\Penyewa;
 use App\Models\Kostum;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PenyewaanController extends Controller
 {
@@ -37,7 +38,7 @@ class PenyewaanController extends Controller
 
                 return [
                     'id' => $sewa->id,
-                    'status' => $sewa->status, // ⬅️ INI KUNCI
+                    'status' => $sewa->status,
                     'penyewa' => [
                         'nama_penyewa' => $sewa->penyewa->nama_penyewa ?? null
                     ],
@@ -52,7 +53,6 @@ class PenyewaanController extends Controller
 
         return view('pages.penyewaan.index');
     }
-
 
     /**
      * FORM PILIH KOSTUM
@@ -74,10 +74,12 @@ class PenyewaanController extends Controller
         }
 
         $kostumIds = $request->kostum_id;
+        $user = Auth::user();
 
         return view('pages.penyewaan.create', [
-            'penyewas'  => Penyewa::all(),
-            'kostums'   => Kostum::whereIn('id', $kostumIds)->get(),
+            'kostums' => Kostum::whereIn('id', $kostumIds)->get(),
+            'penyewa' => $user->role === 'penyewa' ? $user->penyewa : null,
+            'penyewas' => $user->role === 'admin' ? Penyewa::all() : null,
         ]);
     }
 
@@ -86,22 +88,33 @@ class PenyewaanController extends Controller
      */
     public function store(Request $request)
     {
+        $user = Auth::user();
+
         $request->validate([
-            'penyewa_id' => 'required|exists:penyewas,id',
-            'kostum_id'  => 'required|array',
-            'kostum_id.*' => 'exists:kostums,id',
-            'tanggal_sewa' => 'required|date',
-            'tanggal_kembali' => 'required|date|after_or_equal:tanggal_sewa',
-            'catatan' => 'nullable|string',
-            'status' => 'required|boolean',
+            'kostum_id'        => 'required|array',
+            'kostum_id.*'      => 'exists:kostums,id',
+            'tanggal_sewa'     => 'required|date',
+            'tanggal_kembali'  => 'required|date|after_or_equal:tanggal_sewa',
+            'catatan'          => 'nullable|string',
+            'status'           => 'required|boolean',
         ]);
+
+        // Tentukan penyewa ID secara aman
+        if ($user->role === 'penyewa') {
+            $penyewaId = $user->penyewa->id;
+        } else {
+            $request->validate([
+                'penyewa_id' => 'required|exists:penyewas,id'
+            ]);
+            $penyewaId = $request->penyewa_id;
+        }
 
         $kostumList = Kostum::whereIn('id', $request->kostum_id)->get();
         $total = $kostumList->sum('harga');
 
         $sewa = Sewa::create([
             'kode_sewa'       => 'SEWA-' . now()->format('YmdHis'),
-            'penyewa_id'      => $request->penyewa_id,
+            'penyewa_id'      => $penyewaId,
             'kostum_id'       => json_encode($request->kostum_id),
             'tanggal_sewa'    => $request->tanggal_sewa,
             'tanggal_kembali' => $request->tanggal_kembali,
@@ -113,8 +126,7 @@ class PenyewaanController extends Controller
         ]);
 
         foreach ($kostumList as $kostum) {
-            $kostum->status = 1;
-            $kostum->save();
+            $kostum->update(['status' => 1]);
         }
 
         return redirect()->route('pembayaran.index')
@@ -142,6 +154,14 @@ class PenyewaanController extends Controller
     public function edit($id)
     {
         $sewa = Sewa::findOrFail($id);
+        $user = Auth::user();
+
+        // Penyewa hanya bisa edit jika status = 0
+        if ($sewa->status == 1 && $user->role !== 'admin') {
+            return redirect()->route('pembayaran.index')
+                ->with('error', 'Penyewaan sudah dikembalikan dan tidak bisa diedit');
+        }
+
         $currentIds = json_decode($sewa->kostum_id);
 
         return view('pages.penyewaan.edit', [
@@ -158,6 +178,13 @@ class PenyewaanController extends Controller
     public function update(Request $request, $id)
     {
         $sewa = Sewa::findOrFail($id);
+        $user = Auth::user();
+
+        // Penyewa hanya bisa update jika status = 0
+        if ($sewa->status == 1 && $user->role !== 'admin') {
+            return redirect()->route('pembayaran.index')
+                ->with('error', 'Penyewaan sudah dikembalikan dan tidak bisa diperbarui');
+        }
 
         $request->validate([
             'penyewa_id'       => 'required|exists:penyewas,id',
@@ -194,7 +221,7 @@ class PenyewaanController extends Controller
             $kostum->save();
         }
 
-        return redirect()->route('penyewaan.index')
+        return redirect()->route('pembayaran.index')
             ->with('success', 'Penyewaan berhasil diperbarui!');
     }
 
@@ -203,15 +230,24 @@ class PenyewaanController extends Controller
      */
     public function destroy($id)
     {
-        try {
-            $sewa = Sewa::findOrFail($id);
+        $sewa = Sewa::findOrFail($id);
+        $user = Auth::user();
 
+        // Penyewa hanya bisa hapus jika status = 0
+        if ($sewa->status == 1 && $user->role !== 'admin') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Penyewaan sudah dikembalikan dan tidak bisa dibatalkan'
+            ], 403);
+        }
+
+        try {
             // Kembalikan status kostum → TERSEDIA
             if ($sewa->kostum_id) {
                 $ids = json_decode($sewa->kostum_id, true);
 
                 Kostum::whereIn('id', $ids)->update([
-                    'status' => 0 // TERSEDIA
+                    'status' => 0
                 ]);
             }
 

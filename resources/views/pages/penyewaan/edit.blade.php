@@ -34,23 +34,34 @@
                             @csrf
                             @method('PUT')
 
-                            <!-- Nama Penyewa -->
+                            <!-- Penyewa -->
                             <div class="form-group">
-                                <label for="penyewa_id">Nama Penyewa</label>
-                                <select name="penyewa_id" id="penyewa_id"
-                                    class="form-control @error('penyewa_id') is-invalid @enderror">
-                                    <option value="">[ Pilih Penyewa ]</option>
+                                <label>Nama Penyewa</label>
 
-                                    @foreach ($penyewas as $penyewa)
-                                        <option value="{{ $penyewa->id }}"
-                                            {{ old('penyewa_id', $sewa->penyewa_id) == $penyewa->id ? 'selected' : '' }}>
-                                            {{ $penyewa->restuid }} | {{ $penyewa->nama_penyewa }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('penyewa_id')
-                                    <small class="text-danger">{{ $message }}</small>
-                                @enderror
+                                @if (Auth::user()->role === 'admin')
+                                    <!-- ADMIN BOLEH PILIH -->
+                                    <select name="penyewa_id"
+                                        class="form-control @error('penyewa_id') is-invalid @enderror">
+                                        <option value="">[ Pilih Penyewa ]</option>
+
+                                        @foreach ($penyewas as $penyewa)
+                                            <option value="{{ $penyewa->id }}"
+                                                {{ old('penyewa_id', $sewa->penyewa_id) == $penyewa->id ? 'selected' : '' }}>
+                                                {{ $penyewa->restuid }} | {{ $penyewa->nama_penyewa }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+
+                                    @error('penyewa_id')
+                                        <small class="text-danger">{{ $message }}</small>
+                                    @enderror
+                                @else
+                                    <!-- PENYEWA LOGIN (AUTO) -->
+                                    <input type="text" class="form-control" value="{{ $sewa->penyewa->nama_penyewa }}"
+                                        readonly>
+
+                                    <input type="hidden" name="penyewa_id" value="{{ $sewa->penyewa_id }}">
+                                @endif
                             </div>
 
                             <!-- Tombol Kostum -->

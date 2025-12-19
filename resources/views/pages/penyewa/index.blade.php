@@ -11,10 +11,6 @@
                 <a href="{{ route('penyewa.create') }}" class="btn btn-sm btn-primary shadow-sm mt-3 mt-md-0">
                     <i class="fas fa-plus-circle"></i> Tambah Penyewa
                 </a>
-            @else
-                <a href="{{ route('penyewa.create') }}" class="btn btn-sm btn-primary shadow-sm mt-3 mt-md-0">
-                    <i class="fas fa-user-plus"></i> Daftar Sebagai Penyewa
-                </a>
             @endif
         </div>
 

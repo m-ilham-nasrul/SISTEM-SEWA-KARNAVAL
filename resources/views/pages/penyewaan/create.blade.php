@@ -42,23 +42,35 @@
 
                             <!-- Penyewa -->
                             <div class="form-group">
-                                <label for="penyewa_id">Nama Penyewa</label>
-                                <select name="penyewa_id" id="penyewa_id"
-                                    class="form-control @error('penyewa_id') is-invalid @enderror" required>
-                                    <option value="">[ Pilih Penyewa ]</option>
+                                <label>Nama Penyewa</label>
 
-                                    @forelse($penyewas as $penyewa)
-                                        <option value="{{ $penyewa->id }}"
-                                            {{ old('penyewa_id') == $penyewa->id ? 'selected' : '' }}>
-                                            {{ $penyewa->nama_penyewa }}
-                                        </option>
-                                    @empty
-                                        <option disabled>Data penyewa kosong</option>
-                                    @endforelse
-                                </select>
-                                @error('penyewa_id')
-                                    <small class="text-danger">{{ $message }}</small>
-                                @enderror
+                                @if (Auth::user()->role === 'admin')
+                                    <!-- ADMIN BOLEH PILIH -->
+                                    <select name="penyewa_id" class="form-control @error('penyewa_id') is-invalid @enderror"
+                                        required>
+                                        <option value="">[ Pilih Penyewa ]</option>
+
+                                        @forelse($penyewas as $penyewa)
+                                            <option value="{{ $penyewa->id }}"
+                                                {{ old('penyewa_id') == $penyewa->id ? 'selected' : '' }}>
+                                                {{ $penyewa->nama_penyewa }}
+                                            </option>
+                                        @empty
+                                            <option disabled>Data penyewa kosong</option>
+                                        @endforelse
+                                    </select>
+
+                                    @error('penyewa_id')
+                                        <small class="text-danger">{{ $message }}</small>
+                                    @enderror
+                                @else
+                                    <!-- PENYEWA LOGIN (AUTO) -->
+                                    <input type="text" class="form-control" value="{{ $penyewa->nama_penyewa }}"
+                                        readonly>
+
+                                    <!-- kirim ID secara tersembunyi -->
+                                    <input type="hidden" name="penyewa_id" value="{{ $penyewa->id }}">
+                                @endif
                             </div>
 
                             <!-- Detail Kostum Dipilih -->

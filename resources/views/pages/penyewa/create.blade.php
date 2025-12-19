@@ -30,19 +30,33 @@
                         <form action="{{ route('penyewa.store') }}" method="POST">
                             @csrf
 
-                            <!-- User Selection -->
+                            <!-- User -->
                             <div class="mb-3">
                                 <label for="user_id" class="form-label">User</label>
-                                <select name="user_id" id="user_id"
-                                    class="form-control @error('user_id') is-invalid @enderror">
-                                    <option value="">-- Pilih User --</option>
-                                    @foreach (\App\Models\User::where('role', 'penyewa')->get() as $user)
-                                        <option value="{{ $user->id }}">{{ $user->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('user_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+
+                                @if (Auth::user()->role === 'admin')
+                                    <!-- ADMIN BOLEH PILIH USER -->
+                                    <select name="user_id" id="user_id"
+                                        class="form-control @error('user_id') is-invalid @enderror" required>
+                                        <option value="">-- Pilih User --</option>
+
+                                        @foreach (\App\Models\User::where('role', 'penyewa')->get() as $user)
+                                            <option value="{{ $user->id }}"
+                                                {{ old('user_id') == $user->id ? 'selected' : '' }}>
+                                                {{ $user->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+
+                                    @error('user_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                @else
+                                    <!-- PENYEWA LOGIN (AUTO) -->
+                                    <input type="text" class="form-control" value="{{ Auth::user()->name }}" readonly>
+
+                                    <input type="hidden" name="user_id" value="{{ Auth::id() }}">
+                                @endif
                             </div>
 
                             <!-- Nama Penyewa -->

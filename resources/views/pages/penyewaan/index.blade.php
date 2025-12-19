@@ -113,30 +113,59 @@
                             `;
                         }
                     },
-                    {
-                        data: 'id',
-                        orderable: false,
-                        searchable: false,
-                        render: id => `
-                <div class="dropdown">
-                    <button class="btn btn-light btn-sm" data-toggle="dropdown">
-                        <i class="fas fa-ellipsis-v"></i>
-                    </button>
-                    <div class="dropdown-menu">
-                        <a href="/penyewaan/${id}" class="dropdown-item">
-                            <i class="fas fa-eye mr-2"></i> Detail
-                        </a>
-                        ${'{{ Auth::user()->role }}' === 'admin' ? `
-                                            <a href="/penyewaan/${id}/edit" class="dropdown-item">
-                                                <i class="fas fa-edit mr-2"></i> Edit
-                                            </a>
-                                            <button class="dropdown-item text-danger btn-delete" data-id="${id}">
-                                                <i class="fas fa-trash mr-2"></i> Batalkan
-                                            </button>` : ''}
-                    </div>
+                   {
+    data: null,
+    orderable: false,
+    searchable: false,
+    render: data => {
+        let id = data.id;
+        let role = '{{ Auth::user()->role }}';
+
+        let editBtn = '';
+        let deleteBtn = '';
+
+        // ===== EDIT =====
+        if (
+            role === 'admin' ||
+            (role === 'penyewa' && data.status == 0)
+        ) {
+            editBtn = `
+                <a href="/penyewaan/${id}/edit" class="dropdown-item">
+                    <i class="fas fa-edit mr-2"></i> Edit
+                </a>
+            `;
+        }
+
+        // ===== BATALKAN =====
+        if (
+            role === 'admin' ||
+            (role === 'penyewa' && data.status == 0)
+        ) {
+            deleteBtn = `
+                <button class="dropdown-item text-danger btn-delete"
+                        data-id="${id}">
+                    <i class="fas fa-trash mr-2"></i> Batalkan
+                </button>
+            `;
+        }
+
+        return `
+            <div class="dropdown">
+                <button class="btn btn-light btn-sm" data-toggle="dropdown">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <div class="dropdown-menu">
+                    <a href="/penyewaan/${id}" class="dropdown-item">
+                        <i class="fas fa-eye mr-2"></i> Detail
+                    </a>
+
+                    ${editBtn}
+                    ${deleteBtn}
                 </div>
-            `
-                    }
+            </div>
+        `;
+    }
+}
                 ]
             });
 
