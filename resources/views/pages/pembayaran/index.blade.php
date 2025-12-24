@@ -57,14 +57,11 @@
                 <!-- Filter -->
                 <div class="mx-auto mb-3">
                     <div class="btn-group" role="group">
-                        <a href="{{ route('pembayaran.index') }}" class="btn btn-dark">All</a>
-                        <a href="{{ route('pembayaran.index', ['status_bayar' => 0]) }}" class="btn btn-secondary">
-                            Menunggu Pembayaran
-                        </a>
-                        <a href="{{ route('pembayaran.index', ['status_bayar' => 1]) }}" class="btn btn-secondary">
-                            Telah Terbayar
-                        </a>
+                        <button class="btn btn-dark filter-btn" data-status="">All</button>
+                        <button class="btn btn-warning filter-btn" data-status="0">Menunggu Pembayaran</button>
+                        <button class="btn btn-success filter-btn" data-status="1">Telah Terbayar</button>
                     </div>
+
                 </div>
 
                 <div class="table-responsive">
@@ -106,17 +103,24 @@
     <script>
         $(document).ready(function() {
 
+            let statusBayar = ''; 
+
             let table = $('#dataTable').DataTable({
                 processing: true,
                 serverSide: false,
-                ajax: "{{ route('pembayaran.index') }}",
+                ajax: {
+                    url: "{{ route('pembayaran.index') }}",
+                    data: function(d) {
+                        d.status_bayar = statusBayar;
+                    }
+                },
                 columns: [{
                         data: null,
                         render: (data, type, row, meta) => meta.row + 1
                     },
                     {
                         data: 'kode_sewa',
-                        render: (data, row) => data ?? `SEWA-${String(row.id).padStart(4,'0')}`
+                        render: (data, type, row) => data ?? `SEWA-${String(row.id).padStart(4,'0')}`
                     },
                     {
                         data: 'penyewa.nama_penyewa',
@@ -157,81 +161,81 @@
                             let bayar = data.status_bayar ? 'Telah Terbayar' : 'Belum Membayar';
                             let badgeStatus = data.status ? 'success' : 'secondary';
                             let badgeBayar = data.status_bayar ? 'success' : 'danger';
-                            return `<span class="badge badge-${badgeStatus}">${status}</span><br>
-                        <span class="badge badge-${badgeBayar} mt-1">${bayar}</span>`;
+
+                            return `
+                        <span class="badge badge-${badgeStatus}">${status}</span><br>
+                        <span class="badge badge-${badgeBayar} mt-1">${bayar}</span>
+                    `;
                         }
                     },
                     {
-    data: null,
-    orderable: false,
-    searchable: false,
-    render: data => {
-        let id = data.id;
-        let role = '{{ Auth::user()->role }}';
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        render: data => {
+                            let id = data.id;
+                            let role = '{{ Auth::user()->role }}';
 
-        // ===== BAYAR =====
-        let bayarBtn = '';
-        if (!data.status_bayar) {
-            bayarBtn = `
-                <a href="/pengembalian/${id}/edit"
-                   class="btn btn-success btn-sm mb-1 w-100">
-                    <i class="fas fa-money-bill-wave mr-1"></i> Bayar
-                </a>
-            `;
-        }
+                            /*Bayar*/
+                            let bayarBtn = !data.status_bayar ?
+                                `<a href="/pengembalian/${id}/edit" class="btn btn-success btn-sm mb-1 w-100">
+                               <i class="fas fa-money-bill-wave mr-1"></i> Bayar
+                           </a>` :
+                                '';
+                            /*Nota*/
+                            let notaBtn = data.status_bayar ?
+                                `<a href="/pembayaran/${id}/nota" class="btn btn-info btn-sm mb-1 w-100">
+                               <i class="fas fa-file-invoice mr-1"></i> Nota
+                           </a>` :
+                                '';
 
-        // ===== NOTA =====
-        let notaBtn = '';
-        if (data.status_bayar) {
-            notaBtn = `
-                <a href="/pembayaran/${id}/nota"
-                   class="btn btn-info btn-sm mb-1 w-100">
-                    <i class="fas fa-file-invoice mr-1"></i> Nota
-                </a>
-            `;
-        }
+                            let editBtn = '';
+                            let deleteBtn = '';
 
-        // ===== EDIT & HAPUS (ROLE-BASED) =====
-        let editBtn = '';
-        let deleteBtn = '';
+                            if (role === 'admin' || (role === 'penyewa' && !data.status_bayar)) {
+                                editBtn = `
+                            <a href="/penyewaan/${id}/edit" class="dropdown-item">
+                                <i class="fas fa-edit mr-2"></i> Edit
+                            </a>
+                        `;
+                                deleteBtn = `
+                            <button class="dropdown-item text-danger btn-delete" data-id="${id}">
+                                <i class="fas fa-trash mr-2"></i> Hapus
+                            </button>
+                        `;
+                            }
 
-        if (role === 'admin' || (role === 'penyewa' && !data.status_bayar)) {
-            editBtn = `
-                <a href="/penyewaan/${id}/edit" class="dropdown-item">
-                    <i class="fas fa-edit mr-2"></i> Edit
-                </a>
-            `;
-            deleteBtn = `
-                <button class="dropdown-item text-danger btn-delete" data-id="${id}">
-                    <i class="fas fa-trash mr-2"></i> Batalkan
-                </button>
-            `;
-        }
+                            return `
+                        <div class="d-flex flex-column align-items-center">
+                            ${bayarBtn}
+                            ${notaBtn}
+                            <div class="dropdown mt-1">
+                                <button class="btn btn-light btn-sm w-100" data-toggle="dropdown">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-right">
+                                    <a href="/penyewaan/${id}" class="dropdown-item">
+                                        <i class="fas fa-eye mr-2"></i> Detail
+                                    </a>
+                                    ${editBtn}
+                                    ${deleteBtn}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                        }
+                    }
+                ]
+            });
 
-        return `
-            <div class="d-flex flex-column align-items-center">
-                ${bayarBtn}
-                ${notaBtn}
+            // ===== FILTER BUTTON =====
+            $('.filter-btn').on('click', function() {
+                $('.filter-btn').removeClass('active');
+                $(this).addClass('active');
 
-                <div class="dropdown mt-1">
-                    <button class="btn btn-light btn-sm w-100" data-toggle="dropdown">
-                        <i class="fas fa-ellipsis-v"></i>
-                    </button>
-
-                    <div class="dropdown-menu dropdown-menu-right">
-                        <a href="/penyewaan/${id}" class="dropdown-item">
-                            <i class="fas fa-eye mr-2"></i> Detail
-                        </a>
-                        ${editBtn}
-                        ${deleteBtn}
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-}
-]
-    });
+                statusBayar = $(this).data('status');
+                table.ajax.reload();
+            });
 
             // DELETE AJAX + SWEETALERT
             $(document).on('click', '.btn-delete', function() {
@@ -271,7 +275,6 @@
                     }
                 });
             });
-
         });
     </script>
 @endpush

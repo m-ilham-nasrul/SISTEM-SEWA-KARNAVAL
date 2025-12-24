@@ -102,20 +102,9 @@
                                 <select name="metode_pembayaran" id="metode_pembayaran" class="form-control" required>
                                     <option value="">-- Pilih Metode --</option>
                                     <option value="tunai" {{ old('metode_pembayaran', $pengembalian->metode_pembayaran) == 'tunai' ? 'selected' : '' }}>Tunai</option>
-                                    <option value="transfer" {{ old('metode_pembayaran', $pengembalian->metode_pembayaran) == 'transfer' ? 'selected' : '' }}>Transfer Bank</option>
                                     <option value="ewallet" {{ old('metode_pembayaran', $pengembalian->metode_pembayaran) == 'ewallet' ? 'selected' : '' }}>E-Wallet</option>
+                                    <option value="transfer" {{ old('metode_pembayaran', $pengembalian->metode_pembayaran) == 'transfer' ? 'selected' : '' }}>Transfer Bank</option>
                                 </select>
-                            </div>
-
-                            {{-- Input Bank --}}
-                            <div class="mb-3" id="input_bank" style="display:none;">
-                                <label class="form-label">Nama Bank</label>
-                                <input type="text" name="nama_bank" class="form-control"
-                                       value="{{ old('nama_bank', $pengembalian->nama_bank) }}" placeholder="BCA / BRI / Mandiri">
-
-                                <label class="form-label mt-2">No Rekening</label>
-                                <input type="text" name="no_rekening" class="form-control"
-                                       value="{{ old('no_rekening', $pengembalian->no_rekening) }}" placeholder="1234567890">
                             </div>
 
                             {{-- Input E-Wallet --}}
@@ -129,6 +118,17 @@
                                 <label class="form-label">Nomor E-Wallet</label>
                                 <input type="text" name="nomor_ewallet" class="form-control"
                                        value="{{ old('nomor_ewallet', $pengembalian->nomor_ewallet) }}" placeholder="08xxxxxxxxxx">
+                            </div>
+
+                                {{-- Input Bank --}}
+                            <div class="mb-3" id="input_bank" style="display:none;">
+                                <label class="form-label">Nama Bank</label>
+                                <input type="text" name="nama_bank" class="form-control"
+                                       value="{{ old('nama_bank', $pengembalian->nama_bank) }}" placeholder="BCA / BRI / Mandiri">
+
+                                <label class="form-label mt-2">No Rekening</label>
+                                <input type="text" name="no_rekening" class="form-control"
+                                       value="{{ old('no_rekening', $pengembalian->no_rekening) }}" placeholder="1234567890">
                             </div>
 
                             <script>

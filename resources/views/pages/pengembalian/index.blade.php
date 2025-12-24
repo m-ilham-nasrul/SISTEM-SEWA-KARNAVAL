@@ -115,13 +115,15 @@
         // ===== KEMBALIKAN =====
         let returnBtn = '';
         if (!data.status) {
-            returnBtn = `
-                <button class="btn btn-warning btn-sm mb-1 w-100 btn-return"
-                        data-id="${id}">
-                    <i class="fas fa-undo mr-1"></i> Kembalikan
-                </button>
-            `;
+        returnBtn = `
+        <button class="btn btn-warning btn-sm mb-1 w-100 btn-return"
+                data-id="${id}"
+                data-paid="${data.status_bayar}">
+            <i class="fas fa-undo mr-1"></i> Kembalikan
+        </button>
+        `;
         }
+
 
         // ===== EDIT & BATALKAN (ROLE-BASED) =====
         let editBtn = '';
@@ -135,7 +137,7 @@
             `;
             deleteBtn = `
                 <button class="dropdown-item text-danger btn-delete" data-id="${id}">
-                    <i class="fas fa-trash mr-2"></i> Batalkan
+                    <i class="fas fa-trash mr-2"></i> Hapus
                 </button>
             `;
         }
@@ -163,15 +165,31 @@
     }
 }
 
-
-
                 ]
             });
 
             // KEMBALIKAN KOSTUM
-            $(document).on('click', '.btn-return', function() {
+            $(document).on('click', '.btn-return', function () {
     let id = $(this).data('id');
+    let paid = $(this).data('paid');
 
+    //JIKA BELUM BAYAR
+    if (!paid) {
+        Swal.fire({
+            title: 'Pembayaran Diperlukan',
+            text: 'Penyewaan belum dibayar. Silakan lakukan pembayaran terlebih dahulu.',
+            icon: 'warning',
+            confirmButtonText: 'Bayar Sekarang',
+            confirmButtonColor: '#28a745'
+        }).then(res => {
+            if (res.isConfirmed) {
+                window.location.href = `/pengembalian/${id}/edit`;
+            }
+        });
+        return;
+    }
+
+    //JIKA SUDAH BAYAR → LANJUTKAN PENGEMBALIAN
     Swal.fire({
         title: 'Kembalikan Kostum',
         text: 'Pastikan kostum sudah diterima kembali.',
@@ -189,17 +207,18 @@
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 },
-                success: function(r) {
+                success: function (r) {
                     Swal.fire({
                         icon: 'success',
                         title: 'Berhasil',
                         text: r.message,
                         timer: 1500,
                         showConfirmButton: false
-                    });
-                    table.ajax.reload(null, false);
-                },
-                error: function(xhr) {
+                        }).then(() => {
+                window.location.href = "{{ route('pembayaran.index') }}";
+            });
+            },
+                error: function (xhr) {
                     Swal.fire(
                         'Gagal',
                         xhr.responseJSON?.message ?? 'Terjadi kesalahan',

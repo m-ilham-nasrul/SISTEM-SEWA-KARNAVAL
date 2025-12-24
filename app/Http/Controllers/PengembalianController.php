@@ -105,6 +105,7 @@ class PengembalianController extends Controller
         try {
             $sewa = Sewa::findOrFail($id);
 
+            //SUDAH DIKEMBALIKAN
             if ($sewa->status == 1) {
                 return response()->json([
                     'status' => false,
@@ -112,6 +113,15 @@ class PengembalianController extends Controller
                 ], 400);
             }
 
+            //BELUM BAYAR
+            if (!$sewa->status_bayar) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Sewa belum dibayar. Silakan lakukan pembayaran terlebih dahulu.'
+                ], 404);
+            }
+
+            // KEMBALIKAN STATUS KOSTUM
             if ($sewa->kostum_id) {
                 $ids = json_decode($sewa->kostum_id, true);
                 Kostum::whereIn('id', $ids)->update([
@@ -119,6 +129,7 @@ class PengembalianController extends Controller
                 ]);
             }
 
+            // UPDATE STATUS SEWA
             $sewa->update([
                 'status' => 1
             ]);
@@ -134,6 +145,7 @@ class PengembalianController extends Controller
             ], 500);
         }
     }
+
 
     public function hapus($id)
     {
@@ -158,7 +170,7 @@ class PengembalianController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Data gagal dihapus'
-            ], 500);
+            ], 404);
         }
     }
 }

@@ -15,14 +15,16 @@ class User extends Authenticatable
         'password',
         'role',
         'telp',
+        'photo',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
     ];
+
     public function penyewa()
-{
-    return $this->hasOne(\App\Models\Penyewa::class);
-}
+    {
+        return $this->hasOne(\App\Models\Penyewa::class);
+    }
 }

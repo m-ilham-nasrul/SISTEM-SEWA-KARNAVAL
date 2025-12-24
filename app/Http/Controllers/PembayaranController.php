@@ -32,8 +32,13 @@ class PembayaranController extends Controller
         if ($request->ajax()) {
             $query = Sewa::with('penyewa')->orderBy('created_at', 'desc');
 
-            if ($status === '1') $query->where('status_bayar', 1);
-            elseif ($status === '0') $query->where('status_bayar', 0);
+            if ($status === '1') {
+                // TELAH TERBAYAR
+                $query->where('status_bayar', 1);
+            } elseif ($status === '0') {
+                // MENUNGGU PEMBAYARAN
+                $query->where('status_bayar', 0);
+            }
 
             $sewas = $query->get();
 
