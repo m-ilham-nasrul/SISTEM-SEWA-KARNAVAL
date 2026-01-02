@@ -103,7 +103,7 @@
     <script>
         $(document).ready(function() {
 
-            let statusBayar = ''; 
+            let statusBayar = '';
 
             let table = $('#dataTable').DataTable({
                 processing: true,
@@ -123,7 +123,7 @@
                         render: (data, type, row) => data ?? `SEWA-${String(row.id).padStart(4,'0')}`
                     },
                     {
-                        data: 'penyewa.nama_penyewa',
+                        data: 'penyewa.user.name',
                         defaultContent: '<small>Data penyewa telah dihapus!</small>'
                     },
                     {

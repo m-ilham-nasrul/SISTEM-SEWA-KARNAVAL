@@ -38,30 +38,27 @@
                             <div class="form-group">
                                 <label>Nama Penyewa</label>
 
-                                @if (Auth::user()->role === 'admin')
-                                    <!-- ADMIN BOLEH PILIH -->
-                                    <select name="penyewa_id"
-                                        class="form-control @error('penyewa_id') is-invalid @enderror">
-                                        <option value="">[ Pilih Penyewa ]</option>
+                                <select name="penyewa_id" class="form-control @error('penyewa_id') is-invalid @enderror">
+                                    <option value="">[ Pilih Penyewa ]</option>
 
-                                        @foreach ($penyewas as $penyewa)
-                                            <option value="{{ $penyewa->id }}"
-                                                {{ old('penyewa_id', $sewa->penyewa_id) == $penyewa->id ? 'selected' : '' }}>
-                                                {{ $penyewa->restuid }} | {{ $penyewa->nama_penyewa }}
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                    @foreach ($penyewas as $penyewa)
+                                        <option value="{{ $penyewa->id }}"
+                                            {{ old('penyewa_id', $sewa->penyewa_id) == $penyewa->id ? 'selected' : '' }}>
+                                            {{ $penyewa->user->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
 
-                                    @error('penyewa_id')
-                                        <small class="text-danger">{{ $message }}</small>
-                                    @enderror
-                                @else
-                                    <!-- PENYEWA LOGIN (AUTO) -->
-                                    <input type="text" class="form-control" value="{{ $sewa->penyewa->nama_penyewa }}"
-                                        readonly>
+                                @error('penyewa_id')
+                                    <small class="text-danger">{{ $message }}</small>
+                                @enderror
+                            </div>
 
-                                    <input type="hidden" name="penyewa_id" value="{{ $sewa->penyewa_id }}">
-                                @endif
+                            <!-- NO TELEPON (ADMIN VIEW) -->
+                            <div class="form-group">
+                                <label>No Telepon Penyewa</label>
+                                <input type="text" class="form-control" value="{{ $sewa->penyewa->no_telp ?? '-' }}"
+                                    readonly>
                             </div>
 
                             <!-- Tombol Kostum -->

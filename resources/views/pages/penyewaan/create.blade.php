@@ -51,9 +51,8 @@
                                         <option value="">[ Pilih Penyewa ]</option>
 
                                         @forelse($penyewas as $penyewa)
-                                            <option value="{{ $penyewa->id }}"
-                                                {{ old('penyewa_id') == $penyewa->id ? 'selected' : '' }}>
-                                                {{ $penyewa->nama_penyewa }}
+                                            <option value="{{ $penyewa->id }}">
+                                                {{ $penyewa->user->name }}
                                             </option>
                                         @empty
                                             <option disabled>Data penyewa kosong</option>
@@ -65,8 +64,7 @@
                                     @enderror
                                 @else
                                     <!-- PENYEWA LOGIN (AUTO) -->
-                                    <input type="text" class="form-control" value="{{ $penyewa->nama_penyewa }}"
-                                        readonly>
+                                    <input type="text" class="form-control" value="{{ $penyewa->user->name }}" readonly>
 
                                     <!-- kirim ID secara tersembunyi -->
                                     <input type="hidden" name="penyewa_id" value="{{ $penyewa->id }}">

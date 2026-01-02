@@ -9,10 +9,13 @@ return new class extends Migration {
     {
         Schema::create('penyewas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
-            $table->string('nama_penyewa');
-            $table->string('no_telp');
-            $table->string('alamat');
+            $table->foreignId('user_id')
+                ->constrained('users')
+                ->onDelete('cascade');
+
+            $table->string('no_telp', 20);
+            $table->text('alamat');
+
             $table->timestamps();
             $table->softDeletes();
         });

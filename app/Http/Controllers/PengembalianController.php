@@ -17,9 +17,10 @@ class PengembalianController extends Controller
     {
         if ($request->ajax()) {
 
-            $sewas = Sewa::with('penyewa')
+            $sewas = Sewa::with(['penyewa.user'])
                 ->orderBy('created_at', 'desc')
                 ->get();
+
 
             $data = $sewas->map(function ($sewa) {
 
@@ -37,9 +38,7 @@ class PengembalianController extends Controller
                 return [
                     'id' => $sewa->id,
                     'kode_sewa' => $sewa->kode_sewa ?? 'SEWA-' . str_pad($sewa->id, 4, '0', STR_PAD_LEFT),
-                    'penyewa' => [
-                        'nama_penyewa' => $sewa->penyewa->nama_penyewa ?? null
-                    ],
+                    'penyewa' => ['user' => ['name' => $sewa->penyewa->user->name ?? null]],
                     'kostum_list' => $kostums,
                     'tanggal_sewa' => $sewa->tanggal_sewa,
                     'tanggal_kembali' => $sewa->tanggal_kembali,
@@ -73,11 +72,18 @@ class PengembalianController extends Controller
         $validated = $request->validate([
             'total_biaya' => 'required|numeric',
             'denda' => 'nullable|numeric',
-            'metode_pembayaran' => 'required',
-            'no_rekening' => 'nullable|string',
-            'nama_bank' => 'nullable|string',
-            'nama_ewallet' => 'nullable|string',
-            'nomor_ewallet' => 'nullable|string',
+            'metode_pembayaran' => 'required|in:tunai,ewallet,transfer',
+
+            'nama_ewallet' => 'required_if:metode_pembayaran,ewallet|string|nullable',
+            'nomor_ewallet' => 'required_if:metode_pembayaran,ewallet|string|nullable',
+
+            'nama_bank' => 'required_if:metode_pembayaran,transfer|string|nullable',
+            'no_rekening' => 'required_if:metode_pembayaran,transfer|string|nullable',
+        ], [
+            'nama_ewallet.required_if' => 'Nama E-Wallet wajib diisi jika metode E-Wallet dipilih.',
+            'nomor_ewallet.required_if' => 'Nomor E-Wallet wajib diisi jika metode E-Wallet dipilih.',
+            'nama_bank.required_if' => 'Nama Bank wajib diisi jika metode Transfer dipilih.',
+            'no_rekening.required_if' => 'Nomor Rekening wajib diisi jika metode Transfer dipilih.',
         ]);
 
         $sewa = Sewa::findOrFail($id);
@@ -86,17 +92,20 @@ class PengembalianController extends Controller
             'total_biaya' => $validated['total_biaya'],
             'denda' => $validated['denda'] ?? 0,
             'metode_pembayaran' => $validated['metode_pembayaran'],
-            'no_rekening' => $validated['no_rekening'] ?? null,
-            'nama_bank' => $validated['nama_bank'] ?? null,
-            'nama_ewallet' => $validated['nama_ewallet'] ?? null,
-            'nomor_ewallet' => $validated['nomor_ewallet'] ?? null,
+
+            'nama_ewallet' => $validated['metode_pembayaran'] === 'ewallet' ? $validated['nama_ewallet'] : null,
+            'nomor_ewallet' => $validated['metode_pembayaran'] === 'ewallet' ? $validated['nomor_ewallet'] : null,
+
+            'nama_bank' => $validated['metode_pembayaran'] === 'transfer' ? $validated['nama_bank'] : null,
+            'no_rekening' => $validated['metode_pembayaran'] === 'transfer' ? $validated['no_rekening'] : null,
+
             'status_bayar' => 1
         ]);
 
-        return redirect()->route('pengembalian.index')
+        return redirect()
+            ->route('pengembalian.index')
             ->with('success', 'Pembayaran berhasil diproses');
     }
-
     /**
      * PROSES PENGEMBALIAN KOSTUM
      */

@@ -64,8 +64,8 @@
                         render: (data, type, row, meta) => meta.row + 1
                     },
                     {
-                        data: 'penyewa.nama_penyewa',
-                        defaultContent: '<span class="text-muted">Data penyewa telah dihapus</span>'
+                        data: 'penyewa.user.name',
+                        defaultContent: '<span class="text-muted">Data user telah dihapus</span>'
                     },
                     {
                         data: 'kostum_list',
@@ -113,43 +113,43 @@
                             `;
                         }
                     },
-                   {
-    data: null,
-    orderable: false,
-    searchable: false,
-    render: data => {
-        let id = data.id;
-        let role = '{{ Auth::user()->role }}';
+                    {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        render: data => {
+                            let id = data.id;
+                            let role = '{{ Auth::user()->role }}';
 
-        let editBtn = '';
-        let deleteBtn = '';
+                            let editBtn = '';
+                            let deleteBtn = '';
 
-        // ===== EDIT =====
-        if (
-            role === 'admin' ||
-            (role === 'penyewa' && data.status == 0)
-        ) {
-            editBtn = `
+                            // ===== EDIT =====
+                            if (
+                                role === 'admin' ||
+                                (role === 'penyewa' && data.status == 0)
+                            ) {
+                                editBtn = `
                 <a href="/penyewaan/${id}/edit" class="dropdown-item">
                     <i class="fas fa-edit mr-2"></i> Edit
                 </a>
             `;
-        }
+                            }
 
-        // ===== BATALKAN =====
-        if (
-            role === 'admin' ||
-            (role === 'penyewa' && data.status == 0)
-        ) {
-            deleteBtn = `
+                            // ===== BATALKAN =====
+                            if (
+                                role === 'admin' ||
+                                (role === 'penyewa' && data.status == 0)
+                            ) {
+                                deleteBtn = `
                 <button class="dropdown-item text-danger btn-delete"
                         data-id="${id}">
                     <i class="fas fa-trash mr-2"></i> Batalkan
                 </button>
             `;
-        }
+                            }
 
-        return `
+                            return `
             <div class="dropdown">
                 <button class="btn btn-light btn-sm" data-toggle="dropdown">
                     <i class="fas fa-ellipsis-v"></i>
@@ -164,8 +164,8 @@
                 </div>
             </div>
         `;
-    }
-}
+                        }
+                    }
                 ]
             });
 

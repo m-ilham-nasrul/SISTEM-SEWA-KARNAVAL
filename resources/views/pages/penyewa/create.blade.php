@@ -40,7 +40,7 @@
                                         class="form-control @error('user_id') is-invalid @enderror" required>
                                         <option value="">-- Pilih User --</option>
 
-                                        @foreach (\App\Models\User::where('role', 'penyewa')->get() as $user)
+                                        @foreach ($users as $user)
                                             <option value="{{ $user->id }}"
                                                 {{ old('user_id') == $user->id ? 'selected' : '' }}>
                                                 {{ $user->name }}
@@ -59,21 +59,11 @@
                                 @endif
                             </div>
 
-                            <!-- Nama Penyewa -->
-                            <div class="mb-3">
-                                <label for="nama_penyewa" class="form-label">Nama Penyewa</label>
-                                <input type="text" class="form-control @error('nama_penyewa') is-invalid @enderror"
-                                    id="nama_penyewa" name="nama_penyewa" value="{{ old('nama_penyewa') }}">
-                                @error('nama_penyewa')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
                             <!-- Nomor Telepon -->
                             <div class="mb-3">
-                                <label for="no_hp" class="form-label">Nomor Telepon</label>
+                                <label for="no_telp" class="form-label">Nomor Telepon</label>
                                 <input type="text" class="form-control @error('no_telp') is-invalid @enderror"
-                                    id="no_telp" name="no_telp" value="{{ old('no_telp') }}">
+                                    id="no_telp" name="no_telp" value="{{ old('no_telp') }}" required>
                                 @error('no_telp')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -82,7 +72,8 @@
                             <!-- Alamat -->
                             <div class="mb-3">
                                 <label for="alamat" class="form-label">Alamat</label>
-                                <textarea class="form-control @error('alamat') is-invalid @enderror" name="alamat" id="alamat" rows="3">{{ old('alamat') }}</textarea>
+                                <textarea class="form-control @error('alamat') is-invalid @enderror" name="alamat" id="alamat" rows="3"
+                                    required>{{ old('alamat') }}</textarea>
                                 @error('alamat')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror

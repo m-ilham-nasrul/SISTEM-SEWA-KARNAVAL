@@ -30,7 +30,7 @@ class PembayaranController extends Controller
             Sewa::whereMonth('tanggal_sewa', now()->month)->sum('denda');
 
         if ($request->ajax()) {
-            $query = Sewa::with('penyewa')->orderBy('created_at', 'desc');
+            $query = Sewa::with('penyewa.user')->orderBy('created_at', 'desc');
 
             if ($status === '1') {
                 // TELAH TERBAYAR
@@ -54,7 +54,7 @@ class PembayaranController extends Controller
                 return [
                     'id' => $sewa->id,
                     'kode_sewa' => $sewa->kode_sewa ?? 'SEWA-' . str_pad($sewa->id, 4, '0', STR_PAD_LEFT),
-                    'penyewa' => ['nama_penyewa' => $sewa->penyewa->nama_penyewa ?? null],
+                    'penyewa' => ['user' => ['name' => optional($sewa->penyewa->user)->name]],
                     'kostum_list' => $kostums,
                     'tanggal_sewa' => $sewa->tanggal_sewa,
                     'tanggal_kembali' => $sewa->tanggal_kembali,

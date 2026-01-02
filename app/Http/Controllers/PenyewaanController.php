@@ -19,9 +19,10 @@ class PenyewaanController extends Controller
     {
         if ($request->ajax()) {
 
-            $sewas = Sewa::with('penyewa')
+            $sewas = Sewa::with(['penyewa.user'])
                 ->orderBy('created_at', 'desc')
                 ->get();
+
 
             $data = $sewas->map(function ($sewa) {
 
@@ -39,9 +40,7 @@ class PenyewaanController extends Controller
                 return [
                     'id' => $sewa->id,
                     'status' => $sewa->status,
-                    'penyewa' => [
-                        'nama_penyewa' => $sewa->penyewa->nama_penyewa ?? null
-                    ],
+                    'penyewa' => $sewa->penyewa ? ['user' => ['name' => optional($sewa->penyewa->user)->name]] : null,
                     'kostum_list' => $kostums,
                     'tanggal_sewa' => $sewa->tanggal_sewa,
                     'tanggal_kembali' => $sewa->tanggal_kembali,

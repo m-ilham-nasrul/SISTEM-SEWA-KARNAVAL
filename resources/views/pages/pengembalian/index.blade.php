@@ -60,7 +60,7 @@
                         data: 'kode_sewa'
                     },
                     {
-                        data: 'penyewa.nama_penyewa',
+                        data: 'penyewa.user.name',
                         defaultContent: '<small>Penyewa dihapus</small>'
                     },
                     {
@@ -93,56 +93,56 @@
                     </span>
                 `
                     },
-                {
-    data: null,
-    orderable: false,
-    searchable: false,
-    render: data => {
-        let id = data.id;
-        let role = '{{ Auth::user()->role }}';
+                    {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        render: data => {
+                            let id = data.id;
+                            let role = '{{ Auth::user()->role }}';
 
-        // ===== NOTA =====
-        let notaBtn = '';
-        if (data.status_bayar) {
-            notaBtn = `
+                            // ===== NOTA =====
+                            let notaBtn = '';
+                            if (data.status_bayar) {
+                                notaBtn = `
                 <a href="/pembayaran/${id}/nota"
                    class="btn btn-info btn-sm mb-1 w-100">
                     <i class="fas fa-file-invoice mr-1"></i> Nota
                 </a>
             `;
-        }
+                            }
 
-        // ===== KEMBALIKAN =====
-        let returnBtn = '';
-        if (!data.status) {
-        returnBtn = `
+                            // ===== KEMBALIKAN =====
+                            let returnBtn = '';
+                            if (!data.status) {
+                                returnBtn = `
         <button class="btn btn-warning btn-sm mb-1 w-100 btn-return"
                 data-id="${id}"
                 data-paid="${data.status_bayar}">
             <i class="fas fa-undo mr-1"></i> Kembalikan
         </button>
         `;
-        }
+                            }
 
 
-        // ===== EDIT & BATALKAN (ROLE-BASED) =====
-        let editBtn = '';
-        let deleteBtn = '';
+                            // ===== EDIT & BATALKAN (ROLE-BASED) =====
+                            let editBtn = '';
+                            let deleteBtn = '';
 
-        if (role === 'admin' || (role === 'penyewa' && data.status == 0)) {
-            editBtn = `
+                            if (role === 'admin' || (role === 'penyewa' && data.status == 0)) {
+                                editBtn = `
                 <a href="/penyewaan/${id}/edit" class="dropdown-item">
                     <i class="fas fa-edit mr-2"></i> Edit
                 </a>
             `;
-            deleteBtn = `
+                                deleteBtn = `
                 <button class="dropdown-item text-danger btn-delete" data-id="${id}">
                     <i class="fas fa-trash mr-2"></i> Hapus
                 </button>
             `;
-        }
+                            }
 
-        return `
+                            return `
             <div class="d-flex flex-column align-items-center">
                 ${notaBtn}
                 ${returnBtn}
@@ -162,73 +162,75 @@
                 </div>
             </div>
         `;
-    }
-}
+                        }
+                    }
 
                 ]
             });
 
             // KEMBALIKAN KOSTUM
-            $(document).on('click', '.btn-return', function () {
-    let id = $(this).data('id');
-    let paid = $(this).data('paid');
+            $(document).on('click', '.btn-return', function() {
+                let id = $(this).data('id');
+                let paid = $(this).data('paid');
 
-    //JIKA BELUM BAYAR
-    if (!paid) {
-        Swal.fire({
-            title: 'Pembayaran Diperlukan',
-            text: 'Penyewaan belum dibayar. Silakan lakukan pembayaran terlebih dahulu.',
-            icon: 'warning',
-            confirmButtonText: 'Bayar Sekarang',
-            confirmButtonColor: '#28a745'
-        }).then(res => {
-            if (res.isConfirmed) {
-                window.location.href = `/pengembalian/${id}/edit`;
-            }
-        });
-        return;
-    }
-
-    //JIKA SUDAH BAYAR → LANJUTKAN PENGEMBALIAN
-    Swal.fire({
-        title: 'Kembalikan Kostum',
-        text: 'Pastikan kostum sudah diterima kembali.',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Ya, kembalikan',
-        cancelButtonText: 'Batal',
-        confirmButtonColor: '#28a745',
-        cancelButtonColor: '#6c757d'
-    }).then(res => {
-        if (res.isConfirmed) {
-            $.ajax({
-                url: `/pengembalian/${id}`,
-                type: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function (r) {
+                //JIKA BELUM BAYAR
+                if (!paid) {
                     Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil',
-                        text: r.message,
-                        timer: 1500,
-                        showConfirmButton: false
-                        }).then(() => {
-                window.location.href = "{{ route('pembayaran.index') }}";
-            });
-            },
-                error: function (xhr) {
-                    Swal.fire(
-                        'Gagal',
-                        xhr.responseJSON?.message ?? 'Terjadi kesalahan',
-                        'error'
-                    );
+                        title: 'Pembayaran Diperlukan',
+                        text: 'Penyewaan belum dibayar. Silakan lakukan pembayaran terlebih dahulu.',
+                        icon: 'warning',
+                        confirmButtonText: 'Bayar Sekarang',
+                        confirmButtonColor: '#28a745'
+                    }).then(res => {
+                        if (res.isConfirmed) {
+                            window.location.href = `/pengembalian/${id}/edit`;
+                        }
+                    });
+                    return;
                 }
+
+                //JIKA SUDAH BAYAR → LANJUTKAN PENGEMBALIAN
+                Swal.fire({
+                    title: 'Kembalikan Kostum',
+                    text: 'Pastikan kostum sudah diterima kembali.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, kembalikan',
+                    cancelButtonText: 'Batal',
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d'
+                }).then(res => {
+                    if (res.isConfirmed) {
+                        $.ajax({
+                            url: `/pengembalian/${id}`,
+                            type: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            },
+                            success: function(r) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil',
+                                    text: r.message,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    window.location.href =
+                                        "{{ route('pembayaran.index') }}";
+                                });
+                            },
+                            error: function(xhr) {
+                                Swal.fire(
+                                    'Gagal',
+                                    xhr.responseJSON?.message ??
+                                    'Terjadi kesalahan',
+                                    'error'
+                                );
+                            }
+                        });
+                    }
+                });
             });
-        }
-    });
-});
 
 
             // HAPUS DATA

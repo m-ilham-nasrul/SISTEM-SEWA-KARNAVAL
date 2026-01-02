@@ -77,15 +77,18 @@
                                 <th width="30%">Kode Sewa</th>
                                 <td>{{ $sewa->kode_sewa }}</td>
                             </tr>
-
                             <tr>
                                 <th>Penyewa</th>
                                 <td>
-                                    {{ $sewa->penyewa->nama_penyewa }} <br>
-                                    {{ $sewa->penyewa->telp }}
+                                    {{ optional($sewa->penyewa->user)->name ?? 'Penyewa dihapus' }}
                                 </td>
                             </tr>
-
+                            <tr>
+                                <th>No Telepon</th>
+                                <td>
+                                    {{ $sewa->penyewa->no_telp ?? '-' }}
+                                </td>
+                            </tr>
                             <tr>
                                 <th>Daftar Kostum</th>
                                 <td>

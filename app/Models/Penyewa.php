@@ -12,7 +12,6 @@ class Penyewa extends Model
     protected $table = 'penyewas';
     protected $fillable = [
         'user_id',
-        'nama_penyewa',
         'alamat',
         'no_telp',
     ];

@@ -91,6 +91,19 @@
                                 <input type="email" name="email" class="form-control" value="{{ $user->email }}">
                             </div>
 
+                            @if ($user->role === 'penyewa' && $user->penyewa)
+                                <div class="form-group">
+                                    <label>No. Telepon</label>
+                                    <input type="text" name="no_telp" class="form-control"
+                                        value="{{ $user->penyewa->no_telp ?? '' }}" placeholder="Masukkan nomor telepon">
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Alamat</label>
+                                    <textarea name="alamat" class="form-control" rows="3" placeholder="Masukkan alamat lengkap">{{ $user->penyewa->alamat ?? '' }}</textarea>
+                                </div>
+                            @endif
+
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save"></i> Simpan Profil
                             </button>
@@ -139,7 +152,7 @@
 @push('scripts')
     <script>
         /* =======================
-                     UPDATE PROFIL
+                    UPDATE PROFIL
                 ======================= */
         $('#formProfil').submit(function(e) {
             e.preventDefault();
@@ -159,9 +172,11 @@
                         icon: 'success',
                         title: 'Berhasil',
                         text: 'Profil berhasil diperbarui',
-                        timer: 2000,
+                        timer: 1500,
                         showConfirmButton: false
-                    }).then(() => location.reload());
+                    }).then(() => {
+                        window.location.href = "{{ route('penyewa.index') }}";
+                    });
                 },
                 error: function(xhr) {
                     let errors = xhr.responseJSON.errors;
@@ -242,8 +257,8 @@
         });
 
         /* =======================
-       PILIH & UPLOAD FOTO
-    ======================= */
+           PILIH & UPLOAD FOTO
+        ======================= */
 
         // klik tombol → buka file chooser
         $('#btnUbahFoto').on('click', function() {

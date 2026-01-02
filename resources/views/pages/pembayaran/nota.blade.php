@@ -136,7 +136,9 @@
 
             <tr>
                 <td class="label">Pelanggan</td>
-                <td class="value">{{ $sewa->penyewa->nama_penyewa ?? '-' }}</td>
+                <td class="value">
+                    {{ optional(optional($sewa->penyewa)->user)->name ?? 'Penyewa dihapus' }}
+                </td>
             </tr>
 
             <tr>

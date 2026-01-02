@@ -15,10 +15,13 @@ class ProfileController extends Controller
      */
     public function index()
     {
+        $user = User::with('penyewa')->find(Auth::id());
+
         return view('pages.profile.index', [
-            'user' => Auth::user()
+            'user' => $user
         ]);
     }
+
 
     /**
      * Update profil (AJAX)
@@ -29,19 +32,30 @@ class ProfileController extends Controller
         $user = Auth::user();
 
         if (! $user) {
-            return response()->json([
-                'message' => 'Unauthorized'
-            ], 403);
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
 
+        // Pastikan relasi penyewa ter-load
+        $user->load('penyewa');
+
         $validated = $request->validate([
-            'name'  => 'required|string|max:100',
-            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'name'    => 'required|string|max:100',
+            'email'   => 'required|email|max:255|unique:users,email,' . $user->id,
+            'no_telp' => 'nullable|string|max:20',
+            'alamat'  => 'nullable|string',
         ]);
 
-        $user->name  = $validated['name'];
-        $user->email = $validated['email'];
-        $user->save();
+        $user->update([
+            'name'  => $validated['name'],
+            'email' => $validated['email'],
+        ]);
+
+        if ($user->penyewa) {
+            $user->penyewa->update([
+                'no_telp' => $validated['no_telp'] ?? $user->penyewa->no_telp,
+                'alamat'  => $validated['alamat']  ?? $user->penyewa->alamat,
+            ]);
+        }
 
         return response()->json([
             'status'  => true,

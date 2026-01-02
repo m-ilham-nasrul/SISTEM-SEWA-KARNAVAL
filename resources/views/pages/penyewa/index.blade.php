@@ -24,8 +24,7 @@
                         <thead>
                             <tr>
                                 <th>No</th>
-                                <th>User</th>
-                                <th>Nama</th>
+                                <th>Nama Penyewa</th>
                                 <th>Telepon</th>
                                 <th>Alamat</th>
                                 @if (Auth::user()->role === 'admin')
@@ -65,9 +64,6 @@
                     {
                         data: 'user',
                         render: data => data ? data.name : '-'
-                    },
-                    {
-                        data: 'nama_penyewa'
                     },
                     {
                         data: 'no_telp'

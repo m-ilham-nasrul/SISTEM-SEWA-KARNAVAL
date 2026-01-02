@@ -4,12 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Sewa;
 
 class Kostum extends Model
 {
     use HasFactory;
 
     protected $table = 'kostums';
+
     protected $fillable = [
         'nama_kostum',
         'kategori',
@@ -19,21 +21,23 @@ class Kostum extends Model
         'image_kostum'
     ];
 
-
-
-    public function sewas()
+    /**
+     * Cek apakah kostum sedang dipakai (ada di sewa aktif)
+     */
+    public function sedangDipakai(): bool
     {
-        return $this->hasMany(Sewa::class);
-    }
-
-    public function sedangDipakai()
-    {
-        // Ambil semua sewa yang statusnya aktif
-        $sewasAktif = $this->sewas()->where('status', 0)->get();
+        // status = 0 => SEWA AKTIF
+        $sewasAktif = Sewa::where('status', 0)->get();
 
         foreach ($sewasAktif as $sewa) {
-            $kostumIds = is_array($sewa->kostum_id) ? $sewa->kostum_id : json_decode($sewa->kostum_id, true);
-            if (in_array($this->id, $kostumIds)) {
+
+            $kostumIds = json_decode($sewa->kostum_id, true);
+
+            if (!is_array($kostumIds)) {
+                continue;
+            }
+
+            if (in_array((string) $this->id, $kostumIds, true)) {
                 return true;
             }
         }
