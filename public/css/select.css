@@ -1,0 +1,29 @@
+/* Wrapper klik */
+.kostum-wrapper {
+    cursor: pointer;
+}
+
+/* Sembunyikan checkbox */
+.kostum-check {
+    display: none;
+}
+
+/* Style default card */
+.kostum-card {
+    border: 3px solid transparent;
+    border-radius: 12px;
+    transition: 0.25s;
+}
+
+/* Hover efek */
+.kostum-card:hover {
+    transform: scale(1.02);
+}
+
+/* Jika checkbox dicentang → card berubah biru */
+.kostum-check:checked + .kostum-card {
+    border: 3px solid #0d6efd;
+    background: rgba(13, 110, 253, 0.08);
+    box-shadow: 0 0 10px rgba(13, 110, 253, 0.4);
+    transform: scale(1.03);
+}

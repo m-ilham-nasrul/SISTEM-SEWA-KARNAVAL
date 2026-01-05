@@ -1,0 +1,177 @@
+/* Background (dipakai, sesuai versi login modern) */
+.login-bg {
+    background: linear-gradient(rgba(20,20,40,0.7), rgba(20,20,40,0.7)),
+                url('/images/background.jpg') center/cover no-repeat;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Glass Card Register (lebih lebar dari login) */
+.glass-card {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.10);
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.35);
+    width: 100%;
+    max-width: 540px;        /* Register lebih lebar */
+    padding: 3rem 2.6rem;
+    color: white;
+    animation: fadeIn .7s ease;
+}
+
+/* Icon Register */
+.register-icon,
+.login-icon {
+    font-size: 4rem;
+    color: #fff;
+    text-shadow: 0 4px 18px rgba(255,255,255,0.45);
+}
+
+/* Input Modern */
+.input-modern {
+    border-radius: 50px;
+    background: rgba(255, 255, 255, 0.18);
+    border: none !important;
+    color: #fff;
+    height: 46px;
+    padding: 0 18px;
+    transition: .3s ease;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+/* Placeholder */
+.input-modern::placeholder {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+/* Focus */
+.input-modern:focus {
+    background: rgba(255, 255, 255, 0.30);
+    border: 1px solid #4e73df !important;
+    box-shadow: 0 0 0 .25rem rgba(78,115,223,.45);
+    color: #fff;
+}
+
+/* SELECT ROLE MODERN */
+.select-modern {
+    border-radius: 50px;
+    background: rgba(255, 255, 255, 0.18);
+    border: none;
+    height: 46px;
+    color: white;
+    padding: 0 18px;
+    width: 100%;
+    font-size: 14px;
+    appearance: none;
+    -webkit-appearance: none;
+    backdrop-filter: blur(15px);
+    cursor: pointer;
+    transition: .3s ease;
+    position: relative;
+}
+
+/* Panah custom pada select */
+.select-modern-wrapper {
+    position: relative;
+}
+
+.select-modern-wrapper::after {
+    content: "\f078"; /* icon fa-chevron-down */
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.75);
+    pointer-events: none;
+    font-size: 14px;
+}
+
+/* Fokus select */
+.select-modern:focus {
+    background: rgba(255, 255, 255, 0.28);
+    border: 1px solid #4e73df !important;
+    box-shadow: 0 0 0 .25rem rgba(78,115,223,.45);
+}
+
+/* Option dropdown */
+.select-modern option {
+    background-color: #1f1f2e;
+    color: white;
+}
+
+/* Hover */
+.select-modern:hover {
+    background: rgba(255, 255, 255, 0.24);
+}
+
+
+/* Tombol Modern */
+.btn-login-modern {
+    background: linear-gradient(45deg, #4e73df, #243b92);
+    border-radius: 50px;
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 12px 0;
+    transition: .3s ease-in-out;
+}
+
+.btn-login-modern:hover {
+    background: linear-gradient(45deg, #20306d, #18215a);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(78,115,223,0.35);
+}
+
+/* Divider */
+.divider-modern {
+    border-color: rgba(255,255,255,0.35);
+}
+
+/* Animasi */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(25px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .glass-card {
+        padding: 2rem 1.2rem !important;
+        max-width: 100%;
+    }
+
+    .login-icon,
+    .register-icon {
+        font-size: 3.2rem;
+    }
+}
+
+/* Password Wrapper */
+.password-wrapper {
+    position: relative;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: rgba(255,255,255,0.75);
+    transition: .3s ease;
+}
+
+.toggle-password:hover {
+    color: #ffffff;
+}
+
+.toggle-password svg {
+    width: 20px;
+    height: 20px;
+}
+
+
