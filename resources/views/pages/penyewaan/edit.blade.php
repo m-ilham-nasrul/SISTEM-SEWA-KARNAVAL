@@ -12,16 +12,6 @@
             <h1 class="h3 mb-0 text-gray-800">Edit Penyewaan</h1>
         </div>
 
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
         <div class="row justify-content-center">
             <div class="col-lg-8">
                 <div class="card shadow border-left-primary mb-4">
@@ -54,7 +44,7 @@
                                 @enderror
                             </div>
 
-                            <!-- NO TELEPON (ADMIN VIEW) -->
+                            <!-- NO TELEPON  -->
                             <div class="form-group">
                                 <label>No Telepon Penyewa</label>
                                 <input type="text" class="form-control" value="{{ $sewa->penyewa->no_telp ?? '-' }}"

@@ -10,17 +10,6 @@
             <h1 class="h3 mb-0 text-gray-800">Edit Kostum: {{ $kostum->nama_kostum }}</h1>
         </div>
 
-        <!-- Notifikasi Error -->
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
         <!-- Form Edit Kostum -->
         <div class="row justify-content-center">
             <div class="col-lg-6">
@@ -60,7 +49,6 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-
 
                             <!-- Kategori -->
                             <div class="mb-3">

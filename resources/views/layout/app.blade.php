@@ -122,10 +122,19 @@
                 icon: 'error',
                 title: 'Gagal',
                 text: "{{ session('error') }}",
+                timer: 1500,
+                showConfirmButton: false
+            });
+        @elseif ($errors->any())
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops!',
+                html: `{!! implode('<br>', $errors->all()) !!}`,
+                timer: 1500,
+                showConfirmButton: false
             });
         @endif
     </script>
-
 </body>
 
 </html>

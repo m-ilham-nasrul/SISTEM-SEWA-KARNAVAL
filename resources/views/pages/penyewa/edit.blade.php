@@ -10,16 +10,6 @@
             </h1>
         </div>
 
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
         <div class="row justify-content-center">
             <div class="col-lg-6">
                 <div class="card shadow border-left-primary mb-4">

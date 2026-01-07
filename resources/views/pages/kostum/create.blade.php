@@ -9,18 +9,7 @@
         <div class="d-sm-flex align-items-center justify-content-between mb-4">
             <h1 class="h3 mb-0 text-gray-800">Tambah Kostum Baru</h1>
         </div>
-
-        <!-- Notifikasi Error -->
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
+        
         <!-- Form Tambah Kostum -->
         <div class="row justify-content-center">
             <div class="col-lg-6">

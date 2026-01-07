@@ -16,8 +16,6 @@
         </a>
     </li>
 
-
-
     <!-- Manajemen -->
     @if (Auth::user()->role === 'admin')
         <hr class="sidebar-divider">
@@ -45,7 +43,7 @@
 
     <hr class="sidebar-divider">
     <div class="sidebar-heading">Menu Penyewaan</div>
-
+    
     <li class="nav-item">
         <a class="nav-link" href="{{ route('penyewa.index') }}">
             <i class="fa-solid fa-user"></i>

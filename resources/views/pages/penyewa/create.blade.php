@@ -8,18 +8,6 @@
             <h1 class="h3 mb-0 text-gray-800">Tambah Penyewa Baru</h1>
         </div>
 
-        @if ($errors->any())
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <strong>Oops!</strong> Ada beberapa kesalahan:
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
-
         <div class="row justify-content-center">
             <div class="col-lg-6">
                 <div class="card shadow border-left-primary mb-4">

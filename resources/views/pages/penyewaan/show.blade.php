@@ -184,9 +184,7 @@
 
                         <a href="{{ route('pembayaran.index') }}" class="btn btn-secondary mt-3">Kembali</a>
                     </div>
-
                 </div>
-
             </div>
         </div>
 

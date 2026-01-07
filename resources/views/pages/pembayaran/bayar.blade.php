@@ -11,11 +11,8 @@
             </h1>
         </div>
 
-        <div class="row justify-content-center">
-
-            {{-- ========================== --}}
+        <div class="row justify-content-center">     
             {{-- KOLOM FORM PEMBAYARAN --}}
-            {{-- ========================== --}}
             <div class="col-lg-6">
                 <div class="card shadow border-left-primary mb-4">
                     <div class="card-header py-3 bg-primary text-white">
@@ -68,9 +65,9 @@
                                 </div>
                             </div>
 
-                            {{-- ========================== --}}
-                            {{-- FORM PEMBAYARAN (TIDAK DIUBAH) --}}
-                            {{-- ========================== --}}
+                            
+                            {{-- FORM PEMBAYARAN --}}
+                            
 
                             <form action="{{ route('pengembalian.update', $pengembalian->id) }}" method="POST">
                                 @csrf
@@ -171,10 +168,8 @@
                         </div>
                     </div>
                 </div>
-
-                {{-- ========================== --}}
+       
                 {{-- KOLOM FOTO --}}
-                {{-- ========================== --}}
                 <div class="col-lg-4">
                     <div class="card shadow mb-4">
                         <div class="card-header py-3 bg-primary text-white">
@@ -215,9 +210,7 @@
             </div> {{-- END ROW --}}
         </div> {{-- END CONTAINER-FLUID --}}
 
-        {{-- ========================== --}}
-        {{-- MODAL SEMUA FOTO (dipindah keluar) --}}
-        {{-- ========================== --}}
+        {{-- MODAL SEMUA FOTO --}}
         <div class="modal fade" id="modalSemuaFoto" tabindex="-1">
             <div class="modal-dialog modal-xl modal-dialog-centered">
                 <div class="modal-content">
@@ -245,28 +238,5 @@
                 </div>
             </div>
         </div>
-    <script>
-    @if ($errors->any())
-        let pesanError = '';
-        @foreach ($errors->all() as $error)
-            pesanError += '{{ $error }}<br>';
-        @endforeach
-        Swal.fire({
-            icon: 'error',
-            title: 'Oops!',
-            html: pesanError,
-            confirmButtonColor: '#3085d6',
-            confirmButtonText: 'OK'
-        });
-    @endif
-    @if (session('success'))
-        Swal.fire({
-            icon: 'success',
-            title: 'Berhasil!',
-            text: '{{ session('success') }}',
-            confirmButtonColor: '#3085d6',
-            confirmButtonText: 'OK'
-        });
-    @endif
-</script>
+    
 @endsection
