@@ -177,6 +177,7 @@
                                 <th>Tanggal Sewa</th>
                                 <th>Tanggal Kembali</th>
                                 <th>Status</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
 
@@ -239,6 +240,12 @@
                                                 </div>
                                             @endif
                                         @endif
+                                    </td>
+
+                                    <td>
+                                        <a href="{{ route('penyewaan.show', $item->id) }}" class="btn btn-sm btn-primary">
+                                            Detail
+                                        </a>
                                     </td>
                                 </tr>
                             @empty

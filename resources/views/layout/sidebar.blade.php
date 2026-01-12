@@ -45,12 +45,6 @@
     <div class="sidebar-heading">Menu Penyewaan</div>
     
     <li class="nav-item">
-        <a class="nav-link" href="{{ route('penyewa.index') }}">
-            <i class="fa-solid fa-user"></i>
-            <span>Daftar Penyewa</span>
-        </a>
-    </li>
-    <li class="nav-item">
         <a class="nav-link" href="{{ route('penyewaan.select') }}">
             <i class="fas fa-shopping-cart"></i>
             <span>Sewa Kostum</span>

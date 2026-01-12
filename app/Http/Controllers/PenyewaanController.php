@@ -19,10 +19,17 @@ class PenyewaanController extends Controller
     {
         if ($request->ajax()) {
 
-            $sewas = Sewa::with(['penyewa.user'])
-                ->orderBy('created_at', 'desc')
-                ->get();
+            $user = Auth::user();
 
+            $query = Sewa::with(['penyewa.user'])
+                ->orderBy('created_at', 'desc');
+
+            // 🔐 FILTER DATA BERDASARKAN ROLE
+            if ($user->role === 'penyewa') {
+                $query->where('penyewa_id', $user->penyewa->id);
+            }
+
+            $sewas = $query->get();
 
             $data = $sewas->map(function ($sewa) {
 
@@ -40,7 +47,9 @@ class PenyewaanController extends Controller
                 return [
                     'id' => $sewa->id,
                     'status' => $sewa->status,
-                    'penyewa' => $sewa->penyewa ? ['user' => ['name' => optional($sewa->penyewa->user)->name]] : null,
+                    'penyewa' => $sewa->penyewa
+                        ? ['user' => ['name' => optional($sewa->penyewa->user)->name]]
+                        : null,
                     'kostum_list' => $kostums,
                     'tanggal_sewa' => $sewa->tanggal_sewa,
                     'tanggal_kembali' => $sewa->tanggal_kembali,

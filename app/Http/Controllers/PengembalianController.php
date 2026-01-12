@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Sewa;
 use App\Models\Kostum;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PengembalianController extends Controller
 {
@@ -17,10 +18,17 @@ class PengembalianController extends Controller
     {
         if ($request->ajax()) {
 
-            $sewas = Sewa::with(['penyewa.user'])
-                ->orderBy('created_at', 'desc')
-                ->get();
+            $user = Auth::user();
 
+            $query = Sewa::with(['penyewa.user'])
+                ->orderBy('created_at', 'desc');
+
+            // 🔐 BATASI DATA PENYEWA
+            if ($user->role === 'penyewa') {
+                $query->where('penyewa_id', $user->penyewa->id);
+            }
+
+            $sewas = $query->get();
 
             $data = $sewas->map(function ($sewa) {
 

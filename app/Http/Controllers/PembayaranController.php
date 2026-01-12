@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Sewa;
 use App\Models\Kostum;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PembayaranController extends Controller
 {
@@ -15,28 +16,37 @@ class PembayaranController extends Controller
      */
     public function index(Request $request)
     {
-        // Filter status bayar
         $status = $request->input('status_bayar');
+        $user = Auth::user();
 
-        // Pendapatan
-        $pendapatan_hari = Sewa::whereDate('tanggal_sewa', now())
-            ->where('status_bayar', 1)
-            ->sum('total_biaya') +
-            Sewa::whereDate('tanggal_sewa', now())->sum('denda');
+        // Pendapatan hanya relevan untuk ADMIN
+        $pendapatan_hari = 0;
+        $pendapatan_bulan = 0;
 
-        $pendapatan_bulan = Sewa::whereMonth('tanggal_sewa', now()->month)
-            ->where('status_bayar', 1)
-            ->sum('total_biaya') +
-            Sewa::whereMonth('tanggal_sewa', now()->month)->sum('denda');
+        if ($user->role === 'admin') {
+            $pendapatan_hari = Sewa::whereDate('tanggal_sewa', now())
+                ->where('status_bayar', 1)
+                ->sum('total_biaya') +
+                Sewa::whereDate('tanggal_sewa', now())->sum('denda');
+
+            $pendapatan_bulan = Sewa::whereMonth('tanggal_sewa', now()->month)
+                ->where('status_bayar', 1)
+                ->sum('total_biaya') +
+                Sewa::whereMonth('tanggal_sewa', now()->month)->sum('denda');
+        }
 
         if ($request->ajax()) {
-            $query = Sewa::with('penyewa.user')->orderBy('created_at', 'desc');
+            $query = Sewa::with('penyewa.user')
+                ->orderBy('created_at', 'desc');
+
+            // 🔐 FILTER DATA PENYEWA
+            if ($user->role === 'penyewa') {
+                $query->where('penyewa_id', $user->penyewa->id);
+            }
 
             if ($status === '1') {
-                // TELAH TERBAYAR
                 $query->where('status_bayar', 1);
             } elseif ($status === '0') {
-                // MENUNGGU PEMBAYARAN
                 $query->where('status_bayar', 0);
             }
 
@@ -45,15 +55,15 @@ class PembayaranController extends Controller
             $data = $sewas->map(function ($sewa) {
                 $kostums = [];
                 if ($sewa->kostum_id) {
-                    $kostumIds = json_decode($sewa->kostum_id, true);
-                    $kostums = Kostum::whereIn('id', $kostumIds)->get()->map(function ($k) {
+                    $ids = json_decode($sewa->kostum_id, true);
+                    $kostums = Kostum::whereIn('id', $ids)->get()->map(function ($k) {
                         return ['id' => $k->id, 'nama_kostum' => $k->nama_kostum];
                     });
                 }
 
                 return [
                     'id' => $sewa->id,
-                    'kode_sewa' => $sewa->kode_sewa ?? 'SEWA-' . str_pad($sewa->id, 4, '0', STR_PAD_LEFT),
+                    'kode_sewa' => $sewa->kode_sewa,
                     'penyewa' => ['user' => ['name' => optional($sewa->penyewa->user)->name]],
                     'kostum_list' => $kostums,
                     'tanggal_sewa' => $sewa->tanggal_sewa,
@@ -68,8 +78,9 @@ class PembayaranController extends Controller
             return response()->json(['data' => $data]);
         }
 
-        // Normal view
-        $statusTitle = $status === '1' ? 'Terbayar' : ($status === '0' ? 'Menunggu Pembayaran' : '');
+        $statusTitle = $status === '1'
+            ? 'Terbayar'
+            : ($status === '0' ? 'Menunggu Pembayaran' : '');
 
         return view('pages.pembayaran.index', compact(
             'statusTitle',
@@ -77,7 +88,6 @@ class PembayaranController extends Controller
             'pendapatan_bulan'
         ));
     }
-
     /**
      * FORM BAYAR
      */
