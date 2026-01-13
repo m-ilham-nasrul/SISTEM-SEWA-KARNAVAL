@@ -175,7 +175,7 @@
                         timer: 1500,
                         showConfirmButton: false
                     }).then(() => {
-                        window.location.href = "{{ route('penyewa.index') }}";
+                        window.location.href = "{{ route('dashboard') }}";
                     });
                 },
                 error: function(xhr) {
@@ -217,8 +217,9 @@
                         text: 'Password berhasil diperbarui',
                         timer: 2000,
                         showConfirmButton: false
+                     }).then(() => {
+                        window.location.href = "{{ route('dashboard') }}";
                     });
-                    $('#formPassword')[0].reset();
                 },
                 error: function(xhr) {
                     let errors = xhr.responseJSON.errors;

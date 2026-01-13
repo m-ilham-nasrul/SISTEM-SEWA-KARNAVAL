@@ -23,7 +23,7 @@ class KostumApiController extends Controller
                 'catatan'       => $kostum->catatan,
                 'status'        => $kostum->status,
                 'image_kostum'  => $kostum->image_kostum,
-                'sedang_dipakai'=> $kostum->sedangDipakai(),
+                'sedang_dipakai' => $kostum->sedangDipakai(),
             ];
         });
 

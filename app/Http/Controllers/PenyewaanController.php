@@ -245,7 +245,7 @@ class PenyewaanController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Penyewaan sudah dikembalikan dan tidak bisa dibatalkan'
-            ], 403);
+            ], 404);
         }
 
         try {
@@ -269,7 +269,7 @@ class PenyewaanController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Penyewaan gagal dibatalkan'
-            ], 500);
+            ], 404);
         }
     }
 }

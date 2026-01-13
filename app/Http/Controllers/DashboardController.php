@@ -13,10 +13,13 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Default agar view tidak error
+        // ================= DEFAULT VALUE =================
         $penyewa = null;
         $kostum = null;
         $total_pendapatan = null;
+        $sewa = 0;
+        $total_transaksi = 0;
+        $riwayatSewa = collect();
 
         // ================= ADMIN =================
         if ($user->role === 'admin') {
@@ -32,23 +35,27 @@ class DashboardController extends Controller
 
             $riwayatSewa = Sewa::latest()->limit(5)->get();
         }
+
         // ================= PENYEWA =================
         else {
-            // VALIDASI WAJIB
-            if (!$user->penyewa) {
-                abort(403, 'Data penyewa belum tersedia.');
+
+            // JIKA SUDAH MEMILIKI DATA PENYEWA
+            if ($user->penyewa) {
+
+                $sewa = Sewa::where('penyewa_id', $user->penyewa->id)
+                    ->where('status', 0)
+                    ->count();
+
+                $total_transaksi = Sewa::where('penyewa_id', $user->penyewa->id)->count();
+
+                $riwayatSewa = Sewa::where('penyewa_id', $user->penyewa->id)
+                    ->latest()
+                    ->limit(5)
+                    ->get();
             }
 
-            $sewa = Sewa::where('penyewa_id', $user->penyewa->id)
-                ->where('status', 0)
-                ->count();
-
-            $total_transaksi = Sewa::where('penyewa_id', $user->penyewa->id)->count();
-
-            $riwayatSewa = Sewa::where('penyewa_id', $user->penyewa->id)
-                ->latest()
-                ->limit(5)
-                ->get();
+            // JIKA BELUM DAFTAR PENYEWA
+            // → tetap masuk dashboard, data = 0 / kosong
         }
 
         return view('dashboard', compact(
@@ -61,11 +68,12 @@ class DashboardController extends Controller
         ));
     }
 
-    // ================= AJAX =================
+    // ================= AJAX DASHBOARD =================
     public function ajaxData()
     {
         $user = Auth::user();
 
+        // ================= ADMIN =================
         if ($user->role === 'admin') {
             return response()->json([
                 'penyewa' => Penyewa::count(),
@@ -78,15 +86,20 @@ class DashboardController extends Controller
             ]);
         }
 
-        if (!$user->penyewa) {
-            return response()->json([], 403);
+        // ================= PENYEWA =================
+        if ($user->penyewa) {
+            return response()->json([
+                'sewa' => Sewa::where('penyewa_id', $user->penyewa->id)
+                    ->where('status', 0)
+                    ->count(),
+                'total_transaksi' => Sewa::where('penyewa_id', $user->penyewa->id)->count(),
+            ]);
         }
 
+        // PENYEWA BELUM DAFTAR → DATA DEFAULT
         return response()->json([
-            'sewa' => Sewa::where('penyewa_id', $user->penyewa->id)
-                ->where('status', 0)
-                ->count(),
-            'total_transaksi' => Sewa::where('penyewa_id', $user->penyewa->id)->count(),
+            'sewa' => 0,
+            'total_transaksi' => 0,
         ]);
     }
 }

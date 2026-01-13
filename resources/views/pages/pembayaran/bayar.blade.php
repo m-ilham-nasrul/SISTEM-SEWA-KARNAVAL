@@ -67,8 +67,6 @@
 
                             
                             {{-- FORM PEMBAYARAN --}}
-                            
-
                             <form action="{{ route('pengembalian.update', $pengembalian->id) }}" method="POST">
                                 @csrf
                                 @method('PUT')
@@ -207,8 +205,8 @@
                     </div>
                 </div>
 
-            </div> {{-- END ROW --}}
-        </div> {{-- END CONTAINER-FLUID --}}
+            </div> 
+        </div> 
 
         {{-- MODAL SEMUA FOTO --}}
         <div class="modal fade" id="modalSemuaFoto" tabindex="-1">

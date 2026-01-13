@@ -5,7 +5,11 @@
     <div class="container-fluid">
 
         <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">Tambah Penyewa Baru</h1>
+            @if (Auth::user()->role === 'admin')
+                <h1 class="h3 mb-0 text-gray-800">Tambah Penyewa Baru</h1>
+            @else
+                <h1 class="h3 mb-0 text-gray-800">Daftar sebagai Penyewa</h1>
+            @endif
         </div>
 
         <div class="row justify-content-center">

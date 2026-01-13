@@ -58,7 +58,6 @@ Route::middleware('CheckAuth')->group(function () {
 
     // Master & Transaksi
     Route::resource('penyewa', PenyewaController::class);
-    Route::resource('kostum', KostumController::class);
     Route::resource('penyewaan', PenyewaanController::class);
     Route::resource('pembayaran', PembayaranController::class);
     Route::resource('pengembalian', PengembalianController::class);
@@ -88,6 +87,7 @@ Route::middleware('CheckAuth')->group(function () {
 */
 Route::middleware('CheckAdmin')->group(function () {
     Route::resource('user', UserController::class);
+    Route::resource('kostum', KostumController::class);
 });
 
 /*
