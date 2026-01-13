@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Controller;
 use App\Models\Penyewa;
 use Illuminate\Http\Request;
@@ -29,18 +30,38 @@ class PenyewaApiController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'user_id' => 'required|exists:users,id',
-            'alamat'  => 'required|string',
+            'alamat'  => 'required|string|max:255',
             'no_telp' => 'required|string|max:20',
         ]);
 
-        $penyewa = Penyewa::create($validated);
+        if ($validator->fails()) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Validasi gagal',
+                'errors'  => $validator->errors()
+            ], 422);
+        }
+
+        // Optional: cegah satu user punya lebih dari satu penyewa
+        if (Penyewa::where('user_id', $request->user_id)->exists()) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'User sudah terdaftar sebagai penyewa'
+            ], 409);
+        }
+
+        $penyewa = Penyewa::create([
+            'user_id' => $request->user_id,
+            'alamat'  => $request->alamat,
+            'no_telp' => $request->no_telp,
+        ]);
 
         return response()->json([
-            'status' => true,
+            'status'  => true,
             'message' => 'Penyewa berhasil ditambahkan',
-            'data' => $penyewa
+            'data'    => $penyewa
         ], 201);
     }
 
@@ -75,22 +96,30 @@ class PenyewaApiController extends Controller
 
         if (!$penyewa) {
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => 'Penyewa tidak ditemukan'
             ], 404);
         }
 
-        $validated = $request->validate([
-            'alamat'  => 'required|string',
-            'no_telp' => 'required|string|max:20',
+        $validator = Validator::make($request->all(), [
+            'alamat'  => 'sometimes|required|string|max:255',
+            'no_telp' => 'sometimes|required|string|max:20',
         ]);
 
-        $penyewa->update($validated);
+        if ($validator->fails()) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Validasi gagal',
+                'errors'  => $validator->errors()
+            ], 422);
+        }
+
+        $penyewa->update($request->only(['alamat', 'no_telp']));
 
         return response()->json([
-            'status' => true,
+            'status'  => true,
             'message' => 'Penyewa berhasil diperbarui',
-            'data' => $penyewa
+            'data'    => $penyewa
         ]);
     }
 

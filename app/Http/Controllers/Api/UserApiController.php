@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -30,23 +31,32 @@ class UserApiController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
-            'password' => 'required|min:6',
+            'password' => 'required|string|min:6',
             'role'     => 'required|string',
             'telp'     => 'nullable|string|max:20',
             'photo'    => 'nullable|string',
         ]);
 
-        $validated['password'] = Hash::make($validated['password']);
+        if ($validator->fails()) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Validasi gagal',
+                'errors'  => $validator->errors()
+            ], 422);
+        }
 
-        $user = User::create($validated);
+        $data = $validator->validated();
+        $data['password'] = Hash::make($data['password']);
+
+        $user = User::create($data);
 
         return response()->json([
-            'status' => true,
+            'status'  => true,
             'message' => 'User berhasil ditambahkan',
-            'data' => $user
+            'data'    => $user
         ], 201);
     }
 
@@ -81,32 +91,40 @@ class UserApiController extends Controller
 
         if (!$user) {
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => 'User tidak ditemukan'
             ], 404);
         }
 
-        $validated = $request->validate([
-            'name'  => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'role'  => 'required|string',
-            'telp'  => 'nullable|string|max:20',
-            'photo' => 'nullable|string',
-            'password' => 'nullable|min:6',
+        $validator = Validator::make($request->all(), [
+            'name'     => 'sometimes|required|string|max:255',
+            'email'    => 'sometimes|required|email|unique:users,email,' . $user->id,
+            'role'     => 'sometimes|required|string',
+            'telp'     => 'nullable|string|max:20',
+            'photo'    => 'nullable|string',
+            'password' => 'nullable|string|min:6',
         ]);
 
-        if (!empty($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
-        } else {
-            unset($validated['password']);
+        if ($validator->fails()) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Validasi gagal',
+                'errors'  => $validator->errors()
+            ], 422);
         }
 
-        $user->update($validated);
+        $data = $validator->validated();
+
+        if (isset($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        }
+
+        $user->update($data);
 
         return response()->json([
-            'status' => true,
+            'status'  => true,
             'message' => 'User berhasil diperbarui',
-            'data' => $user
+            'data'    => $user
         ]);
     }
 
