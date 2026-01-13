@@ -165,7 +165,7 @@ class PenyewaanController extends Controller
         $user = Auth::user();
 
         // Penyewa hanya bisa edit jika status = 0
-        if ($sewa->status == 1 && $user->role !== '') {
+        if ($sewa->status == 1 && $user->role !== 'admin') {
             return redirect()->route('pembayaran.index');
         }
 
