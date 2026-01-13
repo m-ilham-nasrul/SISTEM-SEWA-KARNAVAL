@@ -95,15 +95,16 @@
                                 <label for="status" class="form-label">Status Kostum</label>
                                 <select name="status" id="status" class="form-control">
                                     @php
-                                        $sewaAktif = $kostum->sewas()->where('status', 1)->exists();
+                                        $sewaAktif = $kostum->sedangDipakai();
                                     @endphp
                                     <option value="0" {{ !$sewaAktif && $kostum->status == 0 ? 'selected' : '' }}>
-                                        Tersedia</option>
+                                        Tersedia
+                                    </option>
                                     <option value="1" {{ $sewaAktif || $kostum->status == 1 ? 'selected' : '' }}>
-                                        Sedang Digunakan</option>
+                                        Sedang Digunakan
+                                    </option>
                                 </select>
                             </div>
-
 
                             <!-- Tombol -->
                             <a href="{{ route('kostum.index') }}" class="btn btn-secondary">

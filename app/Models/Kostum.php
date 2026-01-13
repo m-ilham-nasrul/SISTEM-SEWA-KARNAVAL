@@ -26,22 +26,25 @@ class Kostum extends Model
      */
     public function sedangDipakai(): bool
     {
-        // status = 0 => SEWA AKTIF
-        $sewasAktif = Sewa::where('status', 0)->get();
+        $sewasAktif = Sewa::where('status', 0)->get(); // 1 = sewa aktif
 
         foreach ($sewasAktif as $sewa) {
-
             $kostumIds = json_decode($sewa->kostum_id, true);
 
-            if (!is_array($kostumIds)) {
-                continue;
-            }
+            if (!is_array($kostumIds)) continue;
 
-            if (in_array((string) $this->id, $kostumIds, true)) {
+            if (in_array((string)$this->id, $kostumIds, true)) {
                 return true;
             }
         }
 
         return false;
+    }
+    /**
+     * Query builder untuk kostum
+     */
+    public function sewas()
+    {
+        return Sewa::whereJsonContains('kostum_id', (string)$this->id);
     }
 }
