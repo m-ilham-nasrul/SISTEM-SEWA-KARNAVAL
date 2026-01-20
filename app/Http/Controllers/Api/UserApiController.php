@@ -25,10 +25,6 @@ class UserApiController extends Controller
         ]);
     }
 
-    /**
-     * POST /api/users
-     * Tambah user baru
-     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -45,7 +41,7 @@ class UserApiController extends Controller
                 'status'  => false,
                 'message' => 'Validasi gagal',
                 'errors'  => $validator->errors()
-            ], 422);
+            ], 404);
         }
 
         $data = $validator->validated();
@@ -57,13 +53,9 @@ class UserApiController extends Controller
             'status'  => true,
             'message' => 'User berhasil ditambahkan',
             'data'    => $user
-        ], 201);
+        ], 404);
     }
 
-    /**
-     * GET /api/users/{id}
-     * Detail user
-     */
     public function show($id)
     {
         $user = User::with('penyewa')->find($id);
@@ -81,14 +73,9 @@ class UserApiController extends Controller
         ]);
     }
 
-    /**
-     * PUT /api/users/{id}
-     * Update user
-     */
     public function update(Request $request, $id)
     {
         $user = User::find($id);
-
         if (!$user) {
             return response()->json([
                 'status'  => false,
@@ -110,7 +97,7 @@ class UserApiController extends Controller
                 'status'  => false,
                 'message' => 'Validasi gagal',
                 'errors'  => $validator->errors()
-            ], 422);
+            ], 404);
         }
 
         $data = $validator->validated();
@@ -120,7 +107,6 @@ class UserApiController extends Controller
         }
 
         $user->update($data);
-
         return response()->json([
             'status'  => true,
             'message' => 'User berhasil diperbarui',
@@ -128,10 +114,6 @@ class UserApiController extends Controller
         ]);
     }
 
-    /**
-     * DELETE /api/users/{id}
-     * Hapus user
-     */
     public function destroy($id)
     {
         $user = User::find($id);

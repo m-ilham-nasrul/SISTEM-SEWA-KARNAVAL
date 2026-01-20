@@ -9,17 +9,11 @@ use Illuminate\Support\Facades\Auth;
 
 class PembayaranController extends Controller
 {
-    /**
-     * INDEX
-     * - AJAX → DataTables (JSON)
-     * - Normal → Blade
-     */
     public function index(Request $request)
     {
         $status = $request->input('status_bayar');
         $user = Auth::user();
 
-        // Pendapatan hanya relevan untuk ADMIN
         $pendapatan_hari = 0;
         $pendapatan_bulan = 0;
 
@@ -39,7 +33,6 @@ class PembayaranController extends Controller
             $query = Sewa::with('penyewa.user')
                 ->orderBy('created_at', 'desc');
 
-            // 🔐 FILTER DATA PENYEWA
             if ($user->role === 'penyewa') {
                 $query->where('penyewa_id', $user->penyewa->id);
             }
@@ -88,18 +81,13 @@ class PembayaranController extends Controller
             'pendapatan_bulan'
         ));
     }
-    /**
-     * FORM BAYAR
-     */
+   
     public function bayar($id)
     {
         $pengembalian = Sewa::with('penyewa')->findOrFail($id);
         return view('pages.pembayaran.bayar', compact('pengembalian'));
     }
 
-    /**
-     * PROSES BAYAR
-     */
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -121,9 +109,6 @@ class PembayaranController extends Controller
             ->with('success', 'Pembayaran berhasil diproses.');
     }
 
-    /**
-     * CETAK NOTA
-     */
     public function nota($id)
     {
         $sewa = Sewa::with(['penyewa'])->findOrFail($id);
@@ -134,10 +119,6 @@ class PembayaranController extends Controller
         return view('pages.pembayaran.nota', compact('sewa', 'kostums'));
     }
 
-
-    /**
-     * HAPUS (AJAX)
-     */
     public function destroy($id)
     {
         $sewa = Sewa::find($id);
@@ -149,7 +130,6 @@ class PembayaranController extends Controller
             ], 404);
         }
 
-        // Kembalikan kostum ke tersedia
         if ($sewa->kostum_id) {
             $ids = json_decode($sewa->kostum_id, true);
             Kostum::whereIn('id', $ids)->update([
@@ -157,7 +137,6 @@ class PembayaranController extends Controller
             ]);
         }
 
-        // HAPUS DATA
         $sewa->delete();
 
         return response()->json([

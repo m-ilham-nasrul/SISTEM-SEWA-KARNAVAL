@@ -8,17 +8,6 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h3 mb-0 text-gray-800">Form Penyewaan</h1>
         </div>
-
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
         <!-- START FORM -->
         <div class="row justify-content-center">
             <div class="col-lg-6">
@@ -31,14 +20,6 @@
                     <div class="card-body">
                         <form action="{{ route('penyewaan.store') }}" method="POST">
                             @csrf
-
-                            <!-- FOTO KOSTUM (banyak) -->
-                            <div class="text-center mb-3">
-                                @foreach ($kostums as $k)
-                                    <img src="{{ asset('storage/' . $k->image_kostum) }}" class="img-fluid rounded m-1"
-                                        style="max-height:130px;">
-                                @endforeach
-                            </div>
 
                             <!-- Penyewa -->
                             <div class="form-group">
@@ -71,19 +52,89 @@
                                 @endif
                             </div>
 
-                            <!-- Detail Kostum Dipilih -->
-                            <h6 class="mb-2">Kostum yang Dipilih:</h6>
-                            <ul class="list-group mb-3">
-                                @foreach ($kostums as $k)
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        {{ $k->nama_kostum }}
-                                        <span>Rp {{ number_format($k->harga) }}</span>
+                            <!-- FOTO KOSTUM (banyak) -->
+                            <div class="mb-3 text-left">
+                                <button type="button" class="btn btn-primary" data-toggle="modal"
+                                    data-target="#modalSemuaFoto">
+                                    <i class="fas fa-images"></i> Lihat Foto Kostum
+                                </button>
+                            </div>
 
-                                        <!-- Kirim semua kostum_id -->
-                                        <input type="hidden" name="kostum_id[]" value="{{ $k->id }}">
-                                    </li>
-                                @endforeach
-                            </ul>
+                            <!-- MODAL SEMUA FOTO -->
+                            <div class="modal fade" id="modalSemuaFoto" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-xl modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-primary text-white">
+                                            <h5 class="modal-title">Detail Gambar Kostum</h5>
+                                            <button type="button" class="close text-white"
+                                                data-dismiss="modal">&times;</button>
+                                        </div>
+
+                                        <div class="modal-body" style="max-height: 520px; overflow-y: auto;">
+                                            <div class="row g-3">
+                                                @foreach ($kostums as $k)
+                                                    <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
+                                                        <div class="card shadow-sm text-center p-3">
+                                                            <img src="{{ $k->image_kostum ? asset('storage/' . $k->image_kostum) : asset('images/no-image.png') }}"
+                                                                class="card-img-top"
+                                                                style="height: 260px; width: 100%; object-fit: contain; background:#f8f9fa; padding:6px;">
+                                                            <div class="fw-bold mt-2">{{ $k->nama_kostum }}</div>
+                                                            <div class="text-muted small mt-1">Rp {{ number_format($k->harga) }}</div>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Detail Kostum Dipilih -->
+                            <div class="mb-3 text-left">
+                                <button type="button" class="btn btn-success" data-toggle="modal"
+                                    data-target="#modalDetailSewa">
+                                    <i class="fas fa-receipt"></i> Detail Kostum & Total Bayar
+                                </button>
+                                @php
+                                    $totalBayar = $kostums->sum('harga');
+                                @endphp
+                                <div class="mt-2 font-weight-bold text-success">
+                                    Total Bayar: Rp {{ number_format($totalBayar) }}
+                                </div>
+                            </div>
+
+                            <!-- MODAL DETAIL SEWA -->
+                            <div class="modal fade" id="modalDetailSewa" tabindex="-1" role="dialog">
+                                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
+                                    <div class="modal-content">
+
+                                        <div class="modal-header bg-primary text-white">
+                                            <h5 class="modal-title">Detail Kostum & Total Pembayaran</h5>
+                                            <button type="button" class="close text-white" data-dismiss="modal">
+                                                &times;</button>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            <ul class="list-group mb-3">
+                                                @foreach ($kostums as $k)
+                                                    <li class="list-group-item d-flex justify-content-between">
+                                                        {{ $k->nama_kostum }}
+                                                        <span>Rp {{ number_format($k->harga) }}</span>
+                                                        <input type="hidden" name="kostum_id[]"
+                                                            value="{{ $k->id }}">
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+
+                                            <div class="alert alert-success text-center font-weight-bold">
+                                                Total Bayar: Rp {{ number_format($totalBayar) }}
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
 
                             <!-- Tanggal Sewa -->
                             <div class="form-group">
@@ -120,7 +171,8 @@
                             <div class="form-group">
                                 <label>Status Sewa</label>
                                 <select name="status" class="form-control">
-                                    <option value="0" {{ old('status', 0) == 0 ? 'selected' : '' }}>Masa Sewa</option>
+                                    <option value="0" {{ old('status', 0) == 0 ? 'selected' : '' }}>Masa Sewa
+                                    </option>
 
                                     @if (Auth::user()->role === 'admin')
                                         <option value="1" {{ old('status') == 1 ? 'selected' : '' }}>Sudah Kembali

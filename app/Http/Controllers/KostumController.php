@@ -8,11 +8,6 @@ use Illuminate\Support\Facades\Storage;
 
 class KostumController extends Controller
 {
-    /**
-     * INDEX
-     * - AJAX → DataTables (JSON)
-     * - Normal → Blade
-     */
     public function index(Request $request)
     {
         if ($request->ajax()) {
@@ -24,17 +19,11 @@ class KostumController extends Controller
         return view('pages.kostum.index');
     }
 
-    /**
-     * FORM TAMBAH (VIEW)
-     */
     public function create()
     {
         return view('pages.kostum.create');
     }
 
-    /**
-     * SIMPAN DATA (AJAX / FORM)
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -59,28 +48,18 @@ class KostumController extends Controller
             ->with('success', 'Kostum berhasil ditambahkan');
     }
 
-
-    /**
-     * DETAIL (VIEW)
-     */
     public function show($id)
     {
         $kostum = Kostum::findOrFail($id);
         return view('pages.kostum.show', compact('kostum'));
     }
 
-    /**
-     * FORM EDIT (VIEW)
-     */
     public function edit($id)
     {
         $kostum = Kostum::findOrFail($id);
         return view('pages.kostum.edit', compact('kostum'));
     }
 
-    /**
-     * UPDATE DATA
-     */
     public function update(Request $request, $id)
     {
         $kostum = Kostum::findOrFail($id);
@@ -110,9 +89,6 @@ class KostumController extends Controller
             ->with('success', 'Data kostum berhasil diperbarui');
     }
 
-    /**
-     * HAPUS DATA (AJAX)
-     */
     public function destroy($id)
     {
         $kostum = Kostum::findOrFail($id);

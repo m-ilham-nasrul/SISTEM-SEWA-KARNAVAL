@@ -47,7 +47,7 @@
                         <div class="modal-dialog modal-xl modal-dialog-centered">
                             <div class="modal-content">
                                 <div class="modal-header bg-primary text-white">
-                                    <h5 class="modal-title">Detail Pilih Kostum</h5>
+                                    <h5 class="modal-title">Detail Gambar Kostum</h5>
                                     <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
                                 </div>
 

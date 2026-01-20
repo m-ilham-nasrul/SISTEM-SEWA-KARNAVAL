@@ -9,11 +9,6 @@ use Illuminate\Support\Facades\Auth;
 
 class PengembalianController extends Controller
 {
-    /**
-     * INDEX
-     * - AJAX → DataTables
-     * - Normal → Blade
-     */
     public function index(Request $request)
     {
         if ($request->ajax()) {
@@ -23,15 +18,12 @@ class PengembalianController extends Controller
             $query = Sewa::with(['penyewa.user'])
                 ->orderBy('created_at', 'desc');
 
-            // 🔐 BATASI DATA PENYEWA
             if ($user->role === 'penyewa') {
                 $query->where('penyewa_id', $user->penyewa->id);
             }
 
             $sewas = $query->get();
-
             $data = $sewas->map(function ($sewa) {
-
                 $kostums = [];
                 if ($sewa->kostum_id) {
                     $ids = json_decode($sewa->kostum_id, true);
@@ -63,18 +55,12 @@ class PengembalianController extends Controller
         return view('pages.pengembalian.index');
     }
 
-    /**
-     * FORM PEMBAYARAN
-     */
     public function edit($id)
     {
         $pengembalian = Sewa::with('penyewa')->findOrFail($id);
         return view('pages.pembayaran.bayar', compact('pengembalian'));
     }
 
-    /**
-     * PROSES PEMBAYARAN
-     */
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
@@ -114,15 +100,12 @@ class PengembalianController extends Controller
             ->route('pengembalian.index')
             ->with('success', 'Pembayaran berhasil diproses');
     }
-    /**
-     * PROSES PENGEMBALIAN KOSTUM
-     */
+
     public function destroy($id)
     {
         try {
             $sewa = Sewa::findOrFail($id);
 
-            //SUDAH DIKEMBALIKAN
             if ($sewa->status == 1) {
                 return response()->json([
                     'status' => false,
@@ -130,7 +113,6 @@ class PengembalianController extends Controller
                 ], 400);
             }
 
-            //BELUM BAYAR
             if (!$sewa->status_bayar) {
                 return response()->json([
                     'status' => false,
@@ -138,7 +120,6 @@ class PengembalianController extends Controller
                 ], 404);
             }
 
-            // KEMBALIKAN STATUS KOSTUM
             if ($sewa->kostum_id) {
                 $ids = json_decode($sewa->kostum_id, true);
                 Kostum::whereIn('id', $ids)->update([
@@ -146,7 +127,6 @@ class PengembalianController extends Controller
                 ]);
             }
 
-            // UPDATE STATUS SEWA
             $sewa->update([
                 'status' => 1
             ]);
@@ -163,13 +143,11 @@ class PengembalianController extends Controller
         }
     }
 
-
     public function hapus($id)
     {
         try {
             $sewa = Sewa::findOrFail($id);
 
-            // pastikan kostum kembali tersedia
             if ($sewa->kostum_id) {
                 $ids = json_decode($sewa->kostum_id, true);
                 Kostum::whereIn('id', $ids)->update([

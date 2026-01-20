@@ -10,7 +10,6 @@ class CheckPenyewa
 {
     public function handle(Request $request, Closure $next)
     {
-        // Asumsi: CheckAuth sudah dijalankan dulu
         $user = Auth::user();
 
         if (

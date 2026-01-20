@@ -25,15 +25,23 @@
                     <div class="col-lg-3 col-md-4 col-sm-6 kostum-item"
                         data-kategori="{{ Str::slug($item->kategori, '_') }}">
                         <label class="kostum-wrapper w-100">
-                            <input class="kostum-check" type="checkbox" name="kostum_id[]" value="{{ $item->id }}">
+                            <input class="kostum-check" type="checkbox" name="kostum_id[]" value="{{ $item->id }}"
+                                {{ $item->status == 1 ? 'disabled' : '' }}>
 
-                            <div class="card pilih-item shadow-sm text-center p-3 kostum-card">
+                            <div
+                                class="card pilih-item shadow-sm text-center p-3 kostum-card 
+                                        {{ $item->status == 1 ? 'kostum-disabled' : '' }}">
                                 <img src="{{ asset('storage/' . $item->image_kostum) }}" class="card-img-top mb-3"
                                     alt="{{ $item->nama_kostum }}"
                                     style="height:260px; width:100%; object-fit:contain; border-radius:10px; background:#f8f9fa; padding:4px;">
                                 <div class="card-body p-0">
                                     <div class="nama-kostum fw-bold">{{ $item->nama_kostum }}</div>
                                     <div class="harga text-muted">Rp {{ number_format($item->harga) }}</div>
+                                    @if ($item->status == 1)
+                                        <div class="badge badge-danger">Sedang Digunakan</div>
+                                    @else
+                                        <div class="badge badge-success">Tersedia</div>
+                                    @endif
                                 </div>
                             </div>
                         </label>

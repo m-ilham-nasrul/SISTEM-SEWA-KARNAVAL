@@ -9,10 +9,6 @@ use Illuminate\Http\Request;
 
 class PenyewaApiController extends Controller
 {
-    /**
-     * GET /api/penyewa
-     * Ambil semua penyewa
-     */
     public function index()
     {
         $penyewas = Penyewa::with('user')->latest()->get();
@@ -24,10 +20,6 @@ class PenyewaApiController extends Controller
         ]);
     }
 
-    /**
-     * POST /api/penyewa
-     * Simpan penyewa baru
-     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -41,15 +33,14 @@ class PenyewaApiController extends Controller
                 'status'  => false,
                 'message' => 'Validasi gagal',
                 'errors'  => $validator->errors()
-            ], 422);
+            ], 404);
         }
 
-        // Optional: cegah satu user punya lebih dari satu penyewa
         if (Penyewa::where('user_id', $request->user_id)->exists()) {
             return response()->json([
                 'status'  => false,
                 'message' => 'User sudah terdaftar sebagai penyewa'
-            ], 409);
+            ], 404);
         }
 
         $penyewa = Penyewa::create([
@@ -62,13 +53,9 @@ class PenyewaApiController extends Controller
             'status'  => true,
             'message' => 'Penyewa berhasil ditambahkan',
             'data'    => $penyewa
-        ], 201);
+        ], 404);
     }
 
-    /**
-     * GET /api/penyewa/{id}
-     * Detail penyewa
-     */
     public function show($id)
     {
         $penyewa = Penyewa::with(['user', 'sewas'])->find($id);
@@ -86,10 +73,6 @@ class PenyewaApiController extends Controller
         ]);
     }
 
-    /**
-     * PUT /api/penyewa/{id}
-     * Update penyewa
-     */
     public function update(Request $request, $id)
     {
         $penyewa = Penyewa::find($id);
@@ -111,7 +94,7 @@ class PenyewaApiController extends Controller
                 'status'  => false,
                 'message' => 'Validasi gagal',
                 'errors'  => $validator->errors()
-            ], 422);
+            ], 404);
         }
 
         $penyewa->update($request->only(['alamat', 'no_telp']));
@@ -123,10 +106,6 @@ class PenyewaApiController extends Controller
         ]);
     }
 
-    /**
-     * DELETE /api/penyewa/{id}
-     * Hapus penyewa
-     */
     public function destroy($id)
     {
         $penyewa = Penyewa::find($id);

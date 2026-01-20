@@ -12,8 +12,6 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
-
-        // ================= DEFAULT VALUE =================
         $penyewa = null;
         $kostum = null;
         $total_pendapatan = null;
@@ -21,7 +19,6 @@ class DashboardController extends Controller
         $total_transaksi = 0;
         $riwayatSewa = collect();
 
-        // ================= ADMIN =================
         if ($user->role === 'admin') {
 
             $penyewa = Penyewa::count();
@@ -36,10 +33,7 @@ class DashboardController extends Controller
             $riwayatSewa = Sewa::latest()->limit(5)->get();
         }
 
-        // ================= PENYEWA =================
         else {
-
-            // JIKA SUDAH MEMILIKI DATA PENYEWA
             if ($user->penyewa) {
 
                 $sewa = Sewa::where('penyewa_id', $user->penyewa->id)
@@ -54,8 +48,6 @@ class DashboardController extends Controller
                     ->get();
             }
 
-            // JIKA BELUM DAFTAR PENYEWA
-            // → tetap masuk dashboard, data = 0 / kosong
         }
 
         return view('dashboard', compact(
@@ -68,12 +60,10 @@ class DashboardController extends Controller
         ));
     }
 
-    // ================= AJAX DASHBOARD =================
     public function ajaxData()
     {
         $user = Auth::user();
 
-        // ================= ADMIN =================
         if ($user->role === 'admin') {
             return response()->json([
                 'penyewa' => Penyewa::count(),
@@ -86,7 +76,6 @@ class DashboardController extends Controller
             ]);
         }
 
-        // ================= PENYEWA =================
         if ($user->penyewa) {
             return response()->json([
                 'sewa' => Sewa::where('penyewa_id', $user->penyewa->id)
@@ -96,7 +85,6 @@ class DashboardController extends Controller
             ]);
         }
 
-        // PENYEWA BELUM DAFTAR → DATA DEFAULT
         return response()->json([
             'sewa' => 0,
             'total_transaksi' => 0,

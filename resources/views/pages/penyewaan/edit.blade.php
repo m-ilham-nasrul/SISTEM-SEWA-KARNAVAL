@@ -28,20 +28,30 @@
                             <div class="form-group">
                                 <label>Nama Penyewa</label>
 
-                                <select name="penyewa_id" class="form-control @error('penyewa_id') is-invalid @enderror">
-                                    <option value="">[ Pilih Penyewa ]</option>
+                                @if (Auth::user()->role === 'admin')
+                                    <select name="penyewa_id" class="form-control @error('penyewa_id') is-invalid @enderror"
+                                        required>
 
-                                    @foreach ($penyewas as $penyewa)
-                                        <option value="{{ $penyewa->id }}"
-                                            {{ old('penyewa_id', $sewa->penyewa_id) == $penyewa->id ? 'selected' : '' }}>
-                                            {{ $penyewa->user->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                        <option value="">[ Pilih Penyewa ]</option>
 
-                                @error('penyewa_id')
-                                    <small class="text-danger">{{ $message }}</small>
-                                @enderror
+                                        @foreach ($penyewas as $p)
+                                            <option value="{{ $p->id }}"
+                                                {{ old('penyewa_id', $sewa->penyewa_id) == $p->id ? 'selected' : '' }}>
+                                                {{ $p->user->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+
+                                    @error('penyewa_id')
+                                        <small class="text-danger">{{ $message }}</small>
+                                    @enderror
+                                @else
+                                    <!-- Penyewa login otomatis -->
+                                    <input type="text" class="form-control" value="{{ $sewa->penyewa->user->name }}"
+                                        readonly>
+
+                                    <input type="hidden" name="penyewa_id" value="{{ $sewa->penyewa_id }}">
+                                @endif
                             </div>
 
                             <!-- NO TELEPON  -->
@@ -154,11 +164,13 @@
                                 <select name="status" id="status"
                                     class="form-control @error('status') is-invalid @enderror">
                                     <option value="0" {{ old('status', $sewa->status) == 0 ? 'selected' : '' }}>
-                                        Masa Sewa / Belum Kembali
+                                        Masa Sewa 
                                     </option>
+                                    @if (Auth::user()->role === 'admin')
                                     <option value="1" {{ old('status', $sewa->status) == 1 ? 'selected' : '' }}>
                                         Sudah Kembali
                                     </option>
+                                    @endif
                                 </select>
                                 @error('status')
                                     <small class="text-danger">{{ $message }}</small>

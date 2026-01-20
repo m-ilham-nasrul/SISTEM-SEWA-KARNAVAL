@@ -24,7 +24,7 @@ class PenyewaanController extends Controller
             $query = Sewa::with(['penyewa.user'])
                 ->orderBy('created_at', 'desc');
 
-            // 🔐 FILTER DATA BERDASARKAN ROLE
+            // FILTER DATA BERDASARKAN ROLE
             if ($user->role === 'penyewa') {
                 $query->where('penyewa_id', $user->penyewa->id);
             }

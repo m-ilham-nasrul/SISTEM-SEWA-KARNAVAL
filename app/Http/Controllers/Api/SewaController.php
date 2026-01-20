@@ -33,7 +33,7 @@ class SewaController extends Controller
             return response()->json([
                 'success' => false,
                 'errors'  => $validator->errors()
-            ], 422);
+            ], 404);
         }
 
         $sewa = Sewa::create([
@@ -52,7 +52,7 @@ class SewaController extends Controller
             'success' => true,
             'message' => 'Data penyewaan berhasil disimpan',
             'data'    => $sewa
-        ], 201);
+        ], 404);
     }
 
     public function show($id)

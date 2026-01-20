@@ -9,9 +9,6 @@ use Illuminate\Support\Facades\Auth;
 
 class PenyewaController extends Controller
 {
-    /**
-     * INDEX
-     */
     public function index(Request $request)
     {
         if ($request->ajax()) {
@@ -23,18 +20,12 @@ class PenyewaController extends Controller
         return view('pages.penyewa.index');
     }
 
-    /**
-     * FORM TAMBAH
-     */
     public function create()
     {
         $users = User::where('role', 'penyewa')->orderBy('name')->get();
         return view('pages.penyewa.create', compact('users'));
     }
 
-    /**
-     * SIMPAN DATA
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -61,14 +52,10 @@ class PenyewaController extends Controller
             ->with('success', 'Data penyewa berhasil disimpan');
     }
 
-    /**
-     * FORM EDIT
-     */
     public function edit($id)
     {
         $penyewa = Penyewa::with('user')->findOrFail($id);
 
-        // ADMIN → boleh pilih user
         $users = Auth::user()->role === 'admin'
             ? User::where('role', 'penyewa')->orderBy('name')->get()
             : null;
@@ -76,9 +63,6 @@ class PenyewaController extends Controller
         return view('pages.penyewa.edit', compact('penyewa', 'users'));
     }
 
-    /**
-     * UPDATE DATA
-     */
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -96,7 +80,6 @@ class PenyewaController extends Controller
             }
         }
 
-        // ===== UPDATE =====
         $penyewa->update([
             'user_id' => Auth::user()->role === 'admin'
                 ? $request->user_id
@@ -109,9 +92,6 @@ class PenyewaController extends Controller
             ->with('success', 'Data penyewa berhasil diperbarui');
     }
 
-    /**
-     * HAPUS
-     */
     public function destroy($id)
     {
         $penyewa = Penyewa::findOrFail($id);

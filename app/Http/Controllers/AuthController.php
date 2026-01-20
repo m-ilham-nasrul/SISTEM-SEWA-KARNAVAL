@@ -9,17 +9,11 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    /**
-     * Tampilkan form login
-     */
     public function loginForm()
     {
         return view('auth.login');
     }
 
-    /**
-     * Proses login
-     */
     public function login(Request $request)
     {
         $request->validate([
@@ -32,10 +26,8 @@ class AuthController extends Controller
 
         if ($checkLogin) {
 
-            // Ambil role user
             $role = Auth::user()->role;
 
-            // Redirect berdasarkan role
             if ($role === 'admin') {
                 return redirect()->route('dashboard')->with('success', 'Selamat datang Admin!');
             }
@@ -44,23 +36,16 @@ class AuthController extends Controller
                 return redirect()->route('dashboard')->with('success', 'Login berhasil!');
             }
 
-            // default jika role tidak terdeteksi
             return redirect()->route('dashboard')->with('success', 'Login berhasil!');
         }
         return back()->with('error', 'Email atau password salah.');
     }
 
-    /**
-     * Tampilkan form registrasi
-     */
     public function registerForm()
     {
         return view('auth.register');
     }
 
-    /**
-     * Proses registrasi
-     */
     public function register()
     {
         return view('auth.register');
@@ -84,18 +69,14 @@ class AuthController extends Controller
 
         return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login.');
     }
-    /**
-     * Proses logout
-     */
+   
     public function logout(Request $request)
     {
         Auth::logout();
 
-        // Hapus session biar benar-benar keluar
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        // Arahkan ke landing page
-        return redirect('/'); // atau route('landing') jika punya route name
+        return redirect('/'); 
     }
 }

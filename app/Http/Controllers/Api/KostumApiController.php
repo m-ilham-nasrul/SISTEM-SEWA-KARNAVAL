@@ -9,9 +9,6 @@ use Illuminate\Support\Facades\Validator;
 
 class KostumApiController extends Controller
 {
-    /**
-     * GET /api/kostum
-     */
     public function index()
     {
         $data = Kostum::all()->map(function ($kostum) {
@@ -34,9 +31,6 @@ class KostumApiController extends Controller
         ]);
     }
 
-    /**
-     * POST /api/kostum
-     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -56,7 +50,6 @@ class KostumApiController extends Controller
         }
 
         $kostum = Kostum::create($request->all());
-
         return response()->json([
             'success' => true,
             'message' => 'Kostum berhasil ditambahkan',
@@ -64,9 +57,6 @@ class KostumApiController extends Controller
         ], 201);
     }
 
-    /**
-     * GET /api/kostum/{id}
-     */
     public function show($id)
     {
         $kostum = Kostum::find($id);
@@ -93,9 +83,6 @@ class KostumApiController extends Controller
         ]);
     }
 
-    /**
-     * PUT /api/kostum/{id}
-     */
     public function update(Request $request, $id)
     {
         $kostum = Kostum::find($id);
@@ -123,9 +110,6 @@ class KostumApiController extends Controller
         ]);
     }
 
-    /**
-     * DELETE /api/kostum/{id}
-     */
     public function destroy($id)
     {
         $kostum = Kostum::find($id);
