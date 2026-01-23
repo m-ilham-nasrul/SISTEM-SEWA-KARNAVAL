@@ -26,13 +26,18 @@ class KostumController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'nama_kostum'  => 'required|string|max:255',
-            'kategori'     => 'required|string|max:255',
-            'harga'        => 'required|integer',
-            'catatan'      => 'nullable|string',
-            'image_kostum' => 'nullable|image|mimes:jpg,jpeg,png|max:6048',
-        ]);
+        $validated = $request->validate(
+            [
+                'nama_kostum'  => 'required|string|max:255',
+                'kategori'     => 'required|string|max:255',
+                'harga'        => 'required|integer',
+                'catatan'      => 'nullable|string',
+                'image_kostum' => 'nullable|image|mimes:jpg,jpeg,png|max:6048',
+            ],
+            [
+                'image_kostum.max' => 'Ukuran gambar maksimal 6 MB.',
+            ]
+        );
 
         $validated['status'] = 0; // TERSEDIA
 
@@ -64,14 +69,19 @@ class KostumController extends Controller
     {
         $kostum = Kostum::findOrFail($id);
 
-        $validated = $request->validate([
-            'nama_kostum'  => 'required|string|max:255',
-            'kategori'     => 'required|string|max:255',
-            'harga'        => 'required|integer',
-            'catatan'      => 'nullable|string',
-            'status'       => 'required|in:0,1',
-            'image_kostum' => 'nullable|image|mimes:jpg,jpeg,png|max:6048',
-        ]);
+        $validated = $request->validate(
+            [
+                'nama_kostum'  => 'required|string|max:255',
+                'kategori'     => 'required|string|max:255',
+                'harga'        => 'required|integer',
+                'catatan'      => 'nullable|string',
+                'status'       => 'required|in:0,1',
+                'image_kostum' => 'nullable|image|mimes:jpg,jpeg,png|max:6048',
+            ],
+            [
+                'image_kostum.max' => 'Ukuran gambar maksimal 6 MB.',
+            ]
+        );
 
         if ($request->hasFile('image_kostum')) {
             if ($kostum->image_kostum) {
