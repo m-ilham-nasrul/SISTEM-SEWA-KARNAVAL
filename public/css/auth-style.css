@@ -1,7 +1,7 @@
 /* Background (dipakai, sesuai versi login modern) */
 .login-bg {
     background: linear-gradient(rgba(20,20,40,0.7), rgba(20,20,40,0.7)),
-                url('/images/authbackground.jpg') center/cover no-repeat;
+                url('/img/authbackground.jpg') center/cover no-repeat;
     font-family: 'Poppins', sans-serif;
 }
 
