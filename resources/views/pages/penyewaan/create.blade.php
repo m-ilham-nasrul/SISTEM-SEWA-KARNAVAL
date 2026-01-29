@@ -75,7 +75,7 @@
                                                 @foreach ($kostums as $k)
                                                     <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
                                                         <div class="card shadow-sm text-center p-3">
-                                                            <img src="{{ $k->image_kostum ? asset('storage/' . $k->image_kostum) : asset('images/no-image.png') }}"
+                                                            <img src="{{ $k->image_kostum ? asset('uploads/kostum/' . $k->image_kostum) : asset('images/no-image.png') }}"
                                                                 class="card-img-top"
                                                                 style="height: 260px; width: 100%; object-fit: contain; background:#f8f9fa; padding:6px;">
                                                             <div class="fw-bold mt-2">{{ $k->nama_kostum }}</div>

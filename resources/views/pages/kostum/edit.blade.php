@@ -28,8 +28,8 @@
                                 <label for="image_kostum" class="form-label">Gambar Kostum</label>
                                 <div class="mb-2">
                                     @if ($kostum->image_kostum)
-                                        <img src="{{ asset('storage/' . $kostum->image_kostum) }}" alt="Gambar Kostum"
-                                            class="img-thumbnail" style="max-width: 150px;">
+                                        <img src="{{ asset('uploads/kostum/' . $kostum->image_kostum) }}"alt="Gambar Kostum"
+                                            class="img-thumbnail" style="max-width: 150px;" loading="lazy">
                                     @endif
                                 </div>
                                 <input type="file" class="form-control @error('image_kostum') is-invalid @enderror"

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Kostum;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class KostumController extends Controller
 {
@@ -42,8 +41,10 @@ class KostumController extends Controller
         $validated['status'] = 0; // TERSEDIA
 
         if ($request->hasFile('image_kostum')) {
-            $validated['image_kostum'] =
-                $request->file('image_kostum')->store('kostum', 'public');
+            $image = $request->file('image_kostum');
+            $filename = time() . '_' . $image->getClientOriginalName();
+            $image->move(public_path('uploads/kostum'), $filename);
+            $validated['image_kostum'] = $filename;
         }
 
         Kostum::create($validated);
@@ -84,12 +85,16 @@ class KostumController extends Controller
         );
 
         if ($request->hasFile('image_kostum')) {
-            if ($kostum->image_kostum) {
-                Storage::disk('public')->delete($kostum->image_kostum);
+
+            // hapus gambar lama
+            if ($kostum->image_kostum && file_exists(public_path('uploads/kostum/' . $kostum->image_kostum))) {
+                unlink(public_path('uploads/kostum/' . $kostum->image_kostum));
             }
 
-            $validated['image_kostum'] =
-                $request->file('image_kostum')->store('kostum', 'public');
+            $image = $request->file('image_kostum');
+            $filename = time() . '_' . $image->getClientOriginalName();
+            $image->move(public_path('uploads/kostum'), $filename);
+            $validated['image_kostum'] = $filename;
         }
 
         $kostum->update($validated);
@@ -103,8 +108,8 @@ class KostumController extends Controller
     {
         $kostum = Kostum::findOrFail($id);
 
-        if ($kostum->image_kostum) {
-            Storage::disk('public')->delete($kostum->image_kostum);
+        if ($kostum->image_kostum && file_exists(public_path('uploads/kostum/' . $kostum->image_kostum))) {
+            unlink(public_path('uploads/kostum/' . $kostum->image_kostum));
         }
 
         $kostum->delete();

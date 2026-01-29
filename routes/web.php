@@ -88,6 +88,7 @@ Route::middleware('CheckAuth')->group(function () {
 Route::middleware('CheckAdmin')->group(function () {
     Route::resource('user', UserController::class);
     Route::resource('kostum', KostumController::class);
+    Route::get('/penyewa', [PenyewaController::class, 'index'])->name('penyewa.index');
 });
 
 /*

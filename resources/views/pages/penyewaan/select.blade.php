@@ -31,7 +31,7 @@
                             <div
                                 class="card pilih-item shadow-sm text-center p-3 kostum-card 
                                         {{ $item->status == 1 ? 'kostum-disabled' : '' }}">
-                                <img src="{{ asset('storage/' . $item->image_kostum) }}" class="card-img-top mb-3"
+                                <img src="{{ asset('uploads/kostum/' . $item->image_kostum) }}" class="card-img-top mb-3"
                                     alt="{{ $item->nama_kostum }}"
                                     style="height:260px; width:100%; object-fit:contain; border-radius:10px; background:#f8f9fa; padding:4px;">
                                 <div class="card-body p-0">

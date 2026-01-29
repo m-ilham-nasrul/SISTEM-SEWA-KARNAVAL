@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 use App\Models\User;
 
 class ProfileController extends Controller
@@ -88,44 +88,59 @@ class ProfileController extends Controller
 
     public function photo(Request $request)
     {
-        $user = User::find(Auth::id());
+        /** @var User $user */
+        $user = Auth::user();
+
         if (! $user) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
+
         $request->validate([
             'photo' => 'required|image|mimes:jpg,jpeg,png|max:2048',
         ]);
-        if ($user->photo && Storage::disk('public')->exists('profile/' . $user->photo)) {
-            Storage::disk('public')->delete('profile/' . $user->photo);
+
+        $path = public_path('uploads/profile');
+
+        if (!File::exists($path)) {
+            File::makeDirectory($path, 0755, true);
+        }
+
+        if ($user->photo && File::exists($path . '/' . $user->photo)) {
+            File::delete($path . '/' . $user->photo);
         }
 
         $file = $request->file('photo');
-        $filename = 'profile_' . $user->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+        $filename = 'profile_' . $user->id . '_' . time() . '.' . $file->extension();
 
-        Storage::disk('public')->putFileAs('profile', $file, $filename);
-        $user->photo = $filename;
-        $user->save();
+        $file->move($path, $filename);
+
+        $user->update(['photo' => $filename]);
 
         return response()->json([
-            'status' => true,
+            'status'  => true,
             'message' => 'Foto profil berhasil diperbarui',
-            'photo' => asset('storage/profile/' . $filename),
+            'photo'   => asset('uploads/profile/' . $filename),
         ]);
     }
 
+
+
     public function deletePhoto()
     {
-        $user = User::find(Auth::id());
+        /** @var User $user */
+        $user = Auth::user();
 
         if (! $user) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
-        if ($user->photo && Storage::disk('public')->exists('profile/' . $user->photo)) {
-            Storage::disk('public')->delete('profile/' . $user->photo);
+
+        $path = public_path('uploads/profile');
+
+        if ($user->photo && File::exists($path . '/' . $user->photo)) {
+            File::delete($path . '/' . $user->photo);
         }
 
-        $user->photo = null;
-        $user->save();
+        $user->update(['photo' => null]);
 
         return response()->json([
             'status'  => true,

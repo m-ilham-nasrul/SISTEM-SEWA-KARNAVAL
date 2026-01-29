@@ -66,8 +66,9 @@
                     {
                         data: 'image_kostum',
                         render: data => data ?
-                            `<img src="/storage/${data}" width="70">` :
-                            `<span class="text-muted">Tidak ada</span>`
+                        `<img src="/uploads/kostum/${data}" width="70" loading="lazy">` :
+                        `<span class="text-muted">Tidak ada</span>`
+
                     },
                     {
                         data: 'nama_kostum'
@@ -136,7 +137,7 @@
                                     icon: 'success',
                                     title: 'Berhasil',
                                     text: res.message,
-                                    timer: 1500,
+                                    timer: 2000,
                                     showConfirmButton: false
                                 });
 

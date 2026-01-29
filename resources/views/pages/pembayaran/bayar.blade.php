@@ -11,7 +11,7 @@
             </h1>
         </div>
 
-        <div class="row justify-content-center">     
+        <div class="row justify-content-center">
             {{-- KOLOM FORM PEMBAYARAN --}}
             <div class="col-lg-6">
                 <div class="card shadow border-left-primary mb-4">
@@ -65,7 +65,7 @@
                                 </div>
                             </div>
 
-                            
+
                             {{-- FORM PEMBAYARAN --}}
                             <form action="{{ route('pengembalian.update', $pengembalian->id) }}" method="POST">
                                 @csrf
@@ -166,7 +166,7 @@
                         </div>
                     </div>
                 </div>
-       
+
                 {{-- KOLOM FOTO --}}
                 <div class="col-lg-4">
                     <div class="card shadow mb-4">
@@ -183,7 +183,7 @@
                                 @foreach ($pengembalian->kostum_list->take(4) as $k)
                                     <div class="col-6 mb-3">
                                         <div class="border rounded p-2 bg-white shadow-sm text-center">
-                                            <img src="{{ $k->image_kostum ? asset('storage/' . $k->image_kostum) : asset('images/no-image.png') }}"
+                                            <img src="{{ $k->image_kostum ? asset('uploads/kostum/' . $k->image_kostum) : asset('images/no-image.png') }}"
                                                 class="img-fluid rounded">
 
                                             <h6 class="mt-2">{{ $k->nama_kostum }}</h6>
@@ -205,8 +205,8 @@
                     </div>
                 </div>
 
-            </div> 
-        </div> 
+            </div>
+        </div>
 
         {{-- MODAL SEMUA FOTO --}}
         <div class="modal fade" id="modalSemuaFoto" tabindex="-1">
@@ -223,7 +223,7 @@
                             @foreach ($pengembalian->kostum_list as $k)
                                 <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
                                     <div class="card shadow-sm text-center p-3">
-                                        <img src="{{ $k->image_kostum ? asset('storage/' . $k->image_kostum) : asset('images/no-image.png') }}"
+                                        <img src="{{ $k->image_kostum ? asset('uploads/kostum/' . $k->image_kostum) : asset('images/no-image.png') }}"
                                             class="card-img-top"
                                             style="height: 260px; object-fit: contain; background:#f8f9fa; padding:6px;">
                                         <div class="card-body p-0 fw-bold">{{ $k->nama_kostum }}</div>
@@ -236,5 +236,5 @@
                 </div>
             </div>
         </div>
-    
-@endsection
+
+    @endsection

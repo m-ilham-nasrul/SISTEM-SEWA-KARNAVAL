@@ -20,8 +20,8 @@
                     </div>
                     <div class="card-body text-center">
                         @if ($kostum->image_kostum)
-                            <img src="{{ asset('storage/' . $kostum->image_kostum) }}" class="img-fluid img-thumbnail"
-                                style="max-height: 700px;">
+                            <img src="{{ asset('uploads/kostum/' . $kostum->image_kostum) }}" class="img-fluid img-thumbnail"
+                                style="max-height: 700px;" loading="lazy">
                         @else
                             <small class="text-muted">Tidak ada gambar</small>
                         @endif

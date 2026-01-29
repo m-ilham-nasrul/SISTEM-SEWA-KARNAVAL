@@ -10,11 +10,6 @@ use Illuminate\Support\Facades\Auth;
 
 class PenyewaanController extends Controller
 {
-    /**
-     * INDEX
-     * - AJAX → DataTables (JSON)
-     * - Normal → Blade
-     */
     public function index(Request $request)
     {
         if ($request->ajax()) {
@@ -62,18 +57,12 @@ class PenyewaanController extends Controller
         return view('pages.penyewaan.index');
     }
 
-    /**
-     * FORM PILIH KOSTUM
-     */
     public function select()
     {
         $kostums = Kostum::all();
         return view('pages.penyewaan.select', compact('kostums'));
     }
 
-    /**
-     * FORM CREATE
-     */
     public function create(Request $request)
     {
         if (!$request->has('kostum_id')) {
@@ -91,9 +80,6 @@ class PenyewaanController extends Controller
         ]);
     }
 
-    /**
-     * STORE PENYEWAAN
-     */
     public function store(Request $request)
     {
         $user = Auth::user();
@@ -107,7 +93,6 @@ class PenyewaanController extends Controller
             'status'           => 'required|boolean',
         ]);
 
-        // Tentukan penyewa ID secara aman
         if ($user->role === 'penyewa') {
             $penyewaId = $user->penyewa->id;
         } else {
@@ -141,9 +126,6 @@ class PenyewaanController extends Controller
             ->with('success', 'Penyewaan berhasil ditambahkan!');
     }
 
-    /**
-     * DETAIL
-     */
     public function show($id)
     {
         $sewa = Sewa::findOrFail($id);
@@ -156,9 +138,6 @@ class PenyewaanController extends Controller
         return view('pages.penyewaan.show', compact('sewa', 'kostums', 'hargaPaket', 'denda', 'total'));
     }
 
-    /**
-     * EDIT
-     */
     public function edit($id)
     {
         $sewa = Sewa::findOrFail($id);
@@ -179,9 +158,6 @@ class PenyewaanController extends Controller
         ]);
     }
 
-    /**
-     * UPDATE
-     */
     public function update(Request $request, $id)
     {
         $sewa = Sewa::findOrFail($id);
@@ -232,9 +208,6 @@ class PenyewaanController extends Controller
             ->with('success', 'Penyewaan berhasil diperbarui!');
     }
 
-    /**
-     * DESTROY (AJAX)
-     */
     public function destroy($id)
     {
         $sewa = Sewa::findOrFail($id);
@@ -258,7 +231,6 @@ class PenyewaanController extends Controller
                 ]);
             }
 
-            // Hapus data sewa
             $sewa->delete();
 
             return response()->json([

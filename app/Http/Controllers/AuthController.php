@@ -69,7 +69,7 @@ class AuthController extends Controller
 
         return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login.');
     }
-   
+
     public function logout(Request $request)
     {
         Auth::logout();
@@ -77,6 +77,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/'); 
+        return redirect('/');
     }
 }

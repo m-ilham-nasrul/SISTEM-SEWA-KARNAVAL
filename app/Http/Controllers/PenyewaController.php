@@ -76,7 +76,7 @@ class PenyewaController extends Controller
         // ===== OTORISASI =====
         if (Auth::user()->role !== 'admin') {
             if ($penyewa->user_id !== Auth::id()) {
-                abort(403, 'Anda tidak memiliki akses');
+                abort(404, 'Anda tidak memiliki akses');
             }
         }
 

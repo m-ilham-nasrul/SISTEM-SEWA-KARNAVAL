@@ -21,11 +21,10 @@
                 <div class="card shadow text-center">
                     <div class="card-body">
                         <img id="previewFoto" class="img-profile rounded-circle mb-3" width="120"
-                            src="{{ $user->photo ? asset('storage/profile/' . $user->photo) : asset('sbadmin2/img/undraw_profile.svg') }}">
+                            src="{{ $user->photo ? asset('uploads/profile/' . $user->photo) : asset('sbadmin2/img/undraw_profile.svg') }}">
 
                         <form id="formPhoto">
                             @csrf
-
                             {{-- input file disembunyikan --}}
                             <input type="file" name="photo" id="photoInput" class="d-none" accept="image/*">
 
@@ -152,8 +151,8 @@
 @push('scripts')
     <script>
         /* =======================
-                    UPDATE PROFIL
-                ======================= */
+             UPDATE PROFIL
+        ======================= */
         $('#formProfil').submit(function(e) {
             e.preventDefault();
 
@@ -172,7 +171,7 @@
                         icon: 'success',
                         title: 'Berhasil',
                         text: 'Profil berhasil diperbarui',
-                        timer: 1500,
+                        timer: 2000,
                         showConfirmButton: false
                     }).then(() => {
                         window.location.href = "{{ route('dashboard') }}";
@@ -217,7 +216,7 @@
                         text: 'Password berhasil diperbarui',
                         timer: 2000,
                         showConfirmButton: false
-                     }).then(() => {
+                    }).then(() => {
                         window.location.href = "{{ route('dashboard') }}";
                     });
                 },
@@ -293,29 +292,51 @@
                         icon: 'success',
                         title: 'Berhasil',
                         text: res.message,
-                        timer: 1500,
+                        timer: 2000,
                         showConfirmButton: false
                     });
 
                     // update foto tanpa reload
-                    $('#previewFoto').attr(
-                        'src',
-                        res.photo + '?' + new Date().getTime()
-                    );
+                    let newPhoto = res.photo + '?' + new Date().getTime();
+                    // halaman profil
+                    $('#previewFoto').attr('src', newPhoto);
+                    // TOPBAR
+                    $('.topbar-avatar, #topbarAvatar').attr('src', newPhoto);
 
+                    // jika tombol hapus belum ada → buat
+                    if ($('#btnHapusFoto').length === 0) {
+                        $('#btnUbahFoto').after(`
+                        <button type="button" id="btnHapusFoto" class="btn btn-sm btn-danger ml-1">
+                            <i class="fas fa-trash"></i> Hapus Foto
+                        </button>`);
+                    }
                     // reset input file
                     $('#photoInput').val('');
                 },
-                error: function() {
-                    Swal.fire('Gagal', 'Upload foto gagal', 'error');
+                error: function(xhr) {
+                    let pesan = 'Upload foto gagal';
+
+                    if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        pesan = '';
+                        $.each(xhr.responseJSON.errors, function(key, value) {
+                            pesan += value[0] + '<br>';
+                        });
+                    }
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        html: pesan
+                    });
                 }
+
             });
         });
 
         /* =======================
-            HAPUS FOTO PROFIL
-           =======================*/
-        $('#btnHapusFoto').click(function() {
+           HAPUS FOTO PROFIL
+        =======================*/
+        $(document).on('click', '#btnHapusFoto', function() {
 
             Swal.fire({
                 title: 'Hapus foto profil?',
@@ -346,17 +367,12 @@
                             icon: 'success',
                             title: 'Berhasil',
                             text: res.message,
-                            timer: 1500,
+                            timer: 2000,
                             showConfirmButton: false
                         });
-
-                        // Ganti ke gambar default SB Admin
-                        $('#previewFoto').attr(
-                            'src',
-                            "{{ asset('sbadmin2/img/undraw_profile.svg') }}"
-                        );
-
-                        // Hilangkan tombol hapus
+                        let defaultAvatar = "{{ asset('sbadmin2/img/undraw_profile.svg') }}";
+                        $('#previewFoto').attr('src', defaultAvatar);
+                        $('#topbarAvatar').attr('src', defaultAvatar);
                         $('#btnHapusFoto').remove();
                     },
                     error: function() {

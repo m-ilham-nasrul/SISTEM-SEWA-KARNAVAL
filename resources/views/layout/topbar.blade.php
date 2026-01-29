@@ -20,17 +20,19 @@
                         @endif
                     </span>
 
-                    <img class="img-profile rounded-circle"
+                    <img id="topbarAvatar" class="img-profile rounded-circle"
                         src="{{ Auth::user()->photo
-                            ? asset('storage/profile/' . Auth::user()->photo)
+                            ? asset('uploads/profile/' . Auth::user()->photo)
                             : asset('sbadmin2/img/undraw_profile.svg') }}">
                 </a>
 
                 <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
-
                     <!-- PROFILE -->
                     <a class="dropdown-item d-flex align-items-center py-2" href="{{ route('profile.index') }}">
-                        <i class="fas fa-user-circle fa-2x text-primary"></i>
+                        <img class="img-profile rounded-circle topbar-avatar" width="40" height="40"
+                            src="{{ Auth::user()->photo
+                                ? asset('uploads/profile/' . Auth::user()->photo)
+                                : asset('sbadmin2/img/undraw_profile.svg') }}">
                         <div class="ml-3">
                             <div class="font-weight-bold">Profil Saya</div>
                             <small class="text-muted">Kelola akun Anda</small>

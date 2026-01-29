@@ -18,7 +18,7 @@
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"> />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="/css/landing.css">
 
 </head>
@@ -166,7 +166,7 @@
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Logout berhasil',
-                                timer: 1200,
+                                timer: 2000,
                                 showConfirmButton: false
                             }).then(() => {
                                 window.location.href = "{{ route('login') }}";
