@@ -121,7 +121,7 @@
                                     icon: 'success',
                                     title: 'Berhasil',
                                     text: res.message,
-                                    timer: 2000,
+                                    timer: 1500,
                                     showConfirmButton: false
                                 });
                                 table.ajax.reload(null, false);
@@ -139,7 +139,7 @@
                     icon: 'success',
                     title: 'Berhasil',
                     text: "{{ session('success') }}",
-                    timer: 2000,
+                    timer: 1500,
                     showConfirmButton: false
                 });
             @endif

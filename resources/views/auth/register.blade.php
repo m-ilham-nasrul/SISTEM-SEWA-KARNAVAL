@@ -122,7 +122,7 @@
                 icon: 'success',
                 title: 'Berhasil',
                 text: "{{ session('success') }}",
-                timer: 2000,
+                timer: 1500,
                 showConfirmButton: false
             });
         @elseif (session('error'))

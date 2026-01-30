@@ -171,7 +171,7 @@
                         icon: 'success',
                         title: 'Berhasil',
                         text: 'Profil berhasil diperbarui',
-                        timer: 2000,
+                        timer: 1500,
                         showConfirmButton: false
                     }).then(() => {
                         window.location.href = "{{ route('dashboard') }}";
@@ -214,7 +214,7 @@
                         icon: 'success',
                         title: 'Password diubah',
                         text: 'Password berhasil diperbarui',
-                        timer: 2000,
+                        timer: 1500,
                         showConfirmButton: false
                     }).then(() => {
                         window.location.href = "{{ route('dashboard') }}";
@@ -292,7 +292,7 @@
                         icon: 'success',
                         title: 'Berhasil',
                         text: res.message,
-                        timer: 2000,
+                        timer: 1500,
                         showConfirmButton: false
                     });
 
@@ -367,7 +367,7 @@
                             icon: 'success',
                             title: 'Berhasil',
                             text: res.message,
-                            timer: 2000,
+                            timer: 1500,
                             showConfirmButton: false
                         });
                         let defaultAvatar = "{{ asset('sbadmin2/img/undraw_profile.svg') }}";

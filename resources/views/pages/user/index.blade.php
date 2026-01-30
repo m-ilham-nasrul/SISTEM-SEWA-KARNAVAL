@@ -119,7 +119,7 @@
                                     title: 'Berhasil',
                                     text: res.message ||
                                         'User berhasil dihapus',
-                                    timer: 2000,
+                                    timer: 1500,
                                     showConfirmButton: false
                                 });
 

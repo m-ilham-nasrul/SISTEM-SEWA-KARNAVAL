@@ -212,7 +212,7 @@
                                     icon: 'success',
                                     title: 'Berhasil',
                                     text: r.message,
-                                    timer: 2000,
+                                    timer: 1500,
                                     showConfirmButton: false
                                 }).then(() => {
                                     window.location.href =

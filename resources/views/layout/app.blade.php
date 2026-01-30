@@ -82,7 +82,7 @@
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Logout berhasil',
-                                timer: 2000,
+                                timer: 1500,
                                 showConfirmButton: false
                             }).then(() => {
                                 window.location.href = "{{ route('login') }}";
@@ -114,7 +114,7 @@
                 icon: 'success',
                 title: 'Berhasil',
                 text: "{{ session('success') }}",
-                timer: 2000,
+                timer: 1500,
                 showConfirmButton: false
             });
         @elseif (session('error'))
@@ -122,7 +122,7 @@
                 icon: 'error',
                 title: 'Gagal',
                 text: "{{ session('error') }}",
-                timer: 2000,
+                timer: 1500,
                 showConfirmButton: false
             });
         @elseif ($errors->any())
@@ -130,7 +130,7 @@
                 icon: 'error',
                 title: 'Oops!',
                 html: `{!! implode('<br>', $errors->all()) !!}`,
-                timer: 2000,
+                timer: 1500,
                 showConfirmButton: false
             });
         @endif
