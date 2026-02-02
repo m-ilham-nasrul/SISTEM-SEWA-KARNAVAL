@@ -6,6 +6,8 @@ use App\Models\Sewa;
 use App\Models\Kostum;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class PembayaranController extends Controller
 {
@@ -18,20 +20,24 @@ class PembayaranController extends Controller
         $pendapatan_bulan = 0;
 
         if ($user->role === 'admin') {
-            $pendapatan_hari = Sewa::whereDate('tanggal_sewa', now())
-                ->where('status_bayar', 1)
-                ->sum('total_biaya') +
-                Sewa::whereDate('tanggal_sewa', now())->sum('denda');
 
-            $pendapatan_bulan = Sewa::whereMonth('tanggal_sewa', now()->month)
-                ->where('status_bayar', 1)
-                ->sum('total_biaya') +
-                Sewa::whereMonth('tanggal_sewa', now()->month)->sum('denda');
+            $pendapatan_hari = Sewa::where('status_bayar', 1)
+                ->whereBetween('updated_at', [
+                    Carbon::today(),
+                    Carbon::tomorrow()
+                ])
+                ->sum(DB::raw('total_biaya + denda'));
+
+            $pendapatan_bulan = Sewa::where('status_bayar', 1)
+                ->whereYear('updated_at', now()->year)
+                ->whereMonth('updated_at', now()->month)
+                ->sum(DB::raw('total_biaya + denda'));
         }
 
         if ($request->ajax()) {
+
             $query = Sewa::with('penyewa.user')
-                ->orderBy('created_at', 'desc');
+                ->orderBy('updated_at', 'desc');
 
             if ($user->role === 'penyewa') {
                 $query->where('penyewa_id', $user->penyewa->id);
@@ -46,18 +52,26 @@ class PembayaranController extends Controller
             $sewas = $query->get();
 
             $data = $sewas->map(function ($sewa) {
+
                 $kostums = [];
                 if ($sewa->kostum_id) {
                     $ids = json_decode($sewa->kostum_id, true);
                     $kostums = Kostum::whereIn('id', $ids)->get()->map(function ($k) {
-                        return ['id' => $k->id, 'nama_kostum' => $k->nama_kostum];
+                        return [
+                            'id' => $k->id,
+                            'nama_kostum' => $k->nama_kostum
+                        ];
                     });
                 }
 
                 return [
                     'id' => $sewa->id,
                     'kode_sewa' => $sewa->kode_sewa,
-                    'penyewa' => ['user' => ['name' => optional($sewa->penyewa->user)->name]],
+                    'penyewa' => [
+                        'user' => [
+                            'name' => optional($sewa->penyewa->user)->name
+                        ]
+                    ],
                     'kostum_list' => $kostums,
                     'tanggal_sewa' => $sewa->tanggal_sewa,
                     'tanggal_kembali' => $sewa->tanggal_kembali,
@@ -81,7 +95,7 @@ class PembayaranController extends Controller
             'pendapatan_bulan'
         ));
     }
-   
+
     public function bayar($id)
     {
         $pengembalian = Sewa::with('penyewa')->findOrFail($id);
@@ -93,25 +107,29 @@ class PembayaranController extends Controller
         $request->validate([
             'denda' => 'nullable|numeric',
             'total_biaya' => 'required|numeric',
-            'metode_pembayaran' => 'required',
+            'metode_pembayaran' => 'required|string',
             'no_rekening' => 'nullable|string'
         ]);
 
         $sewa = Sewa::findOrFail($id);
-        $sewa->denda = $request->denda ?? 0;
-        $sewa->total_biaya = $request->total_biaya;
-        $sewa->metode_pembayaran = $request->metode_pembayaran;
-        $sewa->no_rekening = $request->no_rekening;
-        $sewa->status_bayar = 1;
-        $sewa->save();
+
+        $sewa->update([
+            'denda' => $request->denda ?? 0,
+            'total_biaya' => $request->total_biaya,
+            'metode_pembayaran' => $request->metode_pembayaran,
+            'no_rekening' => $request->no_rekening,
+            'status_bayar' => 1,
+            'updated_at' => now()
+        ]);
 
         return redirect()->route('pembayaran.index')
             ->with('success', 'Pembayaran berhasil diproses.');
     }
 
+    // ================= NOTA =================
     public function nota($id)
     {
-        $sewa = Sewa::with(['penyewa'])->findOrFail($id);
+        $sewa = Sewa::with('penyewa')->findOrFail($id);
 
         $kostumIds = json_decode($sewa->kostum_id, true) ?? [];
         $kostums = Kostum::whereIn('id', $kostumIds)->get();
@@ -132,16 +150,14 @@ class PembayaranController extends Controller
 
         if ($sewa->kostum_id) {
             $ids = json_decode($sewa->kostum_id, true);
-            Kostum::whereIn('id', $ids)->update([
-                'status' => 0
-            ]);
+            Kostum::whereIn('id', $ids)->update(['status' => 0]);
         }
 
         $sewa->delete();
 
         return response()->json([
             'status' => true,
-            'message' => 'Data pengembalian berhasil dihapus'
+            'message' => 'Data pembayaran berhasil dihapus'
         ]);
     }
 }

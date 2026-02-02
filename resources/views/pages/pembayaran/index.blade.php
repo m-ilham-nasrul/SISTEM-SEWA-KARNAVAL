@@ -9,42 +9,52 @@
             <h1 class="h3 mb-0 text-gray-800">Pembayaran Sewa</h1>
         </div>
 
-        <!-- Ringkasan Pendapatan -->
-        <div class="row mb-4">
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-success shadow h-100 py-2">
-                    <div class="card-body d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                Pendapatan Hari Ini
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold">Rp. {{ number_format($pendapatan_hari) }}</div>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-center bg-success"
-                            style="width: 50px; height: 50px; border-radius: 10px;">
-                            <i class="fas fa-dollar-sign text-white" style="font-size: 22px;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        @php
+            $role = Auth::user()->role;
+        @endphp
 
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-left-primary shadow h-100 py-2">
-                    <div class="card-body d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                Pendapatan Bulan Ini
+        @if ($role === 'admin')
+            <!-- Ringkasan Pendapatan -->
+            <div class="row mb-4">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    Pendapatan Hari Ini
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold">
+                                    Rp. {{ number_format($pendapatan_hari) }}
+                                </div>
                             </div>
-                            <div class="h5 mb-0 font-weight-bold">Rp. {{ number_format($pendapatan_bulan) }}</div>
+                            <div class="d-flex align-items-center justify-content-center bg-success"
+                                style="width: 50px; height: 50px; border-radius: 10px;">
+                                <i class="fas fa-dollar-sign text-white"></i>
+                            </div>
                         </div>
-                        <div class="d-flex align-items-center justify-content-center bg-primary"
-                            style="width: 50px; height: 50px; border-radius: 10px;">
-                            <i class="fas fa-chart-line text-white" style="font-size: 22px;"></i>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    Pendapatan Bulan Ini
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold">
+                                    Rp. {{ number_format($pendapatan_bulan) }}
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-center bg-primary"
+                                style="width: 50px; height: 50px; border-radius: 10px;">
+                                <i class="fas fa-chart-line text-white"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        @endif
 
         <!-- Table Pembayaran -->
         <div class="card shadow mb-4">
