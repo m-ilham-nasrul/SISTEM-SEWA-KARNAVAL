@@ -91,7 +91,7 @@
                     <span class="badge badge-${d.status_bayar ? 'success' : 'danger'} mt-1">
                         ${d.status_bayar ? 'Terbayar' : 'Belum Bayar'}
                     </span>
-                `
+                        `
                     },
                     {
                         data: null,
@@ -105,43 +105,44 @@
                             let notaBtn = '';
                             if (data.status_bayar) {
                                 notaBtn = `
-                <a href="/pembayaran/${id}/nota"
-                   class="btn btn-info btn-sm mb-1 w-100">
-                    <i class="fas fa-file-invoice mr-1"></i> Nota
-                </a>
-            `;
-                            }
+                                        <a href="/pembayaran/${id}/nota"
+                                        class="btn btn-info btn-sm mb-1 w-100">
+                                            <i class="fas fa-file-invoice mr-1"></i> Nota
+                                        </a>
+                                        `;
+                                }
 
                             // ===== KEMBALIKAN =====
                             let returnBtn = '';
                             if (!data.status) {
                                 returnBtn = `
-        <button class="btn btn-warning btn-sm mb-1 w-100 btn-return"
-                data-id="${id}"
-                data-paid="${data.status_bayar}">
-            <i class="fas fa-undo mr-1"></i> Kembalikan
-        </button>
-        `;
+                                    <button class="btn btn-warning btn-sm mb-1 w-100 btn-return"
+                                            data-id="${id}"
+                                            data-paid="${data.status_bayar}">
+                                        <i class="fas fa-undo mr-1"></i> Kembalikan
+                                    </button>
+                                    `;
                             }
-
 
                             // ===== EDIT & BATALKAN (ROLE-BASED) =====
                             let editBtn = '';
                             let deleteBtn = '';
-
+                            // EDIT → admin & penyewa (jika belum kembali)
                             if (role === 'admin' || (role === 'penyewa' && data.status == 0)) {
                                 editBtn = `
-                <a href="/penyewaan/${id}/edit" class="dropdown-item">
-                    <i class="fas fa-edit mr-2"></i> Edit
-                </a>
-            `;
-                                deleteBtn = `
-                <button class="dropdown-item text-danger btn-delete" data-id="${id}">
-                    <i class="fas fa-trash mr-2"></i> Hapus
-                </button>
-            `;
+                                     <a href="/penyewaan/${id}/edit" class="dropdown-item">
+                                         <i class="fas fa-edit mr-2"></i> Edit
+                                    </a>
+                                `;
                             }
-
+                            // DELETE → ADMIN SAJA
+                            if (role === 'admin') {
+                                deleteBtn = `
+                                    <button class="dropdown-item text-danger btn-delete" data-id="${id}">
+                                        <i class="fas fa-trash mr-2"></i> Hapus
+                                    </button>
+                                `;
+                            }
                             return `
             <div class="d-flex flex-column align-items-center">
                 ${notaBtn}
