@@ -97,57 +97,52 @@
                                     @endforeach
                                 </td>
                             </tr>
-
                             <tr>
                                 <th>Tanggal Sewa</th>
                                 <td>{{ $sewa->tanggal_sewa }}</td>
                             </tr>
-
                             <tr>
                                 <th>Tanggal Kembali</th>
                                 <td>{{ $sewa->tanggal_kembali }}</td>
                             </tr>
-
                             <tr>
-                                <th>Status Pengembalian</th>
-                                <td>
-                                    @if ($sewa->status == 0)
-                                        <span class="badge badge-warning">Sedang Dipinjam</span>
-                                    @else
-                                        <span class="badge badge-success">Sudah Dikembalikan</span>
-                                    @endif
-                                </td>
-                            </tr>
-
+                        <th>Status Pengembalian</th>
+                            <td>
+                                @if ($sewa->status == 0)
+                            <span class="badge badge-secondary">
+                                <i class="fas fa-hourglass-half"></i> Masa Sewa
+                            </span>
+                                @elseif ($sewa->status == 1)
+                            <span class="badge badge-warning">
+                                <i class="fas fa-clock"></i> Menunggu Verifikasi Admin
+                            </span>
+                                @elseif ($sewa->status == 2)
+                            @if (!$sewa->status_bayar)
+                            <span class="badge badge-info">
+                                <i class="fas fa-credit-card"></i> Menunggu Pembayaran
+                            </span>
+                            @else
+                            <span class="badge badge-success">
+                                <i class="fas fa-check-circle"></i> Kembali
+                            </span>
+                                @endif
+                            @endif
+                            </td>
+                        </tr>
                             <tr>
                                 <th>Status Pembayaran</th>
                                 <td>
                                     @if ($sewa->status_bayar == 0)
-                                        <span class="badge badge-danger">Belum Bayar</span>
+                                        <span class="badge badge-danger">
+                                            <i class="fas fa-times-circle"></i> Belum Membayar
+                                        </span>
                                     @else
-                                        <span class="badge badge-success">Sudah Bayar</span>
+                                        <span class="badge badge-success">
+                                            <i class="fas fa-check-circle"></i> Telah Terbayar
+                                        </span>
                                     @endif
                                 </td>
-                            </tr>
-
-                            <tr>
-                                <th>Metode Pembayaran</th>
-                                <td>{{ $sewa->metode_pembayaran ?? '-' }}</td>
-                            </tr>
-
-                            <tr>
-                                <th>No Rekening / No Dana</th>
-                                <td>
-                                    @if ($sewa->metode_pembayaran === 'transfer')
-                                        {{ $sewa->nama_bank ?? '-' }} - {{ $sewa->no_rekening ?? '-' }}
-                                    @elseif ($sewa->metode_pembayaran === 'ewallet')
-                                        {{ $sewa->nama_ewallet ?? '-' }} - {{ $sewa->nomor_ewallet ?? '-' }}
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-                            </tr>
-
+                            </tr>           
                             <tr>
                                 <th>Harga Paket</th>
                                 <td>Rp {{ number_format($hargaPaket, 0, ',', '.') }}</td>
@@ -181,7 +176,6 @@
                             </tr>
 
                         </table>
-
                         <a href="{{ route('pembayaran.index') }}" class="btn btn-secondary mt-3">Kembali</a>
                     </div>
                 </div>

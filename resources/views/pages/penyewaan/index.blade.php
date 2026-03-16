@@ -88,29 +88,64 @@
                         render: t => moment(t).format('DD-MMMM-YYYY')
                     },
                     {
-                        data: null,
-                        render: d => {
-                            let badge = d.status == 1 ? 'success' : 'secondary';
-                            let text = d.status == 1 ? 'Sudah Dikembalikan' : 'Masa Sewa';
-
+                         data: null,
+                            render: d => {                      
+                            let status = '';
                             let extra = '';
                             if (d.status == 0) {
+                                status = `
+                                    <span class="badge badge-secondary px-3 py-2">
+                                        <i class="fas fa-hourglass-half mr-1"></i>
+                                        Masa Sewa
+                                    </span>
+                                `;
                                 const today = moment();
                                 const kembali = moment(d.tanggal_kembali);
-
                                 if (today.isAfter(kembali)) {
-                                    extra =
-                                        '<br><span class="badge badge-danger mt-1">Terlambat</span>';
-                                } else if (today.isSame(kembali, 'day')) {
-                                    extra =
-                                        '<br><span class="badge badge-warning mt-1">Hari Terakhir</span>';
+                                    extra = `
+                                        <br>
+                                        <span class="badge badge-danger">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            Terlambat
+                                        </span>
+                                    `;
                                 }
+                                    else if (today.isSame(kembali, 'day')) {
+                                        extra = `
+                                            <br>
+                                            <span class="badge badge-warning">
+                                                <i class="fas fa-clock"></i>
+                                                Hari Terakhir
+                                            </span>
+                                        `;
+                                    }
+                                } 
+                                else if (d.status == 1) {
+                                status = `
+                                    <span class="badge badge-warning px-3 py-2">
+                                        <i class="fas fa-hourglass mr-1"></i>
+                                        Menunggu Verifikasi
+                                    </span>
+                                `;
+                                } 
+                                else if (d.status == 2) {
+                                    if(!d.status_bayar){
+                                status = `
+                                    <span class="badge badge-info px-3 py-2">
+                                        <i class="fas fa-credit-card mr-1"></i>
+                                        Menunggu Pembayaran
+                                    </span>
+                                `;
+                                } else {
+                                    status = `
+                                        <span class="badge badge-success px-3 py-2">
+                                            <i class="fas fa-check-circle mr-1"></i>
+                                        Selesai
+                                    </span>
+                                `;
                             }
-
-                            return `
-                            <span class="badge badge-${badge}">${text}</span>
-                            ${extra}
-                            `;
+                        }
+                            return status + extra;
                         }
                     },
                     {
@@ -130,40 +165,40 @@
                                 (role === 'penyewa' && data.status == 0)
                             ) {
                                 editBtn = `
-                <a href="/penyewaan/${id}/edit" class="dropdown-item">
-                    <i class="fas fa-edit mr-2"></i> Edit
-                </a>
-            `;
+                                <a href="/penyewaan/${id}/edit" class="dropdown-item">
+                                    <i class="fas fa-edit mr-2"></i> Edit
+                                </a>
+                            `;
                             }
 
                             // ===== BATALKAN =====
                             if (
                                 role === 'admin' ||
                                 (role === 'penyewa' && data.status == 0)
-                            ) {
-                                deleteBtn = `
-                <button class="dropdown-item text-danger btn-delete"
-                        data-id="${id}">
-                    <i class="fas fa-trash mr-2"></i> Batalkan
-                </button>
-            `;
+                                            ) {
+                                                deleteBtn = `
+                                <button class="dropdown-item text-danger btn-delete"
+                                        data-id="${id}">
+                                    <i class="fas fa-trash mr-2"></i> Batalkan
+                                </button>
+                            `;
                             }
 
                             return `
-            <div class="dropdown">
-                <button class="btn btn-light btn-sm" data-toggle="dropdown">
-                    <i class="fas fa-ellipsis-v"></i>
-                </button>
-                <div class="dropdown-menu">
-                    <a href="/penyewaan/${id}" class="dropdown-item">
-                        <i class="fas fa-eye mr-2"></i> Detail
-                    </a>
+                            <div class="dropdown">
+                                <button class="btn btn-light btn-sm" data-toggle="dropdown">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <div class="dropdown-menu">
+                                    <a href="/penyewaan/${id}" class="dropdown-item">
+                                        <i class="fas fa-eye mr-2"></i> Detail
+                                    </a>
 
-                    ${editBtn}
-                    ${deleteBtn}
-                </div>
-            </div>
-        `;
+                                    ${editBtn}
+                                 ${deleteBtn}
+                                </div>
+                            </div>
+                        `;
                         }
                     }
                 ]
@@ -172,7 +207,6 @@
             // DELETE AJAX + SWEETALERT
             $(document).on('click', '.btn-delete', function() {
                 let id = $(this).data('id');
-
                 Swal.fire({
                     title: 'Yakin?',
                     text: 'Data penyewaan akan dibatalkan!',
@@ -207,7 +241,6 @@
                     }
                 });
             });
-
         });
     </script>
 @endpush

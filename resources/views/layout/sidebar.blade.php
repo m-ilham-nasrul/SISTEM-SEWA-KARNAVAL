@@ -59,18 +59,19 @@
     </li>
 
     <li class="nav-item">
+        <a class="nav-link" href="{{ route('pengembalian.index') }}">
+            <i class="fa-solid fa-rotate-left"></i>
+            <span>Pengembalian</span>
+        </a>
+    </li>
+
+    <li class="nav-item">
         <a class="nav-link" href="{{ route('pembayaran.index') }}">
             <i class="fa-solid fa-money-check-dollar"></i>
             <span>Pembayaran</span>
         </a>
     </li>
 
-    <li class="nav-item">
-        <a class="nav-link" href="{{ route('pengembalian.index') }}">
-            <i class="fa-solid fa-rotate-left"></i>
-            <span>Pengembalian</span>
-        </a>
-    </li>
     <hr class="sidebar-divider d-none d-md-block">
 
     <div class="text-center d-none d-md-inline">

@@ -42,6 +42,7 @@ class PenyewaanController extends Controller
                 return [
                     'id' => $sewa->id,
                     'status' => $sewa->status,
+                    'status_bayar' => $sewa->status_bayar,
                     'penyewa' => $sewa->penyewa
                         ? ['user' => ['name' => optional($sewa->penyewa->user)->name]]
                         : null,
@@ -122,7 +123,7 @@ class PenyewaanController extends Controller
             $kostum->update(['status' => 1]);
         }
 
-        return redirect()->route('pembayaran.index')
+        return redirect()->route('pengembalian.index')
             ->with('success', 'Penyewaan berhasil ditambahkan!');
     }
 
@@ -165,7 +166,7 @@ class PenyewaanController extends Controller
 
         // Penyewa hanya bisa update jika status = 0
         if ($sewa->status == 1 && $user->role !== 'admin') {
-            return redirect()->route('pembayaran.index')
+            return redirect()->route('pengembalian.index')
                 ->with('error', 'Penyewaan sudah dikembalikan dan tidak bisa diperbarui');
         }
 
@@ -204,7 +205,7 @@ class PenyewaanController extends Controller
             $kostum->save();
         }
 
-        return redirect()->route('pembayaran.index')
+        return redirect()->route('pengembalian.index')
             ->with('success', 'Penyewaan berhasil diperbarui!');
     }
 
@@ -232,7 +233,6 @@ class PenyewaanController extends Controller
             }
 
             $sewa->delete();
-
             return response()->json([
                 'status' => true,
                 'message' => 'Penyewaan berhasil dibatalkan'

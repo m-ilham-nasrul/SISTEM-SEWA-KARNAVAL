@@ -213,17 +213,11 @@
                                     </td>
 
                                     <td>
-                                        @if ($item->status == 1)
-                                            <span class="badge badge-success px-3 py-2">
-                                                <i class="fas fa-check-circle mr-1"></i>
-                                                Dikembalikan
-                                            </span>
-                                        @else
+                                        @if ($item->status == 0)
                                             <span class="badge badge-secondary px-3 py-2">
                                                 <i class="fas fa-hourglass-half mr-1"></i>
                                                 Masa Sewa
                                             </span>
-
                                             @if ($today->gt($kembali))
                                                 <div class="mt-1">
                                                     <span class="badge badge-danger px-3 py-2">
@@ -239,9 +233,25 @@
                                                     </span>
                                                 </div>
                                             @endif
+                                        @elseif ($item->status == 1)
+                                            <span class="badge badge-warning px-3 py-2">
+                                                <i class="fas fa-hourglass mr-1"></i>
+                                                Menunggu Verifikasi
+                                            </span>
+                                        @elseif ($item->status == 2)
+                                            @if (!$item->status_bayar)
+                                                <span class="badge badge-info px-3 py-2">
+                                                    <i class="fas fa-credit-card mr-1"></i>
+                                                    Menunggu Pembayaran
+                                                </span>
+                                            @else
+                                                <span class="badge badge-success px-3 py-2">
+                                                    <i class="fas fa-check-circle mr-1"></i>
+                                                    Selesai
+                                                </span>
+                                            @endif
                                         @endif
                                     </td>
-
                                     <td>
                                         <a href="{{ route('penyewaan.show', $item->id) }}" class="btn btn-sm btn-primary">
                                             Detail
@@ -291,11 +301,9 @@
                 }
             });
         }
-
         // Load data saat halaman pertama kali dibuka
         $(document).ready(function() {
             loadDashboardData();
-
             // Optional: refresh data tiap 30 detik
             setInterval(loadDashboardData, 30000);
         });

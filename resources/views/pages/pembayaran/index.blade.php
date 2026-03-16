@@ -84,7 +84,6 @@
                                 <th>Nama Kostum</th>
                                 <th>Tanggal Sewa</th>
                                 <th>Tanggal Kembali</th>
-                                <th>Denda</th>
                                 <th>Total Bayar</th>
                                 <th>Status</th>
                                 <th>Aksi</th>
@@ -111,180 +110,246 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
 
     <script>
-        $(document).ready(function() {
+$(document).ready(function() {
 
-            let statusBayar = '';
+    let statusBayar = '';
 
-            let table = $('#dataTable').DataTable({
-                processing: true,
-                serverSide: false,
-                ajax: {
-                    url: "{{ route('pembayaran.index') }}",
-                    data: function(d) {
-                        d.status_bayar = statusBayar;
-                    }
-                },
-                columns: [{
-                        data: null,
-                        render: (data, type, row, meta) => meta.row + 1
-                    },
-                    {
-                        data: 'kode_sewa',
-                        render: (data, type, row) => data ?? `SEWA-${String(row.id).padStart(4,'0')}`
-                    },
-                    {
-                        data: 'penyewa.user.name',
-                        defaultContent: '<small>Data penyewa telah dihapus!</small>'
-                    },
-                    {
-                        data: 'kostum_list',
-                        orderable: false,
-                        searchable: false,
-                        render: kostums => {
-                            if (kostums.length) {
-                                return kostums.map(k => k.nama_kostum || 'Kostum telah dihapus')
-                                    .join('<br>');
-                            }
-                            return '<small>Data kostum telah dihapus!</small>';
-                        }
-                    },
-                    {
-                        data: 'tanggal_sewa',
-                        render: t => moment(t).format('DD-MMMM-YYYY')
-                    },
-                    {
-                        data: 'tanggal_kembali',
-                        render: t => moment(t).format('DD-MMMM-YYYY')
-                    },
-                    {
-                        data: 'denda',
-                        render: d => `Rp. ${Number(d).toLocaleString()}`
-                    },
-                    {
-                        data: 'total_biaya',
-                        render: d => `Rp. ${Number(d).toLocaleString()}`
-                    },
-                    {
-                        data: null,
-                        render: data => {
-                            let status = data.status ? 'Kembali' : 'Masa Sewa';
-                            let bayar = data.status_bayar ? 'Telah Terbayar' : 'Belum Membayar';
-                            let badgeStatus = data.status ? 'success' : 'secondary';
-                            let badgeBayar = data.status_bayar ? 'success' : 'danger';
+    let table = $('#dataTable').DataTable({
+        processing: true,
+        serverSide: false,
+        ajax: {
+            url: "{{ route('pembayaran.index') }}",
+            data: function(d) {
+                d.status_bayar = statusBayar;
+            }
+        },
+        columns: [
+        {
+            data: null,
+            render: (data, type, row, meta) => meta.row + 1
+        },
+        {
+            data: 'kode_sewa',
+            render: (data, type, row) => data ?? `SEWA-${String(row.id).padStart(4,'0')}`
+        },
+        {
+            data: 'penyewa.user.name',
+            defaultContent: '<small>Data penyewa telah dihapus!</small>'
+        },
+        {
+            data: 'kostum_list',
+            orderable: false,
+            searchable: false,
+            render: kostums => {
+                if (kostums.length) {
+                    return kostums.map(k => k.nama_kostum || 'Kostum telah dihapus')
+                        .join('<br>');
+                }
+                return '<small>Data kostum telah dihapus!</small>';
+            }
+        },
+        {
+            data: 'tanggal_sewa',
+            render: t => moment(t).format('DD-MMMM-YYYY')
+        },
+        {
+            data: 'tanggal_kembali',
+            render: t => moment(t).format('DD-MMMM-YYYY')
+        },
+        {
+            data: null,
+            render: data => {
+                let total = Number(data.total_biaya) + Number(data.denda);
+                return `Rp. ${total.toLocaleString()}`
+            }
+        },
+        {
+            data: null,
+            render: data => {       
+        let status = '';
+        if(data.status == 0){
+            status = `
+                <span class="badge badge-secondary">
+                    <i class="fas fa-hourglass-half"></i>
+                    Masa Sewa
+                </span>
+            `;
+        }
+        else if(data.status == 1){
+            status = `
+                <span class="badge badge-warning">
+                    <i class="fas fa-user-check"></i>
+                    Menunggu Verifikasi
+                </span>
+            `;
 
-                            return `
-                        <span class="badge badge-${badgeStatus}">${status}</span><br>
-                        <span class="badge badge-${badgeBayar} mt-1">${bayar}</span>
+        }
+        else if(data.status == 2){
+            if(!data.status_bayar){
+                status = `
+                    <span class="badge badge-success">
+                        <i class="fas fa-check-circle"></i>
+                        Diverifikasi Admin
+                    </span>
+                    <br>
+                    <span class="badge badge-info">
+                        <i class="fas fa-credit-card"></i>
+                        Silakan lakukan pembayaran
+                    </span>
+                `;
+            }else{
+                status = `
+                    <span class="badge badge-success">
+                        <i class="fas fa-check-circle"></i>
+                        Kembali
+                    </span>
+                `;
+            }
+        }
+        let bayar = `
+            <br>
+            <span class="badge badge-${data.status_bayar ? 'success':'danger'}">
+                <i class="fas ${data.status_bayar ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+                ${data.status_bayar ? 'Telah Terbayar' : 'Belum Membayar'}
+            </span>
+        `;
+        return status + bayar;
+            }
+        },
+        {
+            data: null,
+            orderable: false,
+            searchable: false,
+            render: data => {
+
+                let id = data.id;
+                let role = '{{ Auth::user()->role }}';
+
+                /* tombol bayar */
+                let bayarBtn = (data.status == 2 && !data.status_bayar) ?
+                    `<a href="/pembayaran/${id}/bayar"
+                        class="btn btn-warning btn-sm mb-1 w-100">
+                        <i class="fas fa-money-bill-wave mr-1"></i> Bayar
+                    </a>` : '';
+
+                /* tombol nota */
+                let notaBtn = data.status_bayar ?
+                `<a href="/pembayaran/${id}/nota"
+                    class="btn btn-info btn-sm mb-1 w-100">
+                    <i class="fas fa-file-invoice mr-1"></i> Nota
+                </a>` : '';
+
+                let editBtn = '';
+                let deleteBtn = '';
+
+                if (role === 'admin') {
+
+                    editBtn = `
+                        <a href="/penyewaan/${id}/edit" class="dropdown-item">
+                            <i class="fas fa-edit mr-2"></i> Edit
+                        </a>
                     `;
-                        }
-                    },
-                    {
-                        data: null,
-                        orderable: false,
-                        searchable: false,
-                        render: data => {
-                            let id = data.id;
-                            let role = '{{ Auth::user()->role }}';
 
-                            /*Bayar*/
-                            let bayarBtn = !data.status_bayar ?
-                                `<a href="/pengembalian/${id}/edit" class="btn btn-success btn-sm mb-1 w-100">
-                               <i class="fas fa-money-bill-wave mr-1"></i> Bayar
-                           </a>` :
-                                '';
-                            /*Nota*/
-                            let notaBtn = data.status_bayar ?
-                                `<a href="/pembayaran/${id}/nota" class="btn btn-info btn-sm mb-1 w-100">
-                               <i class="fas fa-file-invoice mr-1"></i> Nota
-                           </a>` :
-                                '';
+                    deleteBtn = `
+                        <button class="dropdown-item text-danger btn-delete"
+                            data-id="${id}">
+                            <i class="fas fa-trash mr-2"></i> Hapus
+                        </button>
+                    `;
+                }
 
-                            let editBtn = '';
-                            let deleteBtn = '';
+                return `
+                    <div class="d-flex flex-column align-items-center">
 
-                            if (role === 'admin' || (role === 'penyewa' && !data.status_bayar)) {
-                                editBtn = `
-                            <a href="/penyewaan/${id}/edit" class="dropdown-item">
-                                <i class="fas fa-edit mr-2"></i> Edit
-                            </a>
-                        `;
-                                deleteBtn = `
-                            <button class="dropdown-item text-danger btn-delete" data-id="${id}">
-                                <i class="fas fa-trash mr-2"></i> Hapus
+                        ${bayarBtn}
+                        ${notaBtn}
+
+                        <div class="dropdown mt-1">
+                            <button class="btn btn-light btn-sm w-100"
+                                data-toggle="dropdown">
+                                <i class="fas fa-ellipsis-v"></i>
                             </button>
-                        `;
-                            }
-
-                            return `
-                        <div class="d-flex flex-column align-items-center">
-                            ${bayarBtn}
-                            ${notaBtn}
-                            <div class="dropdown mt-1">
-                                <button class="btn btn-light btn-sm w-100" data-toggle="dropdown">
-                                    <i class="fas fa-ellipsis-v"></i>
-                                </button>
-                                <div class="dropdown-menu dropdown-menu-right">
-                                    <a href="/penyewaan/${id}" class="dropdown-item">
-                                        <i class="fas fa-eye mr-2"></i> Detail
-                                    </a>
-                                    ${editBtn}
-                                    ${deleteBtn}
-                                </div>
+                            <div class="dropdown-menu dropdown-menu-right">
+                                <a href="/penyewaan/${id}" class="dropdown-item">
+                                    <i class="fas fa-eye mr-2"></i> Detail
+                                </a>
+                                ${editBtn}
+                                ${deleteBtn}
                             </div>
                         </div>
-                    `;
-                        }
-                    }
-                ]
-            });
+                    </div>
+                `;
+            }
+        }]
+    });
 
-            // ===== FILTER BUTTON =====
-            $('.filter-btn').on('click', function() {
-                $('.filter-btn').removeClass('active');
-                $(this).addClass('active');
+    /* ================================
+       FILTER STATUS PEMBAYARAN
+    ================================= */
 
-                statusBayar = $(this).data('status');
-                table.ajax.reload();
-            });
+    $('.filter-btn').on('click', function() {
 
-            // DELETE AJAX + SWEETALERT
-            $(document).on('click', '.btn-delete', function() {
-                let id = $(this).data('id');
+        $('.filter-btn').removeClass('active');
+        $(this).addClass('active');
 
-                Swal.fire({
-                    title: 'Yakin?',
-                    text: 'Data pembayaran akan dihapus!',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonText: 'Batal',
-                    confirmButtonText: 'Ya, hapus'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            url: `/pembayaran/${id}`,
-                            type: 'DELETE',
-                            headers: {
-                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                            },
-                            success: function(res) {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Berhasil',
-                                    text: res.message,
-                                    timer: 1500,
-                                    showConfirmButton: false
-                                });
-                                table.ajax.reload(null, false);
-                            },
-                            error: function(xhr) {
-                                console.log(xhr.responseText);
-                                Swal.fire('Gagal', 'Data gagal dihapus', 'error');
-                            }
+        statusBayar = $(this).data('status');
+
+        table.ajax.reload();
+    });
+
+    /* ================================
+       DELETE DATA
+    ================================= */
+
+    $(document).on('click', '.btn-delete', function(){
+
+        let id = $(this).data('id');
+
+        Swal.fire({
+            title:'Yakin?',
+            text:'Data pembayaran akan dihapus!',
+            icon:'warning',
+            showCancelButton:true,
+            confirmButtonColor:'#d33',
+            cancelButtonText:'Batal',
+            confirmButtonText:'Ya, hapus'
+
+        }).then((result)=>{
+
+            if(result.isConfirmed){
+
+                $.ajax({
+                    url:`/pembayaran/${id}`,
+                    type:'DELETE',
+                    headers:{
+                        'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content')
+                    },
+
+                    success:function(res){
+
+                        Swal.fire({
+                            icon:'success',
+                            title:'Berhasil',
+                            text:res.message,
+                            timer:1500,
+                            showConfirmButton:false
                         });
+
+                        table.ajax.reload(null,false);
+                    },
+
+                    error:function(xhr){
+
+                        Swal.fire('Gagal','Data gagal dihapus','error');
                     }
                 });
-            });
+
+            }
+
         });
-    </script>
+
+    });
+
+});
+</script>
 @endpush

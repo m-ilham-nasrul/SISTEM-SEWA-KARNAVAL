@@ -94,7 +94,7 @@
                             <div class="mb-3 text-left">
                                 <button type="button" class="btn btn-success" data-toggle="modal"
                                     data-target="#modalDetailSewa">
-                                    <i class="fas fa-receipt"></i> Detail Kostum & Total Bayar
+                                    <i class="fas fa-receipt"></i> Detail Kostum & Total Pembayaran
                                 </button>
                                 @php
                                     $totalBayar = $kostums->sum('harga');

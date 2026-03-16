@@ -22,19 +22,14 @@ class Sewa extends Model
         'status',
         'status_bayar',
         'denda',
-        'metode_pembayaran',
-        'no_rekening',
-        'nama_bank',
-        'nama_ewallet',
-        'nomor_ewallet'
     ];
 
     protected $casts = [
-        'tanggal_sewa' => 'date',
-        'tanggal_kembali' => 'date',
-        'status' => 'boolean',
-        'status_bayar' => 'boolean',
-        'kostum_id' => 'json', // penting
+    'tanggal_sewa' => 'date',
+    'tanggal_kembali' => 'date',
+    'status' => 'integer',
+    'status_bayar' => 'boolean',
+    'kostum_id' => 'json',
     ];
 
     // relasi ke penyewa

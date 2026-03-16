@@ -63,6 +63,12 @@ Route::middleware('CheckAuth')->group(function () {
     Route::resource('pengembalian', PengembalianController::class);
 
     // Route tambahan transaksi
+    Route::get('/pembayaran/{id}/bayar', [PembayaranController::class,'bayar'])->name('pembayaran.bayar');
+
+    Route::get('/pembayaran/{id}/snap-token', [PembayaranController::class,'snapToken']);
+
+    Route::post('/pembayaran/update-status', [PembayaranController::class,'updateStatus']);
+    
     Route::get('/pembayaran/{id}/nota', [PembayaranController::class, 'nota'])
         ->name('pembayaran.nota');
 
@@ -90,7 +96,9 @@ Route::middleware('CheckAdmin')->group(function () {
     Route::resource('kostum', KostumController::class);
     Route::get('/penyewa', [PenyewaController::class, 'index'])->name('penyewa.index');
 });
-
+Route::post('/pengembalian/request/{id}',[PengembalianController::class,'request']);
+Route::post('/pengembalian/verifikasi/{id}',[PengembalianController::class,'verifikasi']);
+Route::delete('/pengembalian/hapus/{id}',[PengembalianController::class,'hapus']);
 /*
 |--------------------------------------------------------------------------
 | LOGOUT

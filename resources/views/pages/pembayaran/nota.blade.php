@@ -24,8 +24,7 @@
 
         h2 {
             font-size: 18px;
-            margin: 0;
-            margin-bottom: 4px;
+            margin: 0 0 4px 0;
             text-align: center;
             text-transform: uppercase;
         }
@@ -82,7 +81,6 @@
             font-size: 13px;
         }
 
-        /* Print */
         @media print {
             body {
                 background: white;
@@ -100,7 +98,6 @@
             }
         }
 
-        /* Button */
         .print-btn {
             padding: 8px 15px;
             background: #2d7cff;
@@ -136,53 +133,47 @@
 
             <tr>
                 <td class="label">Pelanggan</td>
-                <td class="value">
-                    {{ optional(optional($sewa->penyewa)->user)->name ?? 'Penyewa dihapus' }}
-                </td>
+                <td class="value">{{ optional(optional($sewa->penyewa)->user)->name ?? 'Penyewa dihapus' }}</td>
             </tr>
 
             <tr>
                 <td class="label">Kostum</td>
                 <td class="value">
-                    @if ($sewa->kostum_list->isNotEmpty())
-                        @foreach ($sewa->kostum_list as $kostum)
-                            <div>{{ $kostum->nama_kostum ?? 'Kostum telah dihapus' }}</div>
-                        @endforeach
-                    @else
+                    @forelse($kostums as $kostum)
+                        <div>{{ $kostum->nama_kostum ?? 'Kostum telah dihapus' }}</div>
+                    @empty
                         <small>Data kostum telah dihapus!</small>
-                    @endif
+                    @endforelse
                 </td>
             </tr>
 
-            <!-- === METODE PEMBAYARAN === -->
             <tr>
                 <td class="label">Metode Pembayaran</td>
-                <td class="value">
-                    {{ $sewa->metode_pembayaran ? ucfirst($sewa->metode_pembayaran) : '-' }}
-                </td>
+                <td class="value">{{ $sewa->payment_type ? ucfirst($sewa->payment_type) : '-' }}</td>
             </tr>
 
-            @if ($sewa->metode_pembayaran == 'ewallet')
-                <tr>
-                    <td class="label">E-Wallet</td>
-                    <td class="value">{{ $sewa->nama_ewallet ?? '-' }}</td>
-                </tr>
+            <tr>
+                <td class="label">Order ID</td>
+                <td class="value">{{ $sewa->midtrans_order_id ?? '-' }}</td>
+            </tr>
 
-                <tr>
-                    <td class="label">No. E-Wallet</td>
-                    <td class="value">{{ $sewa->nomor_ewallet ?? '-' }}</td>
-                </tr>
-            @endif
-            <!-- === END METODE PEMBAYARAN === -->
+            <tr>
+                <td class="label">Status Bayar</td>
+                <td class="value">{{ $sewa->status_bayar ? 'Lunas' : 'Belum Bayar' }}</td>
+            </tr>
 
             <tr>
                 <td class="label">Lama Sewa</td>
-                <td class="value">{{ $sewa->durasi }} hari</td>
+                <td class="value">{{ $sewa->durasi ?? '1' }} hari</td>
             </tr>
+
+            @php
+                $subtotal = $kostums->sum('harga');
+            @endphp
 
             <tr>
                 <td class="label">Harga Sewa</td>
-                <td class="value">Rp {{ number_format($sewa->total_biaya) }}</td>
+                <td class="value">Rp {{ number_format($subtotal) }}</td>
             </tr>
 
             @if ($sewa->denda > 0)
@@ -194,17 +185,13 @@
 
             <tr>
                 <td class="label total">Total Bayar</td>
-                <td class="value total">
-                    Rp {{ number_format($sewa->total_biaya + $sewa->denda) }}
-                </td>
+                <td class="value total">Rp {{ number_format($subtotal + ($sewa->denda ?? 0)) }}</td>
             </tr>
         </table>
 
         <div class="footer">
             Sewa Karnaval {{ date('d F Y') }}
-            <strong>
-                {{ Auth::check() ? Auth::user()->name : 'Petugas' }}
-            </strong>
+            <strong>{{ Auth::check() ? Auth::user()->name : 'Petugas' }}</strong>
         </div>
 
         <div class="no-print" style="text-align:center;">
@@ -212,6 +199,8 @@
             <br>
             <a class="link" href="{{ url()->previous() }}">⬅ Kembali</a>
         </div>
+
+    </div>
 
 </body>
 
