@@ -25,6 +25,7 @@
                             <th>Tanggal Sewa</th>
                             <th>Tanggal Kembali</th>
                             <th>Total Bayar</th>
+                            <th>Kondisi</th>
                             <th>Status</th>
                             <th>Aksi</th>
                         </tr>
@@ -96,9 +97,49 @@ $(document).ready(function () {
             },
 
             {
-                data: 'total_biaya',
-                render: d => `Rp. ${Number(d).toLocaleString()}`
-            },
+    data: null,
+    render: d => {
+        let total = (d.total_biaya || 0) + (d.denda || 0);
+
+        let dendaHtml = '';
+
+        // tampilkan denda hanya jika rusak
+        if (d.kondisi === 'rusak' && d.denda > 0) {
+            dendaHtml = `
+                <br>
+                <small class="text-danger">
+                    Denda: Rp ${ (d.denda || 0).toLocaleString() }
+                </small>
+            `;
+        }
+
+        return `
+            Rp. ${total.toLocaleString()}
+            ${dendaHtml}
+        `;
+    }
+},
+
+           {
+    data: null,
+    render: function (d) {
+
+        // PRIORITAS: kalau status belum selesai
+        if (d.status == 0 || d.status == 1) {
+            return `<span class="badge badge-secondary">Belum Dicek</span>`;
+        }
+
+        if (d.kondisi === 'baik') {
+            return `<span class="badge badge-success">Baik</span>`;
+        } else {
+            return `
+                <span class="badge badge-danger" title="${d.catatan || 'Tidak ada catatan'}">
+                    Rusak
+                </span>
+            `;
+        }
+    }
+},
 
             {
                 data: null,
@@ -281,43 +322,101 @@ $(document).ready(function () {
         });
     });
     /* ===============================
-       ADMIN VERIFIKASI
+   ADMIN VERIFIKASI
     =============================== */
-    $(document).on('click', '.btn-verifikasi', function () {
-        let id = $(this).data('id');
-        Swal.fire({
-            title: 'Verifikasi Kostum',
-            html: `
-                <label>Kondisi Kostum</label>
-                <select id="kondisi" class="form-control">
-                    <option value="baik">Baik</option>
-                    <option value="rusak">Rusak</option>
-                </select>
-                <label class="mt-2">Denda</label>
-                <input type="number" id="denda"
-                       class="form-control"
-                       value="0">
-            `,
-            showCancelButton: true,
-            confirmButtonText: 'Simpan'
-        }).then(result => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: `/pengembalian/verifikasi/${id}`,
-                    type: 'POST',
-                    data: {
-                        denda: $('#denda').val()
-                    },
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    },
-                    success: function (r) {
-                        table.ajax.reload();
-                    }
-                });
-            }
-        });
+$(document).on('click', '.btn-verifikasi', function () { 
+    let id = $(this).data('id');
+
+    Swal.fire({
+    title: 'Verifikasi Kostum',
+    html: `
+        <label>Kondisi Kostum</label>
+        <select id="kondisi" class="form-control">
+            <option value="baik">Baik</option>
+            <option value="rusak">Rusak</option>
+        </select>
+
+        <div id="form-rusak" style="display:none;">
+            <label class="mt-2">Denda</label>
+            <input type="number" id="denda"
+                   class="form-control"
+                   value="0"
+                   min="0">
+
+            <label class="mt-2">Catatan Kerusakan</label>
+            <textarea id="catatan"
+                      class="form-control"
+                      placeholder="Isi jika ada kerusakan"></textarea>
+        </div>
+    `,
+        showCancelButton: true,
+        confirmButtonText: 'Simpan',
+
+        preConfirm: () => {
+    const kondisi = $('#kondisi').val();
+    const denda = $('#denda').val();
+    const catatan = $('#catatan').val();
+
+    // ✅ VALIDASI CATATAN
+    if (kondisi === 'rusak' && (!catatan || catatan.trim() === '')) {
+        Swal.showValidationMessage('Catatan wajib diisi jika rusak');
+        return false;
+    }
+
+    // ✅ VALIDASI DENDA
+    if (kondisi === 'rusak') {
+        if (!denda || denda <= 0) {
+            Swal.showValidationMessage('Denda harus diisi dan lebih dari 0 jika rusak');
+            return false;
+        }
+
+        if (isNaN(denda)) {
+            Swal.showValidationMessage('Denda harus berupa angka');
+            return false;
+        }
+    }
+
+    return {
+        kondisi: kondisi,
+        denda: denda,
+        catatan: catatan
+    };
+}
+
+    }).then(result => {
+        
+        if (result.isConfirmed) {
+
+            $.ajax({
+                url: `/pengembalian/verifikasi/${id}`,
+                type: 'POST',
+                data: {
+                    kondisi: result.value.kondisi,
+                    denda: result.value.denda,
+                    catatan: result.value.catatan
+                },
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function (r) {
+                    table.ajax.reload();
+                }
+            });
+        }
     });
+});
+
+$(document).on('change', '#kondisi', function () {
+    if ($(this).val() === 'rusak') {
+        $('#form-rusak').show();
+    } else {
+        $('#form-rusak').hide();
+
+        // reset nilai
+        $('#denda').val(0);
+        $('#catatan').val('');
+    }
+});
     /* ===============================
         NOTIFIKASI PENYEWA
     =============================== */

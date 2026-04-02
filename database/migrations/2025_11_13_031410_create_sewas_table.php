@@ -12,53 +12,34 @@ return new class extends Migration
 
             $table->id();
 
-            // kode transaksi
-            $table->string('kode_sewa')->nullable();
+            $table->string('kode_sewa')->nullable()->unique();
 
-            // relasi penyewa
             $table->foreignId('penyewa_id')
                 ->constrained('penyewas')
                 ->cascadeOnDelete();
 
-            // menyimpan banyak kostum dalam JSON
-            $table->text('kostum_id');
-
-            // tanggal penyewaan
             $table->date('tanggal_sewa');
             $table->date('tanggal_kembali');
 
-            // biaya sewa
-            $table->integer('total_biaya');
+            $table->unsignedBigInteger('total_biaya')->default(0);
+            $table->unsignedBigInteger('denda')->default(0);
 
-            // denda jika ada keterlambatan / kerusakan
-            $table->integer('denda')->default(0);
-
+            $table->enum('kondisi', ['baik', 'rusak'])->nullable();
             $table->text('catatan')->nullable();
 
-            /*
-            STATUS SEWA
-            0 = disewa
-            1 = dikembalikan
-            2 = menunggu pembayaran
-            3 = selesai
-            */
             $table->tinyInteger('status')->default(0);
-
-            /*
-            STATUS PEMBAYARAN
-            */
             $table->boolean('status_bayar')->default(false);
 
-            /*
-            DATA MIDTRANS
-            */
-            $table->string('midtrans_order_id')->nullable();
+            $table->string('midtrans_order_id')->nullable()->unique();
             $table->text('snap_token')->nullable();
             $table->string('transaction_status')->nullable();
             $table->string('payment_type')->nullable();
 
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index('status');
+            $table->index('status_bayar');
         });
     }
 

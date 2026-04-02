@@ -12,20 +12,25 @@ return new class extends Migration
 
             $table->id();
 
-            // relasi ke tabel sewas
             $table->foreignId('sewa_id')
                 ->constrained('sewas')
                 ->cascadeOnDelete();
 
-            // relasi ke tabel kostums
             $table->foreignId('kostum_id')
                 ->constrained('kostums')
                 ->cascadeOnDelete();
 
-            // harga kostum saat disewa
-            $table->integer('harga')->nullable();
+            $table->unsignedBigInteger('harga');
+            $table->integer('qty')->default(1);
+            $table->unsignedBigInteger('subtotal')->nullable();
 
             $table->timestamps();
+
+            $table->index('sewa_id');
+            $table->index('kostum_id');
+
+            // optional
+            // $table->unique(['sewa_id', 'kostum_id']);
         });
     }
 

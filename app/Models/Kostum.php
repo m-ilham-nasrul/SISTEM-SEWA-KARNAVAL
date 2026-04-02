@@ -21,30 +21,30 @@ class Kostum extends Model
         'image_kostum'
     ];
 
-    /**
-     * Cek apakah kostum sedang dipakai (ada di sewa aktif)
-     */
-    public function sedangDipakai(): bool
+    // relasi ke detail sewa
+    public function detailSewas()
     {
-        $sewasAktif = Sewa::where('status', 0)->get(); // 1 = sewa aktif
-
-        foreach ($sewasAktif as $sewa) {
-            $kostumIds = json_decode($sewa->kostum_id, true);
-
-            if (!is_array($kostumIds)) continue;
-
-            if (in_array((string)$this->id, $kostumIds, true)) {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->hasMany(DetailSewa::class);
     }
-    /**
-     * Query builder untuk kostum
-     */
+
+    // relasi ke sewa (melalui detail)
     public function sewas()
     {
-        return Sewa::whereJsonContains('kostum_id', (string)$this->id);
+        return $this->belongsToMany(
+            Sewa::class,
+            'detail_sewas',
+            'kostum_id',
+            'sewa_id'
+        );
+    }
+
+    // cek apakah sedang dipakai
+    public function sedangDipakai(): bool
+    {
+        return $this->detailSewas()
+            ->whereHas('sewa', function ($q) {
+                $q->where('status', 0); // status disewa
+            })
+            ->exists();
     }
 }

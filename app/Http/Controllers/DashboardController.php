@@ -12,10 +12,12 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $penyewa = null;
-        $kostum = null;
-        $total_pendapatan = null;
+
+        $penyewa = 0;
+        $kostum = 0;
+        $total_pendapatan = 0;
         $sewa = 0;
+        $total_sewa = 0;
         $total_transaksi = 0;
         $riwayatSewa = collect();
 
@@ -23,17 +25,27 @@ class DashboardController extends Controller
 
             $penyewa = Penyewa::count();
             $kostum = Kostum::count();
-            $sewa = Sewa::where('status', 0)->count();
-            $total_transaksi = Sewa::count();
+
+            $sewa = Sewa::where('status', 0)->count(); // aktif
+            $total_sewa = Sewa::count(); // semua
+            $total_transaksi = $total_sewa;
 
             $total_pendapatan = Sewa::where('status_bayar', 1)
                 ->selectRaw('SUM(total_biaya + denda) as total')
                 ->value('total') ?? 0;
 
-            $riwayatSewa = Sewa::latest()->limit(5)->get();
-        }
+            $riwayatSewa = Sewa::with('details.kostum')
+                ->latest()
+                ->limit(5)
+                ->get()
+                ->map(function ($sewa) {
+                    $sewa->kostum_list = $sewa->details->map(function ($d) {
+                        return $d->kostum;
+                    });
+                    return $sewa;
+                });
+        } else {
 
-        else {
             if ($user->penyewa) {
 
                 $sewa = Sewa::where('penyewa_id', $user->penyewa->id)
@@ -42,18 +54,25 @@ class DashboardController extends Controller
 
                 $total_transaksi = Sewa::where('penyewa_id', $user->penyewa->id)->count();
 
-                $riwayatSewa = Sewa::where('penyewa_id', $user->penyewa->id)
+                $riwayatSewa = Sewa::with('details.kostum')
+                    ->where('penyewa_id', $user->penyewa->id)
                     ->latest()
                     ->limit(5)
-                    ->get();
+                    ->get()
+                    ->map(function ($sewa) {
+                        $sewa->kostum_list = $sewa->details->map(function ($d) {
+                            return $d->kostum;
+                        });
+                        return $sewa;
+                    });
             }
-
         }
 
         return view('dashboard', compact(
             'penyewa',
             'kostum',
             'sewa',
+            'total_sewa',
             'total_transaksi',
             'total_pendapatan',
             'riwayatSewa'
@@ -69,6 +88,7 @@ class DashboardController extends Controller
                 'penyewa' => Penyewa::count(),
                 'kostum' => Kostum::count(),
                 'sewa' => Sewa::where('status', 0)->count(),
+                'total_sewa' => Sewa::count(),
                 'total_transaksi' => Sewa::count(),
                 'total_pendapatan' => Sewa::where('status_bayar', 1)
                     ->selectRaw('SUM(total_biaya + denda) as total')

@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -13,7 +12,7 @@ class KostumsSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('kostums')->truncate();
+        DB::table('kostums')->delete();
 
         DB::table('kostums')->insert([
             [

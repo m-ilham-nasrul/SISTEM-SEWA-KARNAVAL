@@ -84,6 +84,7 @@
                                 <th>Nama Kostum</th>
                                 <th>Tanggal Sewa</th>
                                 <th>Tanggal Kembali</th>
+                                <th>Denda</th>
                                 <th>Total Bayar</th>
                                 <th>Status</th>
                                 <th>Aksi</th>
@@ -130,7 +131,7 @@ $(document).ready(function() {
         },
         {
             data: 'kode_sewa',
-            render: (data, type, row) => data ?? `SEWA-${String(row.id).padStart(4,'0')}`
+            render: (data, type, row) => {return data && data !== '' ? data : `SEWA-${String(row.id).padStart(4,'0')}`;}
         },
         {
             data: 'penyewa.user.name',
@@ -141,7 +142,7 @@ $(document).ready(function() {
             orderable: false,
             searchable: false,
             render: kostums => {
-                if (kostums.length) {
+                if (kostums && kostums.length) {
                     return kostums.map(k => k.nama_kostum || 'Kostum telah dihapus')
                         .join('<br>');
                 }
@@ -157,9 +158,15 @@ $(document).ready(function() {
             render: t => moment(t).format('DD-MMMM-YYYY')
         },
         {
+            data: 'denda',
+            render: denda => {
+                return `Rp. ${Number(denda || 0).toLocaleString()}`
+            }
+        },
+        {
             data: null,
             render: data => {
-                let total = Number(data.total_biaya) + Number(data.denda);
+                let total = (data.total_biaya || 0) + (data.denda || 0);
                 return `Rp. ${total.toLocaleString()}`
             }
         },
@@ -289,12 +296,20 @@ $(document).ready(function() {
 
     $('.filter-btn').on('click', function() {
 
-        $('.filter-btn').removeClass('active');
-        $(this).addClass('active');
+    $('.filter-btn').removeClass('active');
+    $(this).addClass('active');
 
-        statusBayar = $(this).data('status');
+    statusBayar = $(this).data('status');
 
-        table.ajax.reload();
+    // update title
+    let title = '';
+    if (statusBayar == '1') title = 'Terbayar';
+    else if (statusBayar == '0') title = 'Menunggu Pembayaran';
+    else title = 'All';
+
+    $('.card-header .badge').text(title);
+
+    table.ajax.reload();
     });
 
     /* ================================

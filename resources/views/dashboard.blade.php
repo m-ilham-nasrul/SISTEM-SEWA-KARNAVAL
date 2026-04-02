@@ -23,7 +23,7 @@
                                     Total Penyewa
                                 </div>
                                 <div class="h5 mb-0 font-weight-bold text-gray-800" data-dashboard="penyewa">
-                                    {{ $penyewa }}
+                                    {{ $penyewa ?? 0 }}
                                 </div>
                             </div>
                             <i class="fas fa-users fa-2x text-primary"></i>
@@ -57,7 +57,7 @@
                                     Kostum
                                 </div>
                                 <div class="h5 mb-0 font-weight-bold text-gray-800" data-dashboard="kostum">
-                                    {{ $kostum }}
+                                    {{ $kostum ?? 0 }}
                                 </div>
                             </div>
                             <i class="fas fa-masks-theater fa-2x text-secondary"></i>
@@ -73,8 +73,8 @@
                                 <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
                                     Total Penyewaan
                                 </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800" data-dashboard="sewa">
-                                    {{ $sewa }}
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" data-dashboard="total_sewa">
+                                    {{ $total_sewa ?? 0 }}
                                 </div>
                             </div>
                             <i class="fas fa-clipboard-list fa-2x text-warning"></i>
@@ -91,7 +91,7 @@
                                     Total Transaksi
                                 </div>
                                 <div class="h5 mb-0 font-weight-bold text-gray-800" data-dashboard="total_transaksi">
-                                    {{ $total_transaksi }}
+                                    {{ $total_transaksi ?? 0 }}
                                 </div>
                             </div>
                             <i class="fas fa-receipt fa-2x text-dark"></i>
@@ -162,8 +162,8 @@
 
         {{-- ================= RIWAYAT SEWA ================= --}}
         <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary">
+            <div class="card-header bg-primary text-white">
+                <h6 class="m-0 font-weight-bold">
                     <i class="fas fa-history mr-2"></i>Riwayat Penyewaan Terakhir
                 </h6>
             </div>
@@ -290,6 +290,7 @@
                     $('[data-dashboard="penyewa"]').text(data.penyewa ?? 0);
                     $('[data-dashboard="kostum"]').text(data.kostum ?? 0);
                     $('[data-dashboard="sewa"]').text(data.sewa ?? 0);
+                    $('[data-dashboard="total_sewa"]').text(data.total_sewa ?? 0);
                     $('[data-dashboard="total_transaksi"]').text(data.total_transaksi ?? 0);
                     $('[data-dashboard="total_pendapatan"]').text(
                         'Rp ' + (data.total_pendapatan ? new Intl.NumberFormat('id-ID').format(data

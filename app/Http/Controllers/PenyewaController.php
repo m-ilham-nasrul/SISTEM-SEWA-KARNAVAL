@@ -75,9 +75,9 @@ class PenyewaController extends Controller
 
         // ===== OTORISASI =====
         if (Auth::user()->role !== 'admin') {
-            if ($penyewa->user_id !== Auth::id()) {
-                abort(404, 'Anda tidak memiliki akses');
-            }
+            return response()->json([
+                'message' => 'Unauthorized'
+            ], 403);
         }
 
         $penyewa->update([

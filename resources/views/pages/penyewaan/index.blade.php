@@ -94,7 +94,7 @@
                             let extra = '';
                             if (d.status == 0) {
                                 status = `
-                                    <span class="badge badge-secondary px-3 py-2">
+                                    <span class="badge badge-secondary">
                                         <i class="fas fa-hourglass-half mr-1"></i>
                                         Masa Sewa
                                     </span>

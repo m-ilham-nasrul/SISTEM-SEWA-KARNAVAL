@@ -11,7 +11,9 @@ class DetailSewa extends Model
     protected $fillable = [
         'sewa_id',
         'kostum_id',
-        'harga'
+        'harga',
+        'qty',
+        'subtotal'
     ];
 
     public function sewa()

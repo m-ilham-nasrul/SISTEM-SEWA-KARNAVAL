@@ -69,8 +69,8 @@
                                     Pilih Kostum
                                 </button>
                                 <ul class="mt-2">
-                                    @foreach ($sewa->kostum_list as $k)
-                                        <li>{{ $k->nama_kostum }}</li>
+                                    @foreach ($sewa->details as $d)
+                                        <li>{{ $d->kostum->nama_kostum }}</li>
                                     @endforeach
                                 </ul>
                             </div>
@@ -88,7 +88,7 @@
                                         <!-- Tambahkan scroll disini -->
                                         <div class="modal-body" style="max-height: 520px; overflow-y: auto;">
                                             <div class="row g-3">
-                                                @php $selected = $sewa->kostum_list->pluck('id')->toArray(); @endphp
+                                                @php $selected = $sewa->details->pluck('kostum_id')->toArray(); @endphp
 
                                                 @foreach ($kostums as $item)
                                                     <div class="col-lg-3 col-md-4 col-sm-6">
@@ -164,12 +164,12 @@
                                 <select name="status" id="status"
                                     class="form-control @error('status') is-invalid @enderror">
                                     <option value="0" {{ old('status', $sewa->status) == 0 ? 'selected' : '' }}>
-                                        Masa Sewa 
+                                        Masa Sewa
                                     </option>
                                     @if (Auth::user()->role === 'admin')
-                                    <option value="1" {{ old('status', $sewa->status) == 1 ? 'selected' : '' }}>
-                                        Sudah Kembali
-                                    </option>
+                                        <option value="1" {{ old('status', $sewa->status) == 1 ? 'selected' : '' }}>
+                                            Sudah Kembali
+                                        </option>
                                     @endif
                                 </select>
                                 @error('status')

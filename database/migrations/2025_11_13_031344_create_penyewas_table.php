@@ -10,14 +10,17 @@ return new class extends Migration {
         Schema::create('penyewas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')
+                ->unique()
                 ->constrained('users')
-                ->onDelete('cascade');
+                ->cascadeOnDelete();
 
-            $table->string('no_telp', 20);
+            $table->string('no_telp', 20)->unique();
             $table->text('alamat');
 
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index('user_id');
         });
     }
 

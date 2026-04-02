@@ -23,8 +23,12 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    protected $casts = [
+        'password' => 'hashed',
+    ];
+
     public function penyewa()
     {
-        return $this->hasOne(\App\Models\Penyewa::class);
+        return $this->hasOne(Penyewa::class);
     }
 }

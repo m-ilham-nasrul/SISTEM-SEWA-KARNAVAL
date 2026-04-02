@@ -11,25 +11,27 @@ class Sewa extends Model
     use HasFactory;
 
     protected $table = 'sewas';
+
     protected $fillable = [
         'kode_sewa',
         'penyewa_id',
-        'kostum_id',
         'tanggal_sewa',
         'tanggal_kembali',
         'total_biaya',
+        'denda',
+        'kondisi',
         'catatan',
         'status',
         'status_bayar',
-        'denda',
+        'midtrans_order_id',
     ];
 
     protected $casts = [
-    'tanggal_sewa' => 'date',
-    'tanggal_kembali' => 'date',
-    'status' => 'integer',
-    'status_bayar' => 'boolean',
-    'kostum_id' => 'json',
+        'tanggal_sewa' => 'date',
+        'tanggal_kembali' => 'date',
+        'status' => 'integer',
+        'status_bayar' => 'boolean',
+        'denda' => 'integer',
     ];
 
     // relasi ke penyewa
@@ -38,18 +40,20 @@ class Sewa extends Model
         return $this->belongsTo(Penyewa::class);
     }
 
-    // accesor untuk mengambil banyak kostum
-    public function getKostumListAttribute()
+    // relasi ke detail
+    public function details()
     {
-        if (!$this->kostum_id) {
-            return collect([]);
-        }
-
-        $ids = is_array($this->kostum_id)
-            ? $this->kostum_id
-            : json_decode($this->kostum_id, true);
-
-        return Kostum::whereIn('id', $ids)->get();
+        return $this->hasMany(DetailSewa::class);
     }
-    
+
+    // relasi langsung ke kostum (optional helper)
+    public function kostums()
+    {
+        return $this->belongsToMany(
+            Kostum::class,
+            'detail_sewas',
+            'sewa_id',
+            'kostum_id'
+        );
+    }
 }

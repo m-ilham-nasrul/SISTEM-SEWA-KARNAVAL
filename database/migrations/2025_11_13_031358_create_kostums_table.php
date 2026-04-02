@@ -13,10 +13,13 @@ return new class extends Migration {
             $table->string('image_kostum')->nullable();
             $table->string('kategori');
             $table->text('catatan')->nullable();
-            $table->integer('harga');
+            $table->unsignedBigInteger('harga');
             $table->boolean('status')->default(true);
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index('kategori');
+            $table->index('status');
         });
     }
 
