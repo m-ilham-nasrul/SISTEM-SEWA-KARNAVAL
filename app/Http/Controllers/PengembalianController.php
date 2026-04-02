@@ -36,7 +36,7 @@ class PengembalianController extends Controller
                         ]
                     ],
 
-                    // 🔥 ambil dari detail_sewas
+                    // ambil dari detail_sewas
                     'kostum_list' => $sewa->details->map(function ($d) {
                         return [
                             'id' => $d->kostum->id,
@@ -92,29 +92,24 @@ class PengembalianController extends Controller
         if (Auth::user()->role !== 'admin') {
             abort(403);
         }
-
         $request->validate([
             'kondisi' => 'required|in:baik,rusak',
             'denda' => 'nullable|numeric|min:0',
             'catatan' => 'required_if:kondisi,rusak|nullable|string'
         ]);
-
         $sewa = Sewa::with('details.kostum')->findOrFail($id);
-
         // kembalikan semua kostum
         foreach ($sewa->details as $detail) {
             $detail->kostum->update([
                 'status' => 0
             ]);
         }
-
         $sewa->update([
             'status' => 2, // selesai
             'kondisi' => $request->kondisi,
             'denda' => $request->kondisi === 'rusak' ? $request->denda : 0,
             'catatan' => $request->catatan
         ]);
-
         return response()->json([
             'status' => true,
             'message' => 'Pengembalian berhasil diverifikasi'
@@ -127,20 +122,16 @@ class PengembalianController extends Controller
     public function hapus($id)
     {
         $sewa = Sewa::with('details.kostum')->findOrFail($id);
-
-        // 🔥 kembalikan status kostum dulu
+        //kembalikan status kostum dulu
         foreach ($sewa->details as $detail) {
             $detail->kostum->update([
                 'status' => 0
             ]);
         }
-
         // hapus detail
         $sewa->details()->delete();
-
         // hapus sewa
         $sewa->delete();
-
         return response()->json([
             'status' => true,
             'message' => 'Data pengembalian berhasil dihapus'

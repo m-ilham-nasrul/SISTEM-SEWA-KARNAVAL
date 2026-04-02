@@ -39,7 +39,7 @@
                                 <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
                                     Penyewaan Aktif
                                 </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" data-dashboard="sewa">
                                     {{ $sewa }}
                                 </div>
                             </div>
@@ -131,7 +131,7 @@
                                 <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                                     Penyewaan Aktif Saya
                                 </div>
-                                <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" data-dashboard="sewa">
                                     {{ $sewa }}
                                 </div>
                             </div>

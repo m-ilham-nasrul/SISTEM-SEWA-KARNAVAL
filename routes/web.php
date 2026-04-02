@@ -85,6 +85,12 @@ Route::middleware('CheckAuth')->group(function () {
     Route::post('/profile/photo', [ProfileController::class, 'photo'])->name('profile.photo');
     Route::delete('/profile/photo', [ProfileController::class, 'deletePhoto'])->name('profile.photo.delete');
 });
+/*
+|--------------------------------------------------------------------------
+| MIDTRANS NOTIFICATION
+|--------------------------------------------------------------------------
+*/
+Route::post('midtrans/notification', [PembayaranController::class, 'notification']);
 
 /*
 |--------------------------------------------------------------------------
@@ -105,3 +111,5 @@ Route::delete('/pengembalian/hapus/{id}',[PengembalianController::class,'hapus']
 |--------------------------------------------------------------------------
 */
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+

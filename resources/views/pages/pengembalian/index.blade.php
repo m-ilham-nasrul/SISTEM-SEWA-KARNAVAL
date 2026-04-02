@@ -357,16 +357,16 @@ $(document).on('click', '.btn-verifikasi', function () {
     const denda = $('#denda').val();
     const catatan = $('#catatan').val();
 
-    // ✅ VALIDASI CATATAN
+    // VALIDASI CATATAN
     if (kondisi === 'rusak' && (!catatan || catatan.trim() === '')) {
         Swal.showValidationMessage('Catatan wajib diisi jika rusak');
         return false;
     }
 
-    // ✅ VALIDASI DENDA
+    // VALIDASI DENDA
     if (kondisi === 'rusak') {
         if (!denda || denda <= 0) {
-            Swal.showValidationMessage('Denda harus diisi dan lebih dari 0 jika rusak');
+            Swal.showValidationMessage('Denda harus diisi jika rusak');
             return false;
         }
 

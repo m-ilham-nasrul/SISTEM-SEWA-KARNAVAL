@@ -199,7 +199,7 @@
     {{-- ================= LOADING ================= --}}
     <div id="loading"
         style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;
-background:rgba(255,255,255,0.8);z-index:9999;justify-content:center;align-items:center">
+        background:rgba(255,255,255,0.8);z-index:9999;justify-content:center;align-items:center">
         <div class="text-center">
             <div class="spinner-border text-primary mb-2"></div>
             <p>Memproses...</p>
@@ -214,19 +214,17 @@ background:rgba(255,255,255,0.8);z-index:9999;justify-content:center;align-items
 
     <script>
         $(function() {
-
             $('#btn-bayar').click(function(e) {
                 e.preventDefault();
-
                 let id = {{ $sewa->id }};
                 $('#loading').fadeIn();
 
+                // AJAX GET snap token
                 $.ajax({
                     url: `/pembayaran/${id}/snap-token`,
                     type: 'GET',
-
+                    dataType: 'json',
                     success: function(res) {
-
                         $('#loading').fadeOut();
 
                         if (!res.status) {
@@ -234,34 +232,44 @@ background:rgba(255,255,255,0.8);z-index:9999;justify-content:center;align-items
                             return;
                         }
 
+                        // Panggil Midtrans Snap
                         snap.pay(res.snap_token, {
-
-                            onSuccess: function() {
-                                 window.location.href = "{{ route('pembayaran.index') }}";
+                            onSuccess: function(result) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Pembayaran Berhasil',
+                                    text: 'Terima kasih, pembayaran sudah diterima!',
+                                    confirmButtonText: 'OK',
+                                    timer: 5000,
+                                }).then(() => {
+                                    window.location.href =
+                                        "{{ route('pembayaran.index') }}";
+                                });
                             },
-
-                            onPending: function() {
-                                Swal.fire('Menunggu', 'Selesaikan pembayaran',
-                                    'info');
+                            onPending: function(result) {
+                                Swal.fire({
+                                    icon: 'info',
+                                    title: 'Menunggu Pembayaran',
+                                    text: 'Silakan selesaikan pembayaran.'
+                                });
                             },
-
-                            onError: function() {
-                                Swal.fire('Error', 'Pembayaran gagal', 'error');
+                            onError: function(result) {
+                                Swal.fire('Error',
+                                    'Pembayaran gagal. Silakan coba lagi',
+                                    'error');
+                            },
+                            onClose: function() {
+                                console.log('Payment popup ditutup');
                             }
-
                         });
-
                     },
-
-                    error: function() {
+                    error: function(xhr, status, error) {
                         $('#loading').fadeOut();
-                        Swal.fire('Error', 'Gagal koneksi server', 'error');
+                        Swal.fire('Error', 'Gagal koneksi server. Silakan refresh halaman',
+                            'error');
                     }
-
                 });
-
             });
-
         });
     </script>
 @endpush

@@ -32,6 +32,7 @@ return new class extends Migration
 
             $table->string('midtrans_order_id')->nullable()->unique();
             $table->text('snap_token')->nullable();
+            $table->timestamp('snap_token_created_at')->nullable();
             $table->string('transaction_status')->nullable();
             $table->string('payment_type')->nullable();
 

@@ -26,7 +26,9 @@ class DashboardController extends Controller
             $penyewa = Penyewa::count();
             $kostum = Kostum::count();
 
-            $sewa = Sewa::where('status', 0)->count(); // aktif
+            $sewa = Sewa::where('status', 0)
+                ->whereDate('tanggal_kembali', '>=', now())
+                ->count(); // aktif
             $total_sewa = Sewa::count(); // semua
             $total_transaksi = $total_sewa;
 
@@ -50,6 +52,7 @@ class DashboardController extends Controller
 
                 $sewa = Sewa::where('penyewa_id', $user->penyewa->id)
                     ->where('status', 0)
+                    ->whereDate('tanggal_kembali', '>=', now())
                     ->count();
 
                 $total_transaksi = Sewa::where('penyewa_id', $user->penyewa->id)->count();
@@ -87,7 +90,9 @@ class DashboardController extends Controller
             return response()->json([
                 'penyewa' => Penyewa::count(),
                 'kostum' => Kostum::count(),
-                'sewa' => Sewa::where('status', 0)->count(),
+                'sewa' => Sewa::where('status', 0)
+                    ->whereDate('tanggal_kembali', '>=', now())
+                    ->count(),
                 'total_sewa' => Sewa::count(),
                 'total_transaksi' => Sewa::count(),
                 'total_pendapatan' => Sewa::where('status_bayar', 1)
@@ -100,6 +105,7 @@ class DashboardController extends Controller
             return response()->json([
                 'sewa' => Sewa::where('penyewa_id', $user->penyewa->id)
                     ->where('status', 0)
+                    ->whereDate('tanggal_kembali', '>=', now())
                     ->count(),
                 'total_transaksi' => Sewa::where('penyewa_id', $user->penyewa->id)->count(),
             ]);

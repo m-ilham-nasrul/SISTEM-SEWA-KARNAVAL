@@ -228,35 +228,28 @@ $(document).ready(function() {
             orderable: false,
             searchable: false,
             render: data => {
-
                 let id = data.id;
                 let role = '{{ Auth::user()->role }}';
-
                 /* tombol bayar */
                 let bayarBtn = (data.status == 2 && !data.status_bayar) ?
                     `<a href="/pembayaran/${id}/bayar"
                         class="btn btn-warning btn-sm mb-1 w-100">
                         <i class="fas fa-money-bill-wave mr-1"></i> Bayar
                     </a>` : '';
-
                 /* tombol nota */
                 let notaBtn = data.status_bayar ?
                 `<a href="/pembayaran/${id}/nota"
                     class="btn btn-info btn-sm mb-1 w-100">
                     <i class="fas fa-file-invoice mr-1"></i> Nota
                 </a>` : '';
-
                 let editBtn = '';
                 let deleteBtn = '';
-
                 if (role === 'admin') {
-
                     editBtn = `
                         <a href="/penyewaan/${id}/edit" class="dropdown-item">
                             <i class="fas fa-edit mr-2"></i> Edit
                         </a>
                     `;
-
                     deleteBtn = `
                         <button class="dropdown-item text-danger btn-delete"
                             data-id="${id}">
@@ -264,13 +257,10 @@ $(document).ready(function() {
                         </button>
                     `;
                 }
-
                 return `
                     <div class="d-flex flex-column align-items-center">
-
                         ${bayarBtn}
                         ${notaBtn}
-
                         <div class="dropdown mt-1">
                             <button class="btn btn-light btn-sm w-100"
                                 data-toggle="dropdown">
@@ -289,37 +279,26 @@ $(document).ready(function() {
             }
         }]
     });
-
     /* ================================
        FILTER STATUS PEMBAYARAN
     ================================= */
-
     $('.filter-btn').on('click', function() {
-
     $('.filter-btn').removeClass('active');
     $(this).addClass('active');
-
     statusBayar = $(this).data('status');
-
     // update title
     let title = '';
     if (statusBayar == '1') title = 'Terbayar';
     else if (statusBayar == '0') title = 'Menunggu Pembayaran';
     else title = 'All';
-
     $('.card-header .badge').text(title);
-
     table.ajax.reload();
     });
-
     /* ================================
        DELETE DATA
     ================================= */
-
     $(document).on('click', '.btn-delete', function(){
-
         let id = $(this).data('id');
-
         Swal.fire({
             title:'Yakin?',
             text:'Data pembayaran akan dihapus!',
@@ -328,20 +307,15 @@ $(document).ready(function() {
             confirmButtonColor:'#d33',
             cancelButtonText:'Batal',
             confirmButtonText:'Ya, hapus'
-
         }).then((result)=>{
-
             if(result.isConfirmed){
-
                 $.ajax({
                     url:`/pembayaran/${id}`,
                     type:'DELETE',
                     headers:{
                         'X-CSRF-TOKEN':$('meta[name="csrf-token"]').attr('content')
                     },
-
                     success:function(res){
-
                         Swal.fire({
                             icon:'success',
                             title:'Berhasil',
@@ -352,10 +326,8 @@ $(document).ready(function() {
 
                         table.ajax.reload(null,false);
                     },
-
                     error:function(xhr){
-
-                        Swal.fire('Gagal','Data gagal dihapus','error');
+                    Swal.fire('Gagal','Data gagal dihapus','error');
                     }
                 });
 

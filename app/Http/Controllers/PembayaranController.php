@@ -126,6 +126,7 @@ class PembayaranController extends Controller
     {
         $sewa = Sewa::with(['penyewa.user', 'details.kostum'])->findOrFail($id);
 
+        // ================= AUTH CHECK =================
         if (Auth::user()->role === 'penyewa') {
             if ($sewa->penyewa_id !== Auth::user()->penyewa->id) {
                 return response()->json([
@@ -135,6 +136,7 @@ class PembayaranController extends Controller
             }
         }
 
+        // ================= CEK STATUS BAYAR =================
         if ($sewa->status_bayar == 1) {
             return response()->json([
                 'status' => false,
@@ -142,6 +144,7 @@ class PembayaranController extends Controller
             ]);
         }
 
+        // ================= CEK VERIFIKASI SEWA =================
         if ($sewa->status != 2) {
             return response()->json([
                 'status' => false,
@@ -149,26 +152,32 @@ class PembayaranController extends Controller
             ]);
         }
 
+        // ================= CEK TOKEN LAMA =================
+        // Token hanya valid jika dibuat < 24 jam yang lalu
+        if ($sewa->snap_token && $sewa->snap_token_created_at) {
+            $hours = $sewa->snap_token_created_at->diffInHours(now());
+            if ($hours < 24) {
+                return response()->json([
+                    'status' => true,
+                    'snap_token' => $sewa->snap_token
+                ]);
+            }
+        }
+
+        // ================= MIDTRANS CONFIG =================
         Config::$serverKey = config('midtrans.server_key');
         Config::$isProduction = config('midtrans.is_production', false);
         Config::$isSanitized = true;
         Config::$is3ds = true;
 
-        if ($sewa->midtrans_order_id) {
-            $orderId = $sewa->midtrans_order_id;
-        } else {
-            $orderId = 'SEWA-' . $sewa->id . '-' . time();
-        }
-
+        // ================= ORDER ID =================
+        $orderId = $sewa->midtrans_order_id ?? 'SEWA-' . $sewa->id . '-' . time();
         $sewa->update([
             'midtrans_order_id' => $orderId
         ]);
 
+        // ================= ITEM DETAILS =================
         $item_details = [];
-        $subtotal = 0;
-
-        $subtotal = 0;
-
         $subtotal = (int) $sewa->total_biaya;
 
         foreach ($sewa->details as $d) {
@@ -181,7 +190,6 @@ class PembayaranController extends Controller
         }
 
         $denda = (int) ($sewa->denda ?? 0);
-
         if ($denda > 0) {
             $item_details[] = [
                 'id' => 'DENDA',
@@ -191,8 +199,8 @@ class PembayaranController extends Controller
             ];
         }
 
+        // ================= CUSTOMER DETAILS =================
         $phone = preg_replace('/[^0-9]/', '', optional($sewa->penyewa)->no_telp ?? '');
-
         if (substr($phone, 0, 1) === '0') {
             $phone = '62' . substr($phone, 1);
         }
@@ -202,30 +210,45 @@ class PembayaranController extends Controller
                 'order_id' => $orderId,
                 'gross_amount' => $subtotal + $denda
             ],
-
             'customer_details' => [
                 'first_name' => optional($sewa->penyewa->user)->name,
                 'email' => optional($sewa->penyewa->user)->email ?? 'customer@email.com',
                 'phone' => $phone,
-
                 'billing_address' => [
                     'address' => optional($sewa->penyewa)->alamat ?? '-'
                 ],
-
                 'shipping_address' => [
                     'address' => optional($sewa->penyewa)->alamat ?? '-'
                 ]
             ],
-
             'item_details' => $item_details,
-
             'callbacks' => [
                 'finish' => url('/pembayaran?status=success')
             ]
         ];
 
         try {
+            // ================= CEK TOKEN LAMA =================
+            // Token hanya valid jika dibuat < 24 jam yang lalu
+            if ($sewa->snap_token && $sewa->snap_token_created_at) {
+                $hours = $sewa->snap_token_created_at->diffInHours(now());
+                if ($hours < 24) {
+                    // Gunakan token lama
+                    return response()->json([
+                        'status' => true,
+                        'snap_token' => $sewa->snap_token
+                    ]);
+                }
+            }
+
+            // Hanya generate token baru kalau token lama expired
             $snapToken = Snap::getSnapToken($params);
+
+            // Update database dengan token baru
+            $sewa->update([
+                'snap_token' => $snapToken,
+                'snap_token_created_at' => now()
+            ]);
 
             return response()->json([
                 'status' => true,
@@ -234,7 +257,7 @@ class PembayaranController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => $e->getMessage()
+                'message' => 'Gagal generate Snap Token: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -271,76 +294,86 @@ class PembayaranController extends Controller
             'message' => 'Data pembayaran berhasil dihapus'
         ]);
     }
-   
+
     public function notification(Request $request)
-{
-    Config::$serverKey = config('midtrans.server_key');
-    Config::$isProduction = config('midtrans.is_production', false);
+    {
+        Config::$serverKey = config('midtrans.server_key');
+        Config::$isProduction = config('midtrans.is_production', false);
 
-    try {
-        $notif = new Notification();
+        try {
 
-        $transactionStatus = $notif->transaction_status;
-        $paymentType       = $notif->payment_type;
-        $orderId           = $notif->order_id;
-        $fraudStatus       = $notif->fraud_status ?? null;
+            $notif = new Notification();
 
-        // Ambil data sewa berdasarkan order_id
-        $sewa = Sewa::where('midtrans_order_id', $orderId)->first();
+            $orderId           = $notif->order_id;
+            $statusCode        = $notif->status_code;
+            $grossAmount       = $notif->gross_amount;
+            $transactionStatus = $notif->transaction_status;
+            $fraudStatus       = $notif->fraud_status ?? null;
 
-        if (!$sewa) {
-            Log::warning('Order tidak ditemukan: ' . $orderId);
-            return response()->json(['message' => 'Order not found'], 404);
-        }
+            // =============================
+            // VALIDASI SIGNATURE (WAJIB)
+            // =============================
+            $signatureKey = hash(
+                'sha512',
+                $orderId . $statusCode . $grossAmount . config('midtrans.server_key')
+            );
 
-        // ===============================
-        // HANDLE STATUS PEMBAYARAN
-        // ===============================
+            if ($signatureKey !== $notif->signature_key) {
+                Log::warning('Invalid signature dari Midtrans');
+                return response()->json(['message' => 'Invalid signature'], 403);
+            }
 
-        // ✅ SUCCESS
-        if (
-            $transactionStatus == 'capture' && $fraudStatus == 'accept' ||
-            $transactionStatus == 'settlement'
-        ) {
-            $sewa->update([
-                'status_bayar' => 1 // LUNAS
+            // =============================
+            // CARI DATA SEWA
+            // =============================
+            $sewa = Sewa::where('midtrans_order_id', $orderId)->first();
+
+            if (!$sewa) {
+                Log::warning('Order tidak ditemukan: ' . $orderId);
+                return response()->json(['message' => 'Order not found'], 404);
+            }
+
+            // =============================
+            // HANDLE STATUS
+            // =============================
+
+            if (
+                ($transactionStatus == 'capture' && $fraudStatus == 'accept') ||
+                $transactionStatus == 'settlement'
+            ) {
+                $sewa->update([
+                    'status_bayar' => 1,
+                    'transaction_status' => $transactionStatus,
+                    'payment_type' => $notif->payment_type,
+                    'snap_token' => null
+                ]);
+            } elseif ($transactionStatus == 'pending') {
+                $sewa->update([
+                    'status_bayar' => 0
+                ]);
+            } elseif (
+                $transactionStatus == 'deny' ||
+                $transactionStatus == 'expire' ||
+                $transactionStatus == 'cancel'
+            ) {
+                $sewa->update([
+                    'status_bayar' => 0
+                ]);
+            }
+
+            Log::info('Midtrans masuk', [
+                'order_id' => $orderId,
+                'status' => $transactionStatus
             ]);
+
+            return response()->json(['status' => 'ok']);
+        } catch (\Exception $e) {
+            Log::error('Midtrans Error: ' . $e->getMessage());
+
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
         }
-
-        // ⏳ PENDING
-        else if ($transactionStatus == 'pending') {
-            $sewa->update([
-                'status_bayar' => 0 // BELUM BAYAR
-            ]);
-        }
-
-        // ❌ GAGAL / EXPIRE / CANCEL
-        else if (
-            $transactionStatus == 'deny' ||
-            $transactionStatus == 'expire' ||
-            $transactionStatus == 'cancel'
-        ) {
-            $sewa->update([
-                'status_bayar' => 0
-            ]);
-        }
-
-        // Logging untuk debugging
-        Log::info('Midtrans Notification', [
-            'order_id' => $orderId,
-            'status' => $transactionStatus,
-            'payment_type' => $paymentType
-        ]);
-
-        return response()->json(['status' => 'ok']);
-
-    } catch (\Exception $e) {
-        Log::error('Midtrans Error: ' . $e->getMessage());
-
-        return response()->json([
-            'status' => 'error',
-            'message' => $e->getMessage()
-        ], 500);
     }
-}
 }

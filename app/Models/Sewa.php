@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Kostum;
@@ -24,6 +23,8 @@ class Sewa extends Model
         'status',
         'status_bayar',
         'midtrans_order_id',
+        'snap_token',              
+        'snap_token_created_at',   
     ];
 
     protected $casts = [
@@ -32,20 +33,18 @@ class Sewa extends Model
         'status' => 'integer',
         'status_bayar' => 'boolean',
         'denda' => 'integer',
+        'snap_token_created_at' => 'datetime', 
     ];
-
     // relasi ke penyewa
     public function penyewa()
     {
         return $this->belongsTo(Penyewa::class);
     }
-
     // relasi ke detail
     public function details()
     {
         return $this->hasMany(DetailSewa::class);
     }
-
     // relasi langsung ke kostum (optional helper)
     public function kostums()
     {
