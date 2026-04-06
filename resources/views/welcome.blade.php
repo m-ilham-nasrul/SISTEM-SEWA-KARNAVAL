@@ -178,6 +178,12 @@
                     });
                 }
             });
+            /* ===============================
+                AUTO RELOAD TIAP 30 DETIK
+            =============================== */
+            setInterval(function() {
+                table.ajax.reload(null, false); // false agar tidak reset pagination
+            }, 30000);
         }
     </script>
 </body>

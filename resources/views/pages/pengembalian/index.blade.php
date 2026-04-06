@@ -482,6 +482,12 @@ $(document).on('change', '#kondisi', function () {
             }
         });
     });
+    /* ===============================
+       AUTO RELOAD TIAP 30 DETIK
+    =============================== */
+    setInterval(function() {
+        table.ajax.reload(null, false); 
+    }, 30000);
 });
 </script>
 

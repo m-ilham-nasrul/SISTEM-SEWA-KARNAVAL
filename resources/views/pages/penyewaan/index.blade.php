@@ -88,8 +88,8 @@
                         render: t => moment(t).format('DD-MMMM-YYYY')
                     },
                     {
-                         data: null,
-                            render: d => {                      
+                        data: null,
+                        render: d => {
                             let status = '';
                             let extra = '';
                             if (d.status == 0) {
@@ -109,28 +109,25 @@
                                             Terlambat
                                         </span>
                                     `;
-                                }
-                                    else if (today.isSame(kembali, 'day')) {
-                                        extra = `
+                                } else if (today.isSame(kembali, 'day')) {
+                                    extra = `
                                             <br>
                                             <span class="badge badge-warning">
                                                 <i class="fas fa-clock"></i>
                                                 Hari Terakhir
                                             </span>
                                         `;
-                                    }
-                                } 
-                                else if (d.status == 1) {
+                                }
+                            } else if (d.status == 1) {
                                 status = `
                                     <span class="badge badge-warning px-3 py-2">
                                         <i class="fas fa-hourglass mr-1"></i>
                                         Menunggu Verifikasi
                                     </span>
                                 `;
-                                } 
-                                else if (d.status == 2) {
-                                    if(!d.status_bayar){
-                                status = `
+                            } else if (d.status == 2) {
+                                if (!d.status_bayar) {
+                                    status = `
                                     <span class="badge badge-info px-3 py-2">
                                         <i class="fas fa-credit-card mr-1"></i>
                                         Menunggu Pembayaran
@@ -143,8 +140,8 @@
                                         Selesai
                                     </span>
                                 `;
+                                }
                             }
-                        }
                             return status + extra;
                         }
                     },
@@ -175,8 +172,8 @@
                             if (
                                 role === 'admin' ||
                                 (role === 'penyewa' && data.status == 0)
-                                            ) {
-                                                deleteBtn = `
+                            ) {
+                                deleteBtn = `
                                 <button class="dropdown-item text-danger btn-delete"
                                         data-id="${id}">
                                     <i class="fas fa-trash mr-2"></i> Batalkan
@@ -241,6 +238,12 @@
                     }
                 });
             });
+        /* ===============================
+           AUTO RELOAD TIAP 30 DETIK
+        =============================== */
+            setInterval(function() {
+                table.ajax.reload(null, false); /
+            }, 30000);
         });
     </script>
 @endpush
