@@ -192,7 +192,7 @@ $(document).ready(function () {
                             status = `
                                 <span class="badge badge-success">
                                     <i class="fas fa-check-circle"></i>
-                                    Kembali
+                                    Selesai
                                 </span>
                             `;
                         }
