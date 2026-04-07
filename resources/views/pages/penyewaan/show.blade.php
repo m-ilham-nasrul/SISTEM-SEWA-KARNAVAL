@@ -176,7 +176,9 @@
                             </tr>
 
                         </table>
-                        <a href="{{ route('pembayaran.index') }}" class="btn btn-secondary mt-3">Kembali</a>
+                        <a href="{{ route('pembayaran.index') }}" class="btn btn-secondary mt-3">
+                            <i class="fas fa-arrow-left"></i> Kembali
+                        </a>
                     </div>
                 </div>
             </div>

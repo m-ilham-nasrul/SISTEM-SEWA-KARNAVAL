@@ -24,7 +24,9 @@ class Sewa extends Model
         'status_bayar',
         'midtrans_order_id',
         'snap_token',              
-        'snap_token_created_at',   
+        'snap_token_created_at',
+        'transaction_status',
+        'payment_type',   
     ];
 
     protected $casts = [
