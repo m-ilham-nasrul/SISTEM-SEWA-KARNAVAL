@@ -125,11 +125,23 @@
                 timer: 1500,
                 showConfirmButton: false
             });
-        @elseif (session('error'))
+        @endif
+
+        @if (session('error'))
             Swal.fire({
                 icon: 'error',
                 title: 'Gagal',
                 text: "{{ session('error') }}",
+            });
+        @endif
+
+        @if ($errors->any())
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: 'Masukkan data dengan benar',
+                timer: 1500,
+                showConfirmButton: false
             });
         @endif
     </script>
