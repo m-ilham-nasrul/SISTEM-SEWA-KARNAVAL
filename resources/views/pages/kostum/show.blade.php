@@ -21,7 +21,7 @@
                     <div class="card-body text-center">
                         @if ($kostum->image_kostum)
                             <img src="{{ asset('uploads/kostum/' . $kostum->image_kostum) }}" class="img-fluid img-thumbnail"
-                                style="max-height: 700px;" loading="lazy">
+                                style="max-height: 600px;" loading="lazy">
                         @else
                             <small class="text-muted">Tidak ada gambar</small>
                         @endif
@@ -54,7 +54,7 @@
                             </tr>
 
                             <tr>
-                                <th>Catatan</th>
+                                <th>Deskripsi</th>
                                 <td>{{ $kostum->catatan ?? '-' }}</td>
                             </tr>
 

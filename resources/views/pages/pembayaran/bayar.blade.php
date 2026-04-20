@@ -90,7 +90,7 @@
 
                         {{-- DETAIL --}}
                         <button class="btn btn-success mb-2" data-toggle="modal" data-target="#modalDetail">
-                            <i class="fas fa-receipt"></i> Detail Kostum & Total
+                            <i class="fas fa-receipt"></i> Detail Kostum & Total Pembayaran
                         </button>
 
                         {{-- TOTAL --}}

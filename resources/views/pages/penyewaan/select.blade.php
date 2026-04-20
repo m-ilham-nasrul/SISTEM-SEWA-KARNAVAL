@@ -7,12 +7,24 @@
 
 @section('content')
     <div class="container mt-4">
-        <h3 class="mb-4 fw-bold">Pilih Kostum untuk Disewa</h3>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold mb-0">Pilih Kostum untuk Disewa</h3>
+
+            <div class="btn-action-group">
+                <a href="{{ route('penyewaan.index') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Kembali
+                </a>
+
+                <button type="button" class="btn btn-primary" id="btnSewa">
+                    <i class="fas fa-shopping-cart"></i> Sewa Sekarang
+                </button>
+            </div>
+        </div>
 
         <div class="mb-4 d-flex justify-content-start">
             <div class="btn-group" role="group">
                 <button class="btn btn-dark filter-btn" data-kategori="all">All</button>
-                <button class="btn btn-danger filter-btn" data-kategori="ogoh_ogoh">Ogoh-ogoh</button>
+                <button class="btn btn-danger filter-btn" data-kategori="ogoh_ogoh">Ogoh-Ogoh</button>
                 <button class="btn btn-primary filter-btn" data-kategori="full_body">Full Body</button>
                 <button class="btn btn-success filter-btn" data-kategori="kostum">Kostum</button>
             </div>
@@ -42,6 +54,12 @@
                                     @else
                                         <div class="badge badge-success">Tersedia</div>
                                     @endif
+                                    <div class="mt-2">
+                                        <a href="{{ route('penyewaan.kostum.detail', $item->id) }}"
+                                            class="btn btn-sm btn-outline-info w-100" onclick="event.stopPropagation();">
+                                            <i class="fas fa-eye"></i> Detail
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </label>
@@ -50,15 +68,7 @@
 
             </div>
 
-            <div class="btn-action-group mt-3">
-                <a href="{{ route('penyewaan.index') }}" class="btn btn-secondary btn-lg">
-                    <i class="fas fa-arrow-left"></i> Kembali
-                </a>
 
-                <button type="submit" class="btn btn-primary btn-lg">
-                    <i class="fas fa-shopping-cart"></i> Sewa Sekarang
-                </button>
-            </div>
         </form>
     </div>
 @endsection
@@ -82,6 +92,30 @@
                     });
                 });
             });
+        });
+        document.getElementById('btnSewa').addEventListener('click', function() {
+
+            let selected = [];
+
+            document.querySelectorAll('.kostum-check:checked').forEach(cb => {
+                selected.push(cb.value);
+            });
+
+            if (selected.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Silahkan Pilih Kostum Dulu!',
+                    text: 'Minimal Pilih Satu Kostum',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+                return;
+            }
+
+            // Redirect ke route dengan query string
+            let url = "{{ route('penyewaan.create') }}?kostum_id[]=" + selected.join('&kostum_id[]=');
+
+            window.location.href = url;
         });
     </script>
 @endpush

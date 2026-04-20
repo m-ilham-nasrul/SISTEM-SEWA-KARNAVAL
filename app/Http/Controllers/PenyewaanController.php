@@ -67,8 +67,7 @@ class PenyewaanController extends Controller
     public function create(Request $request)
     {
         if (!$request->has('kostum_id')) {
-            return redirect()->route('penyewaan.select')
-                ->with('error', 'Silakan pilih minimal satu kostum!');
+            return redirect()->route('penyewaan.select');
         }
 
         $kostumIds = $request->kostum_id;
@@ -144,6 +143,12 @@ class PenyewaanController extends Controller
         $total = $hargaPaket + $denda;
 
         return view('pages.penyewaan.show', compact('sewa', 'kostums', 'hargaPaket', 'denda', 'total'));
+    }
+
+    public function showkostum($id)
+    {
+        $kostum = Kostum::findOrFail($id);
+        return view('pages.penyewaan.show-kostum', compact('kostum'));
     }
 
     public function edit($id)

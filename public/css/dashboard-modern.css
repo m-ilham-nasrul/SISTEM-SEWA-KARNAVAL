@@ -48,3 +48,28 @@ html, body {
 .content-scroll {
     padding-top: 10px;
 }
+
+/* Wrapper sebagai acuan */
+#content-wrapper {
+    position: relative;
+}
+
+/* FOOTER FIXED DI DALAM CONTENT */
+.sticky-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin-left: 225px; /* mengikuti sidebar */
+    z-index: 1030;
+}
+
+/* Saat sidebar collapse */
+#wrapper.toggled .sticky-footer {
+    margin-left: 80px;
+}
+
+/* Konten tidak ketutup footer */
+.content-scroll {
+    padding-bottom: 100px;
+}
