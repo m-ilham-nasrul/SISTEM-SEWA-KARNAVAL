@@ -72,26 +72,29 @@
                 cancelButtonColor: '#6c757d'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    $.ajax({
-                        url: "{{ route('logout') }}",
-                        type: "POST",
-                        headers: {
-                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                        },
-                        success: function() {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Logout berhasil',
-                                timer: 1500,
-                                showConfirmButton: false
-                            }).then(() => {
-                                window.location.href = "{{ route('login') }}";
-                            });
-                        },
-                        error: function() {
-                            Swal.fire('Gagal', 'Terjadi kesalahan saat logout', 'error');
-                        }
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Logout berhasil',
+                        timer: 1000,
+                        showConfirmButton: false
                     });
+
+                    setTimeout(() => {
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = "{{ route('logout') }}";
+
+                        const token = document.querySelector('meta[name="csrf-token"]').content;
+
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = '_token';
+                        input.value = token;
+
+                        form.appendChild(input);
+                        document.body.appendChild(form);
+                        form.submit();
+                    }, 1000);
                 }
             });
         }

@@ -127,8 +127,11 @@ class PembayaranController extends Controller
         $sewa = Sewa::with(['penyewa.user', 'details.kostum'])->findOrFail($id);
 
         // ================= AUTH CHECK =================
-        if (Auth::user()->role === 'penyewa') {
-            if ($sewa->penyewa_id !== Auth::user()->penyewa->id) {
+        if (Auth::check() && Auth::user()->role === 'penyewa') {
+
+            $penyewaId = optional(Auth::user()->penyewa)->id;
+
+            if (!$penyewaId || $sewa->penyewa_id != $penyewaId) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Unauthorized'
