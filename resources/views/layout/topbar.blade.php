@@ -34,7 +34,7 @@
                                 ? asset('uploads/profile/' . Auth::user()->photo)
                                 : asset('sbadmin2/img/undraw_profile.svg') }}">
                         <div class="ml-3">
-                            <div class="font-weight-bold">Profil Saya</div>
+                            <div class="font-weight-bold">Profile Saya</div>
                             <small class="text-muted">Kelola akun Anda</small>
                         </div>
                     </a>

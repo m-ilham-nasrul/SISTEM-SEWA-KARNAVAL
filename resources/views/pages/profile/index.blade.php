@@ -1,12 +1,12 @@
 @extends('layout.app')
 
-@section('title', 'Profil Saya')
+@section('title', 'Profile Saya')
 
 @section('content')
     <div class="container-fluid">
 
         <div class="d-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">Profil Saya</h1>
+            <h1 class="h3 mb-0 text-gray-800">Profile Saya</h1>
 
             <a href="#" id="btnKembali" class="btn btn-secondary btn-sm shadow-sm">
                 <i class="fas fa-arrow-left mr-1"></i> Kembali
@@ -73,7 +73,7 @@
                 {{-- EDIT PROFIL --}}
                 <div class="card shadow mb-4">
                     <div class="card-header bg-primary text-white">
-                        <h6 class="m-0 font-weight-bold">Edit Profil</h6>
+                        <h6 class="m-0 font-weight-bold">Edit Profile</h6>
                     </div>
                     <div class="card-body">
                         <form id="formProfil">
@@ -104,7 +104,7 @@
                             @endif
 
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Simpan Profil
+                                <i class="fas fa-save"></i> Simpan Profile
                             </button>
                         </form>
                     </div>
@@ -151,7 +151,7 @@
 @push('scripts')
     <script>
         /* =======================
-             UPDATE PROFIL
+             UPDATE PROFILE
         ======================= */
         $('#formProfil').submit(function(e) {
             e.preventDefault();
@@ -334,7 +334,7 @@
         });
 
         /* =======================
-           HAPUS FOTO PROFIL
+           HAPUS FOTO PROFILE
         =======================*/
         $(document).on('click', '#btnHapusFoto', function() {
 
