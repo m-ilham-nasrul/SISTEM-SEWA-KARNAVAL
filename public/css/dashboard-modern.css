@@ -7,36 +7,44 @@ html, body {
 /* Wrapper utama */
 #wrapper {
     height: 100vh;
+    display: flex;
 }
 
-/* =====================
-   SIDEBAR
-===================== */
+/* SIDEBAR */
 .sidebar {
     width: 260px;
     min-height: 100vh;
 }
 
-/* Sidebar collapse (SB Admin default) */
+/* sidebar sejajar */
+.sidebar .nav-link i {
+    width: 20px;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* Sidebar collapse */
 #wrapper.toggled .sidebar {
     width: 80px;
 }
 
 /* Content wrapper */
 #content-wrapper {
-    height: 100vh;
+    flex: 1;
     display: flex;
     flex-direction: column;
+    height: 100vh;
 }
 
-/* AREA SCROLL (KONTEN SAJA) */
+/* AREA SCROLL */
 .content-scroll {
     flex: 1;
     overflow-y: auto;
     padding: 20px;
+    padding-bottom: 80px; /* ruang footer */
 }
 
-/* TOPBAR BENAR-BENAR DIAM */
+/* TOPBAR */
 .topbar {
     position: sticky;
     top: 0;
@@ -44,32 +52,10 @@ html, body {
     background: #fff;
 }
 
-/* Pastikan konten tidak nutup topbar */
-.content-scroll {
-    padding-top: 10px;
-}
-
-/* Wrapper sebagai acuan */
-#content-wrapper {
-    position: relative;
-}
-
-/* FOOTER FIXED DI DALAM CONTENT */
+/* FOOTER (FINAL) */
 .sticky-footer {
-    position: fixed;
+    position: sticky;
     bottom: 0;
-    left: 0;
-    right: 0;
-    margin-left: 225px; /* mengikuti sidebar */
-    z-index: 1030;
-}
-
-/* Saat sidebar collapse */
-#wrapper.toggled .sticky-footer {
-    margin-left: 80px;
-}
-
-/* Konten tidak ketutup footer */
-.content-scroll {
-    padding-bottom: 100px;
+    z-index: 1020;
+    background: #fff;
 }
