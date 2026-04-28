@@ -59,3 +59,34 @@ html, body {
     z-index: 1020;
     background: #fff;
 }
+
+@media (max-width: 768px) {
+
+    /* Perbaiki tinggi layar mobile */
+    #wrapper {
+        height: 100dvh;
+    }
+
+    #content-wrapper {
+        height: 100dvh;
+    }
+
+    /* Smooth scroll di mobile */
+    .content-scroll {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 100px; /* extra biar footer aman */
+    }
+
+    /* FIX utama: sticky footer sering bug di mobile */
+    .sticky-footer {
+        position: relative;
+        bottom: unset;
+    }
+}
+
+
+/* Optional: fix tambahan untuk browser tertentu */
+html, body {
+    height: -webkit-fill-available;
+}
