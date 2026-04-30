@@ -50,13 +50,13 @@
                                     <div class="nama-kostum fw-bold">{{ $item->nama_kostum }}</div>
                                     <div class="harga text-muted">Rp {{ number_format($item->harga) }}</div>
                                     @if ($item->status == 1)
-                                        <div class="badge badge-danger">Sedang Digunakan</div>
+                                        <div class="badge badge-danger d-block w-100">Sedang Digunakan</div>
                                     @else
-                                        <div class="badge badge-success">Tersedia</div>
+                                        <div class="badge badge-success d-block w-100">Tersedia</div>
                                     @endif
                                     <div class="mt-2">
                                         <a href="{{ route('penyewaan.kostum.detail', $item->id) }}"
-                                            class="btn btn-sm btn-outline-info w-100" onclick="event.stopPropagation();">
+                                            class="btn btn-sm btn-outline-primary w-100" onclick="event.stopPropagation();">
                                             <i class="fas fa-eye"></i> Detail
                                         </a>
                                     </div>

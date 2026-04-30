@@ -39,12 +39,12 @@
                             </tr>
 
                             <tr>
-                                <td>Tgl Sewa</td>
+                                <td>Tanggal Sewa</td>
                                 <td>{{ date('d M Y', strtotime($sewa->tanggal_sewa)) }}</td>
                             </tr>
 
                             <tr>
-                                <td>Tgl Kembali</td>
+                                <td>Tanggal Kembali</td>
                                 <td>{{ date('d M Y', strtotime($sewa->tanggal_kembali)) }}</td>
                             </tr>
 
@@ -69,7 +69,7 @@
                             @endif
 
                             <tr>
-                                <td>Metode</td>
+                                <td>Metode Pembayaran</td>
                                 <td>{{ $sewa->payment_type ? ucfirst($sewa->payment_type) : '-' }}</td>
                             </tr>
 
