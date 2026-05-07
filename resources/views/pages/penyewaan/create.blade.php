@@ -10,7 +10,7 @@
         </div>
         <!-- START FORM -->
         <div class="row justify-content-center">
-            <div class="col-lg-6">
+            <div class="col-lg-9 col-md-11">
 
                 <div class="card shadow mb-4 border-left-primary">
                     <div class="card-header bg-primary text-white py-3">
@@ -79,7 +79,8 @@
                                                                 class="card-img-top"
                                                                 style="height: 260px; width: 100%; object-fit: contain; background:#f8f9fa; padding:6px;">
                                                             <div class="fw-bold mt-2">{{ $k->nama_kostum }}</div>
-                                                            <div class="text-muted small mt-1">Rp {{ number_format($k->harga) }}</div>
+                                                            <div class="text-muted small mt-1">Rp
+                                                                {{ number_format($k->harga) }}</div>
                                                         </div>
                                                     </div>
                                                 @endforeach

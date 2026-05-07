@@ -44,7 +44,7 @@
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="text-center my-auto">
-                        <span>© 2025 Sistem Informasi Penyewaan Karnaval</span>
+                        <span>© 2026 Sistem Informasi Penyewaan Karnaval</span>
                     </div>
                 </div>
             </footer>
