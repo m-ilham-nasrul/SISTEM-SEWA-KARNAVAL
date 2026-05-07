@@ -133,7 +133,7 @@
 
     <!-- FOOTER -->
     <footer class="bg-white text-center py-3 shadow-sm">
-        <p class="mb-0 text-muted">&copy; 2025 <span class="fw-bold text-primary">Sewa Karnaval </span> All Rights
+        <p class="mb-0 text-muted">&copy; 2026 <span class="fw-bold text-primary">Sewa Karnaval </span> All Rights
             Reserved.</p>
     </footer>
 
