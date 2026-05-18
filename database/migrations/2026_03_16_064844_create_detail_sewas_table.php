@@ -29,8 +29,7 @@ return new class extends Migration
             $table->index('sewa_id');
             $table->index('kostum_id');
 
-            // optional
-            // $table->unique(['sewa_id', 'kostum_id']);
+           
         });
     }
 

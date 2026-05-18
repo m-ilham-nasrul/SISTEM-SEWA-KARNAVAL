@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Sewa;
+use App\Models\Kostum;
 
 class DetailSewa extends Model
 {

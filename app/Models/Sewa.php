@@ -4,7 +4,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Kostum;
-
+use App\Models\Penyewa;
+use App\Models\DetailSewa;
 class Sewa extends Model
 {
     use HasFactory;
