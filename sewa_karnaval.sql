@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Waktu pembuatan: 20 Apr 2026 pada 08.20
+-- Waktu pembuatan: 17 Jun 2026 pada 07.27
 -- Versi server: 8.0.30
 -- Versi PHP: 8.1.10
 
@@ -152,8 +152,8 @@ INSERT INTO `kostums` (`id`, `nama_kostum`, `image_kostum`, `kategori`, `catatan
 (13, 'Monster Engrang Kream', '1769569613_Monster Engrang Kream.jpg', 'Full Body', NULL, 300000, 0, '2026-01-25 14:26:18', '2026-01-27 13:06:53', NULL),
 (14, 'Maskot Engrang Coklat', '1769569669_Maskot Engrang Coklat.jpg', 'Full Body', NULL, 300000, 0, '2026-01-25 14:26:48', '2026-01-27 13:07:49', NULL),
 (15, 'Monster Engrang Merah', '1769569687_Monster Engrang Merah.jpg', 'Full Body', NULL, 300000, 0, '2026-01-25 14:27:19', '2026-01-27 13:08:07', NULL),
-(16, 'Prajurit Wira', '1769569943_Prajurit Wira.jpeg', 'Kostum', 'Jumlah Kostum Prajurit ada 80 piece', 50000, 0, '2026-01-25 14:29:21', '2026-01-27 13:12:23', NULL),
-(17, 'Prajurit Dyah', '1769570210_Prajurit Dyah.jpg', 'Kostum', 'Jumlah Kostum Prajurit ada 80 piece', 50000, 0, '2026-01-25 14:29:52', '2026-01-27 13:16:50', NULL),
+(16, 'Prajurit Wira', '1769569943_Prajurit Wira.jpeg', 'Kostum', 'Jumlah Kostum Prajurit ada 80 piece', 100000, 0, '2026-01-25 14:29:21', '2026-01-27 13:12:23', NULL),
+(17, 'Prajurit Dyah', '1769570210_Prajurit Dyah.jpg', 'Kostum', 'Jumlah Kostum Prajurit ada 80 piece', 100000, 0, '2026-01-25 14:29:52', '2026-01-27 13:16:50', NULL),
 (18, 'Bathara Guru', '1769570232_Bathara Guru.jpg', 'Ogoh-Ogoh', NULL, 1500000, 0, '2026-01-25 14:30:32', '2026-01-27 13:17:12', NULL),
 (19, 'Prabu Siliwangi', '1769570569_Prabu Siliwangi.jpg', 'Ogoh-Ogoh', NULL, 1000000, 0, '2026-01-25 14:31:07', '2026-01-27 13:22:49', NULL),
 (20, 'Watu Kelir', '1769570597_Watu Kelir.jpg', 'Ogoh-Ogoh', NULL, 1000000, 0, '2026-01-25 14:31:40', '2026-01-27 13:23:17', NULL),
@@ -220,7 +220,7 @@ CREATE TABLE `penyewas` (
 --
 
 INSERT INTO `penyewas` (`id`, `user_id`, `no_telp`, `alamat`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 2, '087695446780', 'Salaman', '2026-04-20 01:19:22', '2026-04-20 01:19:22', NULL);
+(1, 2, '087695446780', 'Salaman', '2026-06-17 00:20:44', '2026-06-17 00:20:44', NULL);
 
 -- --------------------------------------------------------
 
@@ -249,13 +249,16 @@ CREATE TABLE `sewas` (
   `penyewa_id` bigint UNSIGNED NOT NULL,
   `tanggal_sewa` date NOT NULL,
   `tanggal_kembali` date NOT NULL,
+  `dp` int NOT NULL DEFAULT '0',
+  `sisa_bayar` int NOT NULL DEFAULT '0',
   `total_biaya` bigint UNSIGNED NOT NULL DEFAULT '0',
   `denda` bigint UNSIGNED NOT NULL DEFAULT '0',
   `kondisi` enum('baik','rusak') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `catatan` text COLLATE utf8mb4_unicode_ci,
   `status` tinyint NOT NULL DEFAULT '0',
-  `status_bayar` tinyint(1) NOT NULL DEFAULT '0',
-  `midtrans_order_id` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status_bayar` enum('pending','dp_paid','paid') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `midtrans_order_id_dp` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `midtrans_order_id_pelunasan` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `snap_token` text COLLATE utf8mb4_unicode_ci,
   `snap_token_created_at` timestamp NULL DEFAULT NULL,
   `transaction_status` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -289,8 +292,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `photo`, `password`, `role`, `remember_token`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'Admin', 'admin@gmail.com', NULL, '$2y$12$5r03zwh5M38p35ouOpCg4.zbM1PfCf8OYm6LjKUM8y7tlO9pAL0v6', 'admin', NULL, '2026-04-20 01:19:22', '2026-04-20 01:19:22', NULL),
-(2, 'Nasrul', 'nasrul@gmail.com', NULL, '$2y$12$fVYtCRcl249USkeKEpjjY..p6s.tDsN4MfOWspkzSJOfvKnULd7Yu', 'penyewa', NULL, '2026-04-20 01:19:22', '2026-04-20 01:19:22', NULL);
+(1, 'Admin', 'admin@gmail.com', NULL, '$2y$12$T4lJinOBTDcIAGs9JV8I8el6CSO3oEyJz3bLLwl8yr0o.fKVv00Dq', 'admin', NULL, '2026-06-17 00:20:43', '2026-06-17 00:20:43', NULL),
+(2, 'Nasrul', 'nasrul@gmail.com', NULL, '$2y$12$ohfPtGWgjGfaUKH3zbIrr.xJ0KnAx/eo0FT4sVizvSl9bzlWvBy2m', 'penyewa', NULL, '2026-06-17 00:20:44', '2026-06-17 00:20:44', NULL);
 
 --
 -- Indexes for dumped tables
@@ -379,7 +382,6 @@ ALTER TABLE `sessions`
 ALTER TABLE `sewas`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `sewas_kode_sewa_unique` (`kode_sewa`),
-  ADD UNIQUE KEY `sewas_midtrans_order_id_unique` (`midtrans_order_id`),
   ADD KEY `sewas_penyewa_id_foreign` (`penyewa_id`),
   ADD KEY `sewas_status_index` (`status`),
   ADD KEY `sewas_status_bayar_index` (`status_bayar`);
