@@ -21,6 +21,9 @@ return new class extends Migration
             $table->date('tanggal_sewa');
             $table->date('tanggal_kembali');
 
+            $table->integer('dp')->default(0);
+            $table->integer('sisa_bayar')->default(0);
+
             $table->unsignedBigInteger('total_biaya')->default(0);
             $table->unsignedBigInteger('denda')->default(0);
 
@@ -28,9 +31,10 @@ return new class extends Migration
             $table->text('catatan')->nullable();
 
             $table->tinyInteger('status')->default(0);
-            $table->boolean('status_bayar')->default(false);
+            $table->enum('status_bayar', ['pending', 'dp_paid', 'paid'])->default('pending');
 
-            $table->string('midtrans_order_id')->nullable()->unique();
+            $table->string('midtrans_order_id_dp')->nullable();
+            $table->string('midtrans_order_id_pelunasan')->nullable();
             $table->text('snap_token')->nullable();
             $table->timestamp('snap_token_created_at')->nullable();
             $table->string('transaction_status')->nullable();

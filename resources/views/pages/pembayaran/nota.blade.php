@@ -60,29 +60,31 @@
                                     @endif
                                 </td>
                             </tr>
-
                             @if ($sewa->catatan)
                                 <tr>
                                     <td>Catatan</td>
                                     <td class="text-danger">{{ $sewa->catatan }}</td>
                                 </tr>
                             @endif
-
                             <tr>
                                 <td>Metode Pembayaran</td>
                                 <td>{{ $sewa->payment_type ? ucfirst($sewa->payment_type) : '-' }}</td>
                             </tr>
-
                             <tr>
-                                <td>Order ID</td>
-                                <td>{{ $sewa->midtrans_order_id ?? '-' }}</td>
+                                <td>Order ID DP</td>
+                                <td>{{ $sewa->midtrans_order_id_dp ?? '-' }}</td>
                             </tr>
-
+                            <tr>
+                                <td>Order ID Pelunasan</td>
+                                <td>{{ $sewa->midtrans_order_id_pelunasan ?? '-' }}</td>
+                            </tr>
                             <tr>
                                 <td>Status</td>
                                 <td>
-                                    @if ($sewa->status_bayar)
-                                        <span class="badge badge-success">Terbayar</span>
+                                    @if ($sewa->status_bayar->value == 'paid')
+                                        <span class="badge badge-success">Terbayar Lunas</span>
+                                    @elseif ($sewa->status_bayar->value == 'dp_paid')
+                                        <span class="badge badge-info">DP Dibayar</span>
                                     @else
                                         <span class="badge badge-danger">Belum Bayar</span>
                                     @endif
@@ -93,9 +95,16 @@
                         <!-- TOTAL -->
                         <table class="table table-sm">
                             <tr>
-                                <td>Biaya Sewa</td>
+                                <td>DP (50%)</td>
                                 <td class="text-right">
-                                    Rp {{ number_format($sewa->total_biaya) }}
+                                    Rp {{ number_format($sewa->dp) }}
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>Pelunasan</td>
+                                <td class="text-right">
+                                    Rp {{ number_format($sewa->sisa_bayar) }}
                                 </td>
                             </tr>
 
@@ -109,9 +118,9 @@
                             @endif
 
                             <tr class="font-weight-bold">
-                                <td>Total Bayar</td>
+                                <td>Total Dibayar</td>
                                 <td class="text-right">
-                                    Rp {{ number_format($sewa->total_biaya + $sewa->denda) }}
+                                    Rp {{ number_format($sewa->dp + $sewa->sisa_bayar + $sewa->denda) }}
                                 </td>
                             </tr>
                         </table>

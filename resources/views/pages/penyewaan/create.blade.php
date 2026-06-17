@@ -100,8 +100,20 @@
                                 @php
                                     $totalBayar = $kostums->sum('harga');
                                 @endphp
+                                @php
+                                    $dp = $totalBayar * 0.5;
+                                    $sisaBayar = $totalBayar - $dp;
+                                @endphp
                                 <div class="mt-2 font-weight-bold text-success">
                                     Total Bayar: Rp {{ number_format($totalBayar) }}
+                                </div>
+
+                                <div class="mt-2 font-weight-bold text-primary">
+                                    DP (50%): Rp {{ number_format($dp) }}
+                                </div>
+
+                                <div class="mt-2 font-weight-bold text-danger">
+                                    Sisa Pembayaran: Rp {{ number_format($sisaBayar) }}
                                 </div>
                             </div>
 
@@ -128,8 +140,12 @@
                                                 @endforeach
                                             </ul>
 
-                                            <div class="alert alert-success text-center font-weight-bold">
-                                                Total Bayar: Rp {{ number_format($totalBayar) }}
+                                            <div class="alert alert-info text-center font-weight-bold">
+                                                DP (50%) : Rp {{ number_format($dp) }}
+                                            </div>
+
+                                            <div class="alert alert-warning text-center font-weight-bold">
+                                                Sisa Pembayaran : Rp {{ number_format($sisaBayar) }}
                                             </div>
                                         </div>
 
@@ -181,7 +197,6 @@
                                     @endif
                                 </select>
                             </div>
-
 
                             <a href="{{ route('penyewaan.select') }}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Kembali

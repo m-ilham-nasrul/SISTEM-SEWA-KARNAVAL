@@ -91,7 +91,7 @@
                                     Total Transaksi
                                 </div>
                                 <div class="h5 mb-0 font-weight-bold text-gray-800" data-dashboard="total_transaksi">
-                                    {{ $total_transaksi ?? 0 }}
+                                    {{ $total_transaksi }}
                                 </div>
                             </div>
                             <i class="fas fa-receipt fa-2x text-dark"></i>
@@ -213,44 +213,34 @@
                                     </td>
 
                                     <td>
-                                        @if ($item->status == 0)
+
+                                        @if ($item->status_bayar->value === 'pending')
+                                            <span class="badge badge-danger px-3 py-2">
+                                                <i class="fas fa-clock mr-1"></i>
+                                                Menunggu DP
+                                            </span>
+                                        @elseif ($item->status == 0)
                                             <span class="badge badge-secondary px-3 py-2">
                                                 <i class="fas fa-hourglass-half mr-1"></i>
                                                 Masa Sewa
                                             </span>
-                                            @if ($today->gt($kembali))
-                                                <div class="mt-1">
-                                                    <span class="badge badge-danger px-3 py-2">
-                                                        <i class="fas fa-exclamation-triangle mr-1"></i>
-                                                        Terlambat
-                                                    </span>
-                                                </div>
-                                            @elseif ($today->equalTo($kembali))
-                                                <div class="mt-1">
-                                                    <span class="badge badge-warning px-3 py-2">
-                                                        <i class="fas fa-clock mr-1"></i>
-                                                        Hari Terakhir
-                                                    </span>
-                                                </div>
-                                            @endif
                                         @elseif ($item->status == 1)
                                             <span class="badge badge-warning px-3 py-2">
-                                                <i class="fas fa-hourglass mr-1"></i>
+                                                <i class="fas fa-user-check"></i>
                                                 Menunggu Verifikasi
                                             </span>
-                                        @elseif ($item->status == 2)
-                                            @if (!$item->status_bayar)
-                                                <span class="badge badge-info px-3 py-2">
-                                                    <i class="fas fa-credit-card mr-1"></i>
-                                                    Menunggu Pembayaran
-                                                </span>
-                                            @else
-                                                <span class="badge badge-success px-3 py-2">
-                                                    <i class="fas fa-check-circle mr-1"></i>
-                                                    Selesai
-                                                </span>
-                                            @endif
+                                        @elseif ($item->status == 2 && $item->status_bayar->value === 'dp_paid')
+                                            <span class="badge badge-primary px-3 py-2">
+                                                <i class="fas fa-money-bill-wave mr-1"></i>
+                                                Menunggu Pelunasan
+                                            </span>
+                                        @elseif ($item->status == 3 && $item->status_bayar->value === 'paid')
+                                            <span class="badge badge-success px-3 py-2">
+                                                <i class="fas fa-check-circle mr-1"></i>
+                                                Selesai
+                                            </span>
                                         @endif
+
                                     </td>
                                     <td>
                                         <a href="{{ route('penyewaan.show', $item->id) }}" class="btn btn-sm btn-primary">

@@ -68,8 +68,8 @@
                 <div class="mx-auto mb-3">
                     <div class="btn-group" role="group">
                         <button class="btn btn-dark filter-btn" data-status="">All</button>
-                        <button class="btn btn-warning filter-btn" data-status="0">Menunggu Pembayaran</button>
-                        <button class="btn btn-success filter-btn" data-status="1">Telah Terbayar</button>
+                        <button class="btn btn-warning filter-btn" data-status="pending">Menunggu Pembayaran</button>
+                        <button class="btn btn-success filter-btn" data-status="paid">Telah Terbayar</button>
                     </div>
 
                 </div>
@@ -173,56 +173,46 @@ $(document).ready(function() {
         {
             data: null,
             render: data => {       
-        let status = '';
-        if(data.status == 0){
-            status = `
-                <span class="badge badge-secondary">
-                    <i class="fas fa-hourglass-half"></i>
-                    Masa Sewa
-                </span>
-            `;
-        }
-        else if(data.status == 1){
-            status = `
-                <span class="badge badge-warning">
-                    <i class="fas fa-user-check"></i>
-                    Menunggu Verifikasi
-                </span>
-            `;
-
-        }
-        else if(data.status == 2){
-            if(!data.status_bayar){
+            let status = '';
+            if (data.status == 0 && data.status_bayar === 'pending') {
                 status = `
-                    <span class="badge badge-success">
-                        <i class="fas fa-check-circle"></i>
-                        Diverifikasi Admin
-                    </span>
-                    <br>
-                    <span class="badge badge-info">
-                        <i class="fas fa-credit-card"></i>
-                        Silakan lakukan pembayaran
+                    <span class="badge badge-danger px-3 py-2">
+                        <i class="fas fa-clock"></i>
+                        Menunggu DP
                     </span>
                 `;
-            }else{
+            } else if (data.status == 0 && data.status_bayar === 'dp_paid') {
                 status = `
-                    <span class="badge badge-success">
+                    <span class="badge badge-secondary px-3 py-2">
+                        <i class="fas fa-hourglass-half"></i>
+                        Masa Sewa
+                    </span>
+                `;
+            } else if (data.status == 1) {
+                status = `
+                    <span class="badge badge-warning px-3 py-2">
+                        <i class="fas fa-user-check"></i>
+                        Menunggu Verifikasi
+                    </span>
+                        `;
+            } else if (data.status == 2 && data.status_bayar === 'dp_paid') {
+                status = `
+                    <span class="badge badge-primary px-3 py-2">
+                        <i class="fas fa-money-bill-wave"></i>
+                        Menunggu Pelunasan
+                    </span>
+                `;
+            } else if (data.status == 3 && data.status_bayar === 'paid') {
+                status = `
+                    <span class="badge badge-success px-3 py-2">
                         <i class="fas fa-check-circle"></i>
                         Selesai
                     </span>
                 `;
             }
-        }
-        let bayar = `
-            <br>
-            <span class="badge badge-${data.status_bayar ? 'success':'danger'}">
-                <i class="fas ${data.status_bayar ? 'fa-check-circle' : 'fa-times-circle'}"></i>
-                ${data.status_bayar ? 'Telah Terbayar' : 'Belum Membayar'}
-            </span>
-        `;
-        return status + bayar;
+            return status;
             }
-        },
+        }, 
         {
             data: null,
             orderable: false,
@@ -231,17 +221,22 @@ $(document).ready(function() {
                 let id = data.id;
                 let role = '{{ Auth::user()->role }}';
                 /* tombol bayar */
-                let bayarBtn = (data.status == 2 && !data.status_bayar) ?
-                    `<a href="/pembayaran/${id}/bayar"
+                let bayarBtn = '';
+                if (data.status == 2 && data.status_bayar !== 'paid') {
+                    const label = data.status_bayar === 'dp_paid' ? 'Lanjutkan Pelunasan' : 'Bayar';
+                    bayarBtn = `<a href="/pembayaran/${id}/bayar"
                         class="btn btn-warning btn-sm mb-1 w-100">
-                        <i class="fas fa-money-bill-wave mr-1"></i> Bayar
-                    </a>` : '';
+                        <i class="fas fa-money-bill-wave mr-1"></i> ${label}
+                    </a>`;
+                }
                 /* tombol nota */
-                let notaBtn = data.status_bayar ?
-                `<a href="/pembayaran/${id}/nota"
-                    class="btn btn-info btn-sm mb-1 w-100">
-                    <i class="fas fa-file-invoice mr-1"></i> Nota
-                </a>` : '';
+                let notaBtn = '';
+                if (data.status_bayar === 'paid') {
+                    notaBtn = `<a href="/pembayaran/${id}/nota"
+                        class="btn btn-info btn-sm mb-1 w-100">
+                        <i class="fas fa-file-invoice mr-1"></i> Nota
+                    </a>`;
+                }
                 let editBtn = '';
                 let deleteBtn = '';
                 if (role === 'admin') {
@@ -262,8 +257,7 @@ $(document).ready(function() {
                         ${bayarBtn}
                         ${notaBtn}
                         <div class="dropdown mt-1">
-                            <button class="btn btn-light btn-sm w-100"
-                                data-toggle="dropdown">
+                            <button class="btn btn-light btn-sm w-100" data-toggle="dropdown">
                                 <i class="fas fa-ellipsis-v"></i>
                             </button>
                             <div class="dropdown-menu dropdown-menu-right">
@@ -288,8 +282,8 @@ $(document).ready(function() {
     statusBayar = $(this).data('status');
     // update title
     let title = '';
-    if (statusBayar == '1') title = 'Terbayar';
-    else if (statusBayar == '0') title = 'Menunggu Pembayaran';
+    if (statusBayar === 'paid') title = 'Terbayar';
+    else if (statusBayar === 'pending') title = 'Menunggu Pembayaran';
     else title = 'All';
     $('.card-header .badge').text(title);
     table.ajax.reload();

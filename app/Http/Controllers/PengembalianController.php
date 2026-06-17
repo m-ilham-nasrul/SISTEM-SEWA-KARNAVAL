@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Models\Sewa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,19 +12,25 @@ class PengembalianController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-
             $user = Auth::user();
-
             $query = Sewa::with(['penyewa.user', 'details.kostum'])
                 ->orderBy('created_at', 'desc');
 
             // filter role
             if ($user->role === 'penyewa') {
-                $query->where('penyewa_id', $user->penyewa->id);
+                if ($user->penyewa) {
+                    $query->where(
+                        'penyewa_id',
+                        $user->penyewa->id
+                    );
+                } else {
+                    return response()->json([
+                        'data' => []
+                    ]);
+                }
             }
 
             $sewas = $query->get();
-
             $data = $sewas->map(function ($sewa) {
                 return [
                     'id' => $sewa->id,
@@ -94,7 +101,7 @@ class PengembalianController extends Controller
         }
         $request->validate([
             'kondisi' => 'required|in:baik,rusak',
-            'denda' => 'nullable|numeric|min:0',
+            'denda' => 'required_if:kondisi,rusak|numeric|min:0',
             'catatan' => 'required_if:kondisi,rusak|nullable|string'
         ]);
         $sewa = Sewa::with('details.kostum')->findOrFail($id);
@@ -104,15 +111,36 @@ class PengembalianController extends Controller
                 'status' => 0
             ]);
         }
+
+        $tanggalKembali = Carbon::parse($sewa->tanggal_kembali);
+        $tanggalSekarang = Carbon::now();
+
+        $hariTerlambat = max(
+            0,
+            $tanggalKembali->diffInDays($tanggalSekarang, false)
+        );
+
+        $dendaTerlambat = $hariTerlambat * 10000; // Rp10.000 per hari
+
+        $dendaKerusakan = $request->kondisi === 'rusak'
+            ? ($request->denda ?? 0)
+            : 0;
+
+        $totalDenda = $dendaTerlambat + $dendaKerusakan;
         $sewa->update([
-            'status' => 2, // selesai
+            'status' => 2,
             'kondisi' => $request->kondisi,
-            'denda' => $request->kondisi === 'rusak' ? $request->denda : 0,
-            'catatan' => $request->catatan
+            'denda' => $totalDenda,
+            'catatan' => $request->kondisi === 'rusak'
+                ? $request->catatan
+                : null,
         ]);
         return response()->json([
             'status' => true,
-            'message' => 'Pengembalian berhasil diverifikasi'
+            'message' => 'Pengembalian berhasil diverifikasi',
+            'hari_terlambat' => $hariTerlambat,
+            'denda_terlambat' => $dendaTerlambat,
+            'total_denda' => $totalDenda,
         ]);
     }
 
@@ -122,15 +150,13 @@ class PengembalianController extends Controller
     public function hapus($id)
     {
         $sewa = Sewa::with('details.kostum')->findOrFail($id);
-        //kembalikan status kostum dulu
         foreach ($sewa->details as $detail) {
-            $detail->kostum->update([
-                'status' => 0
-            ]);
+            if ($detail->kostum) {
+                $detail->kostum->update([
+                    'status' => 0
+                ]);
+            }
         }
-        // hapus detail
-        $sewa->details()->delete();
-        // hapus sewa
         $sewa->delete();
         return response()->json([
             'status' => true,

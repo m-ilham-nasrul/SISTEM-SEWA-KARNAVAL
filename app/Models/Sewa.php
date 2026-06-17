@@ -1,13 +1,18 @@
 <?php
 
 namespace App\Models;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+
+use App\Enums\StatusBayar;
+use App\Models\DetailSewa;
 use App\Models\Kostum;
 use App\Models\Penyewa;
-use App\Models\DetailSewa;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Model;
+
 class Sewa extends Model
 {
+    use SoftDeletes;
     use HasFactory;
 
     protected $table = 'sewas';
@@ -18,25 +23,30 @@ class Sewa extends Model
         'tanggal_sewa',
         'tanggal_kembali',
         'total_biaya',
+        'dp',
+        'sisa_bayar',
         'denda',
         'kondisi',
         'catatan',
         'status',
         'status_bayar',
-        'midtrans_order_id',
-        'snap_token',              
+        'midtrans_order_id_dp',
+        'midtrans_order_id_pelunasan',
+        'snap_token',
         'snap_token_created_at',
         'transaction_status',
-        'payment_type',   
+        'payment_type',
     ];
 
     protected $casts = [
         'tanggal_sewa' => 'date',
         'tanggal_kembali' => 'date',
         'status' => 'integer',
-        'status_bayar' => 'boolean',
+        'status_bayar' => StatusBayar::class,
+        'dp' => 'integer',
+        'sisa_bayar' => 'integer',
         'denda' => 'integer',
-        'snap_token_created_at' => 'datetime', 
+        'snap_token_created_at' => 'datetime',
     ];
     // relasi ke penyewa
     public function penyewa()

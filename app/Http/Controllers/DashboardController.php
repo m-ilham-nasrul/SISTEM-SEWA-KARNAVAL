@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\StatusBayar;
 use App\Models\Penyewa;
 use App\Models\Kostum;
 use App\Models\Sewa;
@@ -26,13 +27,16 @@ class DashboardController extends Controller
             $penyewa = Penyewa::count();
             $kostum = Kostum::count();
 
-            $sewa = Sewa::where('status', 0)
-                ->whereDate('tanggal_kembali', '>=', now())
-                ->count(); // aktif
-            $total_sewa = Sewa::count(); // semua
-            $total_transaksi = $total_sewa;
+            $sewa = Sewa::where('status', '!=', 3)
+                ->count();
+            $total_sewa = Sewa::count();
 
-            $total_pendapatan = Sewa::where('status_bayar', 1)
+            $total_transaksi = Sewa::whereIn('status_bayar', [
+                StatusBayar::DP_PAID,
+                StatusBayar::PAID
+            ])->count();
+
+            $total_pendapatan = Sewa::where('status_bayar', StatusBayar::PAID)
                 ->selectRaw('SUM(total_biaya + denda) as total')
                 ->value('total') ?? 0;
 
@@ -51,11 +55,14 @@ class DashboardController extends Controller
             if ($user->penyewa) {
 
                 $sewa = Sewa::where('penyewa_id', $user->penyewa->id)
-                    ->where('status', 0)
-                    ->whereDate('tanggal_kembali', '>=', now())
+                    ->where('status', '!=', 3)
                     ->count();
 
-                $total_transaksi = Sewa::where('penyewa_id', $user->penyewa->id)->count();
+                $total_transaksi = Sewa::where('penyewa_id', $user->penyewa->id)
+                    ->whereIn('status_bayar', [
+                        StatusBayar::DP_PAID,
+                        StatusBayar::PAID
+                    ])->count();
 
                 $riwayatSewa = Sewa::with('details.kostum')
                     ->where('penyewa_id', $user->penyewa->id)
@@ -90,12 +97,20 @@ class DashboardController extends Controller
             return response()->json([
                 'penyewa' => Penyewa::count(),
                 'kostum' => Kostum::count(),
-                'sewa' => Sewa::where('status', 0)
-                    ->whereDate('tanggal_kembali', '>=', now())
+                'sewa' => Sewa::where('status', '!=', 3)
                     ->count(),
+
                 'total_sewa' => Sewa::count(),
-                'total_transaksi' => Sewa::count(),
-                'total_pendapatan' => Sewa::where('status_bayar', 1)
+
+                'total_transaksi' => Sewa::whereIn('status_bayar', [
+                    StatusBayar::DP_PAID,
+                    StatusBayar::PAID
+                ])->count(),
+
+                'total_pendapatan' => Sewa::where(
+                    'status_bayar',
+                    StatusBayar::PAID
+                )
                     ->selectRaw('SUM(total_biaya + denda) as total')
                     ->value('total') ?? 0,
             ]);
@@ -104,10 +119,13 @@ class DashboardController extends Controller
         if ($user->penyewa) {
             return response()->json([
                 'sewa' => Sewa::where('penyewa_id', $user->penyewa->id)
-                    ->where('status', 0)
-                    ->whereDate('tanggal_kembali', '>=', now())
+                    ->where('status', '!=', 3)
                     ->count(),
-                'total_transaksi' => Sewa::where('penyewa_id', $user->penyewa->id)->count(),
+                'total_transaksi' => Sewa::where('penyewa_id', $user->penyewa->id)
+                    ->whereIn('status_bayar', [
+                        StatusBayar::DP_PAID,
+                        StatusBayar::PAID
+                    ])->count(),
             ]);
         }
 

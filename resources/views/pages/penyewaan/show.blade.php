@@ -106,43 +106,47 @@
                                 <td>{{ $sewa->tanggal_kembali }}</td>
                             </tr>
                             <tr>
-                        <th>Status Pengembalian</th>
-                            <td>
-                                @if ($sewa->status == 0)
-                            <span class="badge badge-secondary">
-                                <i class="fas fa-hourglass-half"></i> Masa Sewa
-                            </span>
-                                @elseif ($sewa->status == 1)
-                            <span class="badge badge-warning">
-                                <i class="fas fa-clock"></i> Menunggu Verifikasi Admin
-                            </span>
-                                @elseif ($sewa->status == 2)
-                            @if (!$sewa->status_bayar)
-                            <span class="badge badge-info">
-                                <i class="fas fa-credit-card"></i> Menunggu Pembayaran
-                            </span>
-                            @else
-                            <span class="badge badge-success">
-                                <i class="fas fa-check-circle"></i> Kembali
-                            </span>
-                                @endif
-                            @endif
-                            </td>
-                        </tr>
-                            <tr>
-                                <th>Status Pembayaran</th>
+                                <th>Status Penyewaan</th>
                                 <td>
-                                    @if ($sewa->status_bayar == 0)
-                                        <span class="badge badge-danger">
-                                            <i class="fas fa-times-circle"></i> Belum Membayar
+                                    @if ($sewa->status == 0)
+                                        <span class="badge badge-secondary px-3 py-2">
+                                            <i class="fas fa-hourglass-half"></i> Masa Sewa
                                         </span>
-                                    @else
-                                        <span class="badge badge-success">
-                                            <i class="fas fa-check-circle"></i> Telah Terbayar
+                                    @elseif ($sewa->status == 1)
+                                        <span class="badge badge-warning px-3 py-2">
+                                            <i class="fas fa-user-check"></i> Menunggu Verifikasi Admin
+                                        </span>
+                                    @elseif ($sewa->status == 2)
+                                        <span class="badge badge-info px-3 py-2">
+                                            <i class="fas fa-user-check"></i> Pengembalian Diverifikasi
+                                        </span>
+                                    @elseif ($sewa->status == 3)
+                                        <span class="badge badge-success px-3 py-2">
+                                            <i class="fas fa-check-circle"></i> Selesai
                                         </span>
                                     @endif
                                 </td>
-                            </tr>           
+                            </tr>
+                            <tr>
+                                <th>Status Pembayaran</th>
+                                <td>
+                                    @if ($sewa->status_bayar->value == 'pending')
+                                        <span class="badge badge-danger px-3 py-2">
+                                            <i class="fas fa-clock mr-1"></i> Menunggu DP
+                                        </span>
+                                    @elseif ($sewa->status_bayar->value == 'dp_paid')
+                                        <span class="badge badge-primary px-3 py-2">
+                                            <i class="fas fa-money-bill-wave"></i> Menunggu Pelunasan
+                                        </span>
+                                    @elseif ($sewa->status_bayar->value == 'paid')
+                                        <span class="badge badge-success px-3 py-2">
+                                            <i class="fas fa-check-circle"></i> Terbayar Lunas
+                                        </span>
+                                    @else
+                                        <span class="badge badge-secondary px-3 py-2">-</span>
+                                    @endif
+                                </td>
+                            </tr>
                             <tr>
                                 <th>Harga Paket</th>
                                 <td>Rp {{ number_format($hargaPaket, 0, ',', '.') }}</td>
@@ -176,7 +180,37 @@
                             </tr>
 
                         </table>
-                        <a href="{{ route('pembayaran.index') }}" class="btn btn-secondary mt-3">
+
+                        <!-- ACTION BUTTONS -->
+                        <div class="mt-4 mb-3">
+
+                            {{-- Pelunasan --}}
+                            @if ($sewa->status == 2 && $sewa->status_bayar->value === 'dp_paid')
+                                <a href="/pembayaran/{{ $sewa->id }}/bayar" class="btn btn-primary btn-sm mr-2">
+                                    <i class="fas fa-credit-card"></i>
+                                    Lanjutkan Pelunasan
+                                </a>
+                            @endif
+
+                            {{-- Nota --}}
+                            @if ($sewa->status_bayar->value === 'paid')
+                                <a href="/pembayaran/{{ $sewa->id }}/nota" class="btn btn-info btn-sm mr-2">
+                                    <i class="fas fa-file-invoice"></i>
+                                    Lihat Nota
+                                </a>
+                            @endif
+
+                            {{-- Edit Admin --}}
+                            @if (Auth::user()->role === 'admin')
+                                <a href="{{ route('penyewaan.edit', $sewa->id) }}" class="btn btn-secondary btn-sm mr-2">
+                                    <i class="fas fa-edit"></i>
+                                    Edit
+                                </a>
+                            @endif
+
+                        </div>
+
+                        <a href="{{ route('penyewaan.index') }}" class="btn btn-secondary btn-sm">
                             <i class="fas fa-arrow-left"></i> Kembali
                         </a>
                     </div>

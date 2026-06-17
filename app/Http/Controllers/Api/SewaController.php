@@ -72,13 +72,15 @@ class SewaController extends Controller
                 'tanggal_sewa' => $request->tanggal_sewa,
                 'tanggal_kembali' => $request->tanggal_kembali,
                 'total_biaya' => $total,
-                'status' => 0,
+                'dp' => 0,
+                'sisa_bayar' => 0,
                 'denda' => 0,
-
-                // default field midtrans
+                'status' => 0,
+                'status_bayar' => \App\Enums\StatusBayar::PENDING,
                 'transaction_status' => null,
                 'payment_type' => null,
-                'midtrans_order_id' => null,
+                'midtrans_order_id_dp' => null,
+                'midtrans_order_id_pelunasan' => null,
                 'snap_token' => null,
                 'snap_token_created_at' => null,
             ]);
@@ -148,7 +150,8 @@ class SewaController extends Controller
             'status_bayar',
             'payment_type',
             'transaction_status',
-            'midtrans_order_id'
+            'midtrans_order_id_dp',
+            'midtrans_order_id_pelunasan'
         ])) {
             return response()->json([
                 'success' => false,

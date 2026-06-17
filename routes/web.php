@@ -65,7 +65,9 @@ Route::middleware('CheckAuth')->group(function () {
     // Route tambahan transaksi
     Route::get('/pembayaran/{id}/bayar', [PembayaranController::class, 'bayar'])->name('pembayaran.bayar');
 
-    Route::get('/pembayaran/{id}/snap-token', [PembayaranController::class, 'snapToken']);
+    Route::get('/pembayaran/{id}/snap-tokenDP', [PembayaranController::class, 'snapTokenDp']);
+
+    Route::get('/pembayaran/{id}/snap-tokenPelunasan', [PembayaranController::class, 'snapTokenPelunasan']);
 
     Route::post('/pembayaran/update-status', [PembayaranController::class, 'updateStatus']);
 

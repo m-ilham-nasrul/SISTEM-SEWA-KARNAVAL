@@ -94,8 +94,21 @@
                         </button>
 
                         {{-- TOTAL --}}
-                        <div class="text-success font-weight-bold mb-3">
-                            Total Bayar : Rp {{ number_format($totalBayar) }}
+                        @php
+                            $dpAmount = $sewa->dp ?? 0;
+                            $sisaBayar = $sewa->sisa_bayar ?? max(0, $totalBayar - $dpAmount);
+                        @endphp
+
+                        <div class="mt-2 font-weight-bold text-success">
+                            Total Bayar: Rp {{ number_format($totalBayar) }}
+                        </div>
+
+                        <div class="mt-2 font-weight-bold text-primary">
+                            Sudah DP (50%): Rp {{ number_format($dpAmount) }}
+                        </div>
+
+                        <div class="mt-2 font-weight-bold text-danger">
+                            Sisa Pembayaran: Rp {{ number_format($sisaBayar) }}
                         </div>
 
                         {{-- BUTTON --}}
@@ -104,7 +117,8 @@
                                 <i class="fas fa-arrow-left"></i> Kembali
                             </a>
 
-                            @if (!$sewa->status_bayar)
+                            @php $sb = $sewa->status_bayar?->value ?? null; @endphp
+                            @if ($sb !== 'paid')
                                 <button id="btn-bayar" class="btn btn-success">
                                     <i class="fas fa-money-bill-wave"></i> Bayar Sekarang
                                 </button>
@@ -216,23 +230,30 @@
         $(function() {
             $('#btn-bayar').click(function(e) {
                 e.preventDefault();
+
                 let id = {{ $sewa->id }};
+                const sewaStatus = @json($sewa->status_bayar?->value ?? 'pending');
+                const snapEndpoint = sewaStatus === 'pending' ? `/pembayaran/${id}/snap-tokenDP` : `/pembayaran/${id}/snap-tokenPelunasan`;
+
                 $('#loading').fadeIn();
 
-                // AJAX GET snap token
                 $.ajax({
-                    url: `/pembayaran/${id}/snap-token`,
+                    url: snapEndpoint,
                     type: 'GET',
                     dataType: 'json',
                     success: function(res) {
                         $('#loading').fadeOut();
 
                         if (!res.status) {
-                            Swal.fire('Error', res.message, 'error');
+                            Swal.fire('Error', res.message || 'Gagal mendapatkan token pembayaran', 'error');
                             return;
                         }
 
-                        // Panggil Midtrans Snap
+                        if (!res.snap_token) {
+                            Swal.fire('Error', 'Snap token tidak tersedia', 'error');
+                            return;
+                        }
+
                         snap.pay(res.snap_token, {
                             onSuccess: function(result) {
                                 Swal.fire({
@@ -242,8 +263,7 @@
                                     confirmButtonText: 'OK',
                                     timer: 5000,
                                 }).then(() => {
-                                    window.location.href =
-                                        "{{ route('pembayaran.index') }}";
+                                    window.location.href = "{{ route('pembayaran.index') }}";
                                 });
                             },
                             onPending: function(result) {
@@ -254,9 +274,7 @@
                                 });
                             },
                             onError: function(result) {
-                                Swal.fire('Error',
-                                    'Pembayaran gagal. Silakan coba lagi',
-                                    'error');
+                                Swal.fire('Error', 'Pembayaran gagal. Silakan coba lagi', 'error');
                             },
                             onClose: function() {
                                 console.log('Payment popup ditutup');
@@ -265,8 +283,7 @@
                     },
                     error: function(xhr, status, error) {
                         $('#loading').fadeOut();
-                        Swal.fire('Error', 'Gagal koneksi server. Silakan refresh halaman',
-                            'error');
+                        Swal.fire('Error', xhr.responseJSON?.message || 'Gagal koneksi server. Silakan refresh halaman', 'error');
                     }
                 });
             });
