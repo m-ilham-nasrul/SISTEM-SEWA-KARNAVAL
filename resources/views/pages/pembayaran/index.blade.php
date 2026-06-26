@@ -182,10 +182,15 @@ $(document).ready(function() {
                     </span>
                 `;
             } else if (data.status == 0 && data.status_bayar === 'dp_paid') {
-                status = `
+                 status = `
                     <span class="badge badge-secondary px-3 py-2">
-                        <i class="fas fa-hourglass-half"></i>
+                        <i class="fas fa-check-circle mr-1"></i>
                         Masa Sewa
+                    </span>
+                    <br>
+                    <span class="badge badge-success px-3 py-2 mt-1">
+                        <i class="fas fa-money-check-alt mr-1"></i>
+                        Sudah DP
                     </span>
                 `;
             } else if (data.status == 1) {

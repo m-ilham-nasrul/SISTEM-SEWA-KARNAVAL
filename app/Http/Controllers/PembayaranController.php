@@ -131,6 +131,7 @@ class PembayaranController extends Controller
         return view('pages.pembayaran.bayar', compact('sewa'));
     }
 
+    /* ================= MIDTRANS DP ================= */
     public function snapTokenDp($id)
     {
         $sewa = Sewa::with(['penyewa.user'])->findOrFail($id);
@@ -257,7 +258,7 @@ class PembayaranController extends Controller
         }
     }
 
-    /* ================= MIDTRANS ================= */
+    /* ================= MIDTRANS Pelunasan ================= */
     public function snapTokenPelunasan($id)
     {
         $sewa = Sewa::with(['penyewa.user'])->findOrFail($id);
