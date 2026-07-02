@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Waktu pembuatan: 17 Jun 2026 pada 07.27
+-- Waktu pembuatan: 02 Jul 2026 pada 07.25
 -- Versi server: 8.0.30
 -- Versi PHP: 8.1.10
 
@@ -145,9 +145,9 @@ INSERT INTO `kostums` (`id`, `nama_kostum`, `image_kostum`, `kategori`, `catatan
 (6, 'Maskot Naga', '1769569343_Maskot Naga.jpg', 'Kostum', NULL, 100000, 0, '2026-01-25 14:14:03', '2026-01-28 17:01:29', NULL),
 (7, 'Maskot Ksatria Wibawa', '1769569469_Maskot Ksatria Wibawa.jpg', 'Kostum', NULL, 100000, 0, '2026-01-25 14:15:37', '2026-01-28 17:01:29', NULL),
 (8, 'Maskot Ksatria Amarah', '1769569485_Maskot Ksatria Amarah.jpg', 'Kostum', NULL, 100000, 0, '2026-01-25 14:16:39', '2026-01-28 17:01:29', NULL),
-(9, 'Maskot Iblis Kream', '1769569510_Maskot Iblis Kream.jpg', 'Full Body', NULL, 200000, 0, '2026-01-25 14:21:06', '2026-01-27 13:05:10', NULL),
-(10, 'Maskot Iblis Merah', '1769569536_Maskot Iblis Merah.jpg', 'Full Body', NULL, 200000, 0, '2026-01-25 14:22:10', '2026-01-27 13:05:36', NULL),
-(11, 'Monster Garuda', '1769569563_Monster Garuda.jpg', 'Full Body', NULL, 500000, 0, '2026-01-25 14:24:03', '2026-01-27 13:06:03', NULL),
+(9, 'Maskot Iblis Kream', '1769569510_Maskot Iblis Kream.jpg', 'Full Body', NULL, 300000, 0, '2026-01-25 14:21:06', '2026-01-27 13:05:10', NULL),
+(10, 'Maskot Iblis Merah', '1769569536_Maskot Iblis Merah.jpg', 'Full Body', NULL, 300000, 0, '2026-01-25 14:22:10', '2026-01-27 13:05:36', NULL),
+(11, 'Monster Garuda', '1769569563_Monster Garuda.jpg', 'Full Body', NULL, 300000, 0, '2026-01-25 14:24:03', '2026-01-27 13:06:03', NULL),
 (12, 'Monster Burung Hantu', '1769569585_Monster Burung Hantu.jpg', 'Full Body', NULL, 300000, 0, '2026-01-25 14:24:48', '2026-01-27 13:06:25', NULL),
 (13, 'Monster Engrang Kream', '1769569613_Monster Engrang Kream.jpg', 'Full Body', NULL, 300000, 0, '2026-01-25 14:26:18', '2026-01-27 13:06:53', NULL),
 (14, 'Maskot Engrang Coklat', '1769569669_Maskot Engrang Coklat.jpg', 'Full Body', NULL, 300000, 0, '2026-01-25 14:26:48', '2026-01-27 13:07:49', NULL),
@@ -220,7 +220,7 @@ CREATE TABLE `penyewas` (
 --
 
 INSERT INTO `penyewas` (`id`, `user_id`, `no_telp`, `alamat`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 2, '087695446780', 'Salaman', '2026-06-17 00:20:44', '2026-06-17 00:20:44', NULL);
+(1, 2, '087695446780', 'Salaman', '2026-07-01 23:32:18', '2026-07-01 23:32:18', NULL);
 
 -- --------------------------------------------------------
 
@@ -236,6 +236,13 @@ CREATE TABLE `sessions` (
   `payload` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
   `last_activity` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data untuk tabel `sessions`
+--
+
+INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
+('sPiMxyh2yvFkH2T2aI0tWWnauS52Xt1NGoGBuKnW', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', 'YToyOntzOjY6Il90b2tlbiI7czo0MDoiQk1CMUxKS1lBR01HcVkyOU1YRWdsTUVrblAyYjhrc29jWklXa1JmcCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1782974239);
 
 -- --------------------------------------------------------
 
@@ -292,8 +299,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `photo`, `password`, `role`, `remember_token`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'Admin', 'admin@gmail.com', NULL, '$2y$12$T4lJinOBTDcIAGs9JV8I8el6CSO3oEyJz3bLLwl8yr0o.fKVv00Dq', 'admin', NULL, '2026-06-17 00:20:43', '2026-06-17 00:20:43', NULL),
-(2, 'Nasrul', 'nasrul@gmail.com', NULL, '$2y$12$ohfPtGWgjGfaUKH3zbIrr.xJ0KnAx/eo0FT4sVizvSl9bzlWvBy2m', 'penyewa', NULL, '2026-06-17 00:20:44', '2026-06-17 00:20:44', NULL);
+(1, 'Admin', 'admin@gmail.com', NULL, '$2y$12$zPqdDupcgSyEk32d4aFAqe/wdJhi3PtrcCnCdjXp.DRlLzK0znLIy', 'admin', NULL, '2026-07-01 23:32:18', '2026-07-01 23:32:18', NULL),
+(2, 'Nasrul', 'nasrul@gmail.com', NULL, '$2y$12$xGy0IUGcduTpMdaVHinpgOXJ2PBrM/ijUSd/hVLDqunPoUPK.glEu', 'penyewa', NULL, '2026-07-01 23:32:18', '2026-07-01 23:32:18', NULL);
 
 --
 -- Indexes for dumped tables
