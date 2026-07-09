@@ -26,19 +26,19 @@
             <p class="text-light small">Silakan masuk untuk melanjutkan</p>
         </div>
 
-        <form method="POST" action="{{ route('login.process') }}">
+        <form method="POST" action="{{ route('login.process') }}" novalidate>
             @csrf
 
             <!-- Email -->
             <div class="form-group">
                 <input type="email" name="email" class="form-control input-modern" placeholder="Masukkan Email"
-                    value="{{ old('email') }}" required>
+                    value="{{ old('email') }}">
             </div>
 
             <!-- Password + Eye Toggle (Sesuai permintaan Anda) -->
             <div class="form-group position-relative">
                 <input type="password" name="password" id="password" class="form-control input-modern pr-5"
-                    placeholder="Masukkan Password" required>
+                    placeholder="Masukkan Password">
 
                 <span class="toggle-password" onclick="togglePassword('password','iconPass')">
                     <i id="iconPass" data-lucide="eye"></i>
@@ -82,14 +82,24 @@
             icon: 'success',
             title: 'Berhasil',
             text: "{{ session('success') }}",
-            timer: 1500,
-            showConfirmButton: false
+            confirmButtonText: 'OK',
+            showConfirmButton: true
         });
     @elseif (session('error'))
         Swal.fire({
             icon: 'error',
             title: 'Gagal',
-            text: "{{ session('error') }}"
+            text: "{{ session('error') }}",
+            confirmButtonText: 'OK',
+            showConfirmButton: true
+        });
+    @elseif ($errors->any())
+        Swal.fire({
+            icon: 'error',
+            title: 'Validasi Gagal',
+            html: `{!! implode('<br>', $errors->all()) !!}`,
+            confirmButtonText: 'OK',
+            showConfirmButton: true
         });
     @endif
 </script>

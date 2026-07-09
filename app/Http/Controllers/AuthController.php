@@ -16,10 +16,20 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $request->validate([
-            'email'    => 'required|email',
-            'password' => 'required',
-        ]);
+        $request->validate(
+            [
+                'email' => 'required|email',
+                'password' => 'required',
+            ],
+            [
+                'required' => ':attribute wajib diisi.',
+                'email' => ':attribute harus berupa email yang valid.',
+            ],
+            [
+                'email' => 'Email',
+                'password' => 'Password',
+            ]
+        );
 
         $credentials = $request->only('email', 'password');
         $checkLogin = Auth::attempt($credentials);
@@ -53,12 +63,27 @@ class AuthController extends Controller
 
     public function processRegister(Request $request)
     {
-        $request->validate([
-            'name' => 'required',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|confirmed|min:5',
-            'role' => 'required|in:admin,penyewa',
-        ]);
+        $request->validate(
+            [
+                'name' => 'required',
+                'email' => 'required|email|unique:users',
+                'password' => 'required|confirmed|min:8',
+                'role' => 'required|in:admin,penyewa',
+            ],
+            [
+                'required' => ':attribute wajib diisi.',
+                'email' => ':attribute harus berupa email yang valid.',
+                'unique' => ':attribute sudah terdaftar.',
+                'confirmed' => 'Konfirmasi :attribute tidak sesuai.',
+                'min' => ':attribute minimal :min karakter.',
+            ],
+            [
+                'name' => 'Nama',
+                'email' => 'Email',
+                'password' => 'Password',
+                'role' => 'Role',
+            ]
+        );
 
         User::create([
             'name' => $request->name,

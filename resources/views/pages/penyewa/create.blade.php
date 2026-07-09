@@ -86,4 +86,17 @@
         </div>
 
     </div>
+
+    @if (Auth::user()->role === 'penyewa')
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Lengkapi Data Penyewa',
+                    text: 'Silakan lengkapi data penyewa terlebih dahulu sebelum melakukan penyewaan.',
+                    confirmButtonText: 'OK'
+                });
+            });
+        </script>
+    @endif
 @endsection

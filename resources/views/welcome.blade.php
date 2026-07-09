@@ -166,8 +166,8 @@
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Logout berhasil',
-                                timer: 1500,
-                                showConfirmButton: false
+                                confirmButtonText: 'OK',
+                                showConfirmButton: true
                             }).then(() => {
                                 window.location.href = "{{ route('login') }}";
                             });

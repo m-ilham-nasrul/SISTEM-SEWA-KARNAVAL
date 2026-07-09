@@ -75,8 +75,8 @@
                     Swal.fire({
                         icon: 'success',
                         title: 'Logout berhasil',
-                        timer: 1000,
-                        showConfirmButton: false
+                        confirmButtonText: 'OK',
+                        showConfirmButton: true
                     });
 
                     setTimeout(() => {
@@ -117,24 +117,24 @@
                 icon: 'success',
                 title: 'Berhasil',
                 text: "{{ session('success') }}",
-                timer: 1500,
-                showConfirmButton: false
+                confirmButtonText: 'OK',
+                showConfirmButton: true
             });
         @elseif (session('error'))
             Swal.fire({
                 icon: 'error',
                 title: 'Gagal',
                 text: "{{ session('error') }}",
-                timer: 1500,
-                showConfirmButton: false
+                confirmButtonText: 'OK',
+                showConfirmButton: true
             });
         @elseif ($errors->any())
             Swal.fire({
                 icon: 'error',
                 title: 'Oops!',
                 html: `{!! implode('<br>', $errors->all()) !!}`,
-                timer: 1500,
-                showConfirmButton: false
+                confirmButtonText: 'OK',
+                showConfirmButton: true
             });
         @endif
     </script>

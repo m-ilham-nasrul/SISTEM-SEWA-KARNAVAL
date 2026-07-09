@@ -82,16 +82,27 @@ class PenyewaanController extends Controller
     {
         $user = Auth::user();
 
-        $request->validate([
-            'kostum_id'       => 'required|array',
-            'kostum_id.*'     => 'exists:kostums,id',
-            'tanggal_sewa'    => 'required|date',
-            'tanggal_kembali' => 'required|date|after_or_equal:tanggal_sewa',
-            'catatan'         => 'nullable|string',
-
-        ], [
-            '*' => 'Data penyewaan yang dimasukkan tidak valid.',
-        ]);
+        $request->validate(
+            [
+                'kostum_id'       => 'required|array',
+                'kostum_id.*'     => 'exists:kostums,id',
+                'tanggal_sewa'    => 'required|date',
+                'tanggal_kembali' => 'required|date|after_or_equal:tanggal_sewa',
+                'catatan'         => 'nullable|string',
+            ],
+            [
+                'required' => ':attribute wajib diisi.',
+                'date' => ':attribute tidak valid.',
+                'after_or_equal' => ':attribute harus sama atau setelah Tanggal Sewa.',
+                'array' => ':attribute wajib dipilih.',
+                'exists' => ':attribute tidak ditemukan.',
+            ],
+            [
+                'kostum_id' => 'Kostum',
+                'tanggal_sewa' => 'Tanggal Sewa',
+                'tanggal_kembali' => 'Tanggal Kembali',
+            ]
+        );
 
         if ($user->role === 'penyewa') {
             $penyewaId = $user->penyewa->id;
@@ -188,15 +199,33 @@ class PenyewaanController extends Controller
                 ->with('error', 'Penyewaan tidak dapat diperbarui karena DP sudah dibayar.');
         }
 
-        $request->validate([
-            'kostum_id'        => 'required|array',
-            'kostum_id.*'      => 'exists:kostums,id',
-            'tanggal_sewa'     => 'required|date',
-            'tanggal_kembali'  => 'required|date|after_or_equal:tanggal_sewa',
-            'catatan'          => 'nullable|string',
-            'status'           => 'nullable|integer',
-            'dp'               => 'nullable|numeric|min:0',
-        ]);
+        $request->validate(
+            [
+                'kostum_id'        => 'required|array',
+                'kostum_id.*'      => 'exists:kostums,id',
+                'tanggal_sewa'     => 'required|date',
+                'tanggal_kembali'  => 'required|date|after_or_equal:tanggal_sewa',
+                'catatan'          => 'nullable|string',
+                'status'           => 'nullable|integer',
+                'dp'               => 'nullable|numeric|min:0',
+            ],
+            [
+                'required' => ':attribute wajib diisi.',
+                'date' => ':attribute tidak valid.',
+                'after_or_equal' => ':attribute harus sama atau setelah Tanggal Sewa.',
+                'array' => ':attribute wajib dipilih.',
+                'exists' => ':attribute tidak ditemukan.',
+                'numeric' => ':attribute harus berupa angka.',
+                'min' => ':attribute minimal :min.',
+            ],
+            [
+                'kostum_id' => 'Kostum',
+                'tanggal_sewa' => 'Tanggal Sewa',
+                'tanggal_kembali' => 'Tanggal Kembali',
+                'status' => 'Status',
+                'dp' => 'DP',
+            ]
+        );
 
         // =========================
         // 1. Ambil kostum lama dari detail

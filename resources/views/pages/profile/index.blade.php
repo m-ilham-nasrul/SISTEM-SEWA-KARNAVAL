@@ -171,8 +171,8 @@
                         icon: 'success',
                         title: 'Berhasil',
                         text: 'Profil berhasil diperbarui',
-                        timer: 1500,
-                        showConfirmButton: false
+                        confirmButtonText: 'OK',
+                        showConfirmButton: true
                     }).then(() => {
                         window.location.href = "{{ route('dashboard') }}";
                     });
@@ -214,8 +214,8 @@
                         icon: 'success',
                         title: 'Password diubah',
                         text: 'Password berhasil diperbarui',
-                        timer: 1500,
-                        showConfirmButton: false
+                        confirmButtonText: 'OK',
+                        showConfirmButton: true
                     }).then(() => {
                         window.location.href = "{{ route('dashboard') }}";
                     });

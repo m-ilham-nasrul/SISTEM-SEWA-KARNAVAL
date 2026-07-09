@@ -274,8 +274,8 @@
                                     icon: 'success',
                                     title: 'Berhasil',
                                     text: res.message,
-                                    timer: 1500,
-                                    showConfirmButton: false
+                                    confirmButtonText: 'OK',
+                                    showConfirmButton: true
                                 });
                                 table.ajax.reload(null, false);
                             },
@@ -333,8 +333,8 @@
                                 icon: 'success',
                                 title: 'Pembayaran Berhasil',
                                 text: 'DP berhasil dibayar',
-                                timer: 2000,
-                                showConfirmButton: false
+                                confirmButtonText: 'OK',
+                                showConfirmButton: true
                             }).then(() => {
                                 table.ajax.reload(null, false);
                             });

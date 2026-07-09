@@ -31,16 +31,15 @@
             <p class="text-light small">Silakan isi data lengkap Anda</p>
         </div>
 
-        <form method="POST" action="{{ route('register.process') }}">
+        <form method="POST" action="{{ route('register.process') }}" novalidate>
             @csrf
 
             <div class="form-group">
-                <input type="text" name="name" class="form-control input-modern" placeholder="Nama Lengkap"
-                    required>
+                <input type="text" name="name" class="form-control input-modern" placeholder="Nama Lengkap">
             </div>
 
             <div class="form-group">
-                <input type="email" name="email" class="form-control input-modern" placeholder="Email" required>
+                <input type="email" name="email" class="form-control input-modern" placeholder="Email">
             </div>
 
             @php
@@ -122,26 +121,24 @@
                 icon: 'success',
                 title: 'Berhasil',
                 text: "{{ session('success') }}",
-                timer: 1500,
-                showConfirmButton: false
+                confirmButtonText: 'OK',
+                showConfirmButton: true
             });
-        @endif
-
-        @if (session('error'))
+        @elseif (session('error'))
             Swal.fire({
                 icon: 'error',
                 title: 'Gagal',
                 text: "{{ session('error') }}",
+                confirmButtonText: 'OK',
+                showConfirmButton: true
             });
-        @endif
-
-        @if ($errors->any())
+        @elseif ($errors->any())
             Swal.fire({
                 icon: 'error',
-                title: 'Gagal',
-                text: 'Masukkan data dengan benar',
-                timer: 1500,
-                showConfirmButton: false
+                title: 'Validasi Gagal',
+                html: `{!! implode('<br>', $errors->all()) !!}`,
+                confirmButtonText: 'OK',
+                showConfirmButton: true
             });
         @endif
     </script>

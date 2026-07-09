@@ -289,32 +289,55 @@
             =============================== */
             $(document).on('click', '.btn-request', function() {
                 let id = $(this).data('id');
+
                 Swal.fire({
                     title: 'Ajukan Pengembalian?',
                     text: 'Admin akan memverifikasi kondisi kostum.',
                     icon: 'question',
                     showCancelButton: true,
-                    confirmButtonText: 'Ya'
-                }).then(res => {
-                    if (res.isConfirmed) {
+                    confirmButtonText: 'Ya',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+
+                    if (result.isConfirmed) {
+
                         $.ajax({
                             url: `/pengembalian/request/${id}`,
                             type: 'POST',
                             headers: {
                                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                             },
-                            success: function(r) {
-                                table.ajax.reload(function() {
-                                    table.columns.adjust();
+
+                            success: function(res) {
+
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil',
+                                    text: 'Pengajuan pengembalian berhasil dikirim. Silakan menunggu verifikasi dari admin.',
+                                    confirmButtonText: 'OK'
+                                }).then(() => {
+                                    table.ajax.reload(null, false);
+                                });
+
+                            },
+
+                            error: function() {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Gagal',
+                                    text: 'Pengajuan pengembalian gagal dikirim.',
+                                    confirmButtonText: 'OK'
                                 });
                             }
                         });
+
                     }
+
                 });
             });
             /* ===============================
-           ADMIN VERIFIKASI
-            =============================== */
+               ADMIN VERIFIKASI
+                =============================== */
             $(document).on('click', '.btn-verifikasi', function() {
                 let id = $(this).data('id');
 
@@ -435,8 +458,8 @@
                             icon: 'info',
                             title: 'Pengembalian Diverifikasi',
                             text: 'Admin sudah memverifikasi pengembalian kostum. Silakan lanjutkan pembayaran.',
-                            timer: 1500,
-                            showConfirmButton: false
+                            confirmButtonText: 'OK',
+                            showConfirmButton: true
                         });
                     }
                 });
@@ -455,8 +478,8 @@
                             icon: 'warning',
                             title: 'Pengajuan Pengembalian',
                             text: 'Ada penyewa yang mengajukan pengembalian kostum.',
-                            timer: 1500,
-                            showConfirmButton: false
+                            confirmButtonText: 'OK',
+                            showConfirmButton: true
                         });
                     }
                 });

@@ -261,7 +261,7 @@
                                     title: 'Pembayaran Berhasil',
                                     text: 'Terima kasih, pembayaran sudah diterima!',
                                     confirmButtonText: 'OK',
-                                    timer: 5000,
+                                    showConfirmButton: true
                                 }).then(() => {
                                     window.location.href = "{{ route('pembayaran.index') }}";
                                 });

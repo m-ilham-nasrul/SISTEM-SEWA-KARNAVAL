@@ -18,7 +18,7 @@
                     </div>
 
                     <div class="card-body">
-                        <form action="{{ route('penyewaan.store') }}" method="POST">
+                        <form action="{{ route('penyewaan.store') }}" method="POST" novalidate>
                             @csrf
 
                             <!-- Penyewa -->
@@ -27,8 +27,7 @@
 
                                 @if (Auth::user()->role === 'admin')
                                     <!-- ADMIN BOLEH PILIH -->
-                                    <select name="penyewa_id" class="form-control @error('penyewa_id') is-invalid @enderror"
-                                        required>
+                                    <select name="penyewa_id" class="form-control @error('penyewa_id') is-invalid @enderror">
                                         <option value="">[ Pilih Penyewa ]</option>
 
                                         @forelse($penyewas as $penyewa)
@@ -158,7 +157,7 @@
                                 <label for="tanggal_sewa">Tanggal Sewa</label>
                                 <input type="date" name="tanggal_sewa" id="tanggal_sewa"
                                     class="form-control @error('tanggal_sewa') is-invalid @enderror"
-                                    value="{{ old('tanggal_sewa') }}" required>
+                                    value="{{ old('tanggal_sewa') }}">
                                 @error('tanggal_sewa')
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror
@@ -169,7 +168,7 @@
                                 <label for="tanggal_kembali">Tanggal Kembali</label>
                                 <input type="date" name="tanggal_kembali" id="tanggal_kembali"
                                     class="form-control @error('tanggal_kembali') is-invalid @enderror"
-                                    value="{{ old('tanggal_kembali') }}" required>
+                                    value="{{ old('tanggal_kembali') }}">
                                 @error('tanggal_kembali')
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror
