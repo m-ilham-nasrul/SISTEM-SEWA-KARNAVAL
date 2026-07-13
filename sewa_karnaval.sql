@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Waktu pembuatan: 02 Jul 2026 pada 07.25
+-- Waktu pembuatan: 13 Jul 2026 pada 07.31
 -- Versi server: 8.0.30
 -- Versi PHP: 8.1.10
 
@@ -220,7 +220,7 @@ CREATE TABLE `penyewas` (
 --
 
 INSERT INTO `penyewas` (`id`, `user_id`, `no_telp`, `alamat`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 2, '087695446780', 'Salaman', '2026-07-01 23:32:18', '2026-07-01 23:32:18', NULL);
+(1, 2, '087695446780', 'Salaman', '2026-07-13 00:29:05', '2026-07-13 00:29:05', NULL);
 
 -- --------------------------------------------------------
 
@@ -236,13 +236,6 @@ CREATE TABLE `sessions` (
   `payload` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
   `last_activity` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data untuk tabel `sessions`
---
-
-INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('sPiMxyh2yvFkH2T2aI0tWWnauS52Xt1NGoGBuKnW', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', 'YToyOntzOjY6Il90b2tlbiI7czo0MDoiQk1CMUxKS1lBR01HcVkyOU1YRWdsTUVrblAyYjhrc29jWklXa1JmcCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1782974239);
 
 -- --------------------------------------------------------
 
@@ -299,8 +292,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `photo`, `password`, `role`, `remember_token`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'Admin', 'admin@gmail.com', NULL, '$2y$12$zPqdDupcgSyEk32d4aFAqe/wdJhi3PtrcCnCdjXp.DRlLzK0znLIy', 'admin', NULL, '2026-07-01 23:32:18', '2026-07-01 23:32:18', NULL),
-(2, 'Nasrul', 'nasrul@gmail.com', NULL, '$2y$12$xGy0IUGcduTpMdaVHinpgOXJ2PBrM/ijUSd/hVLDqunPoUPK.glEu', 'penyewa', NULL, '2026-07-01 23:32:18', '2026-07-01 23:32:18', NULL);
+(1, 'Admin', 'admin@gmail.com', NULL, '$2y$12$qCpjpHTe25d2qD.iWsnsD.W7ek0iZv1OsiaTsXbek2ehEQeUBdtx.', 'admin', NULL, '2026-07-13 00:29:05', '2026-07-13 00:29:05', NULL),
+(2, 'Nasrul', 'nasrul@gmail.com', NULL, '$2y$12$oOcXnY8PqyJWg8bug0SHNOP24FQt9SN6rWetoDkijUPXn.5YnTMyG', 'penyewa', NULL, '2026-07-13 00:29:05', '2026-07-13 00:29:05', NULL);
 
 --
 -- Indexes for dumped tables
