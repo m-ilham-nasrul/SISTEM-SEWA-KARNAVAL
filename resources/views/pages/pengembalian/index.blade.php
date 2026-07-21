@@ -145,50 +145,154 @@
                     {
                         data: null,
                         render: function(d) {
+
                             let status = '';
-                            if (d.status == 0) {
-                                if (d.status_bayar === 'pending') {
-                                    status = `
+
+                            // ==========================================
+                            // MENUNGGU PEMBAYARAN
+                            // ==========================================
+
+                            if (
+                                d.status_bayar === 'pending' &&
+                                d.metode_pembayaran === 'dp'
+                            ) {
+
+                                status = `
                                     <span class="badge badge-danger px-3 py-2">
-                                        <i class="fas fa-clock"></i>
-                                        Menunggu DP
+                                        <i class="fas fa-hourglass-half mr-1"></i>
+                                        Menunggu Pembayaran DP
                                     </span>
                                 `;
-                                } else if (d.status_bayar === 'dp_paid') {
-                                    status = `
+
+                            } else if (
+                                d.status_bayar === 'pending' &&
+                                d.metode_pembayaran === 'lunas'
+                            ) {
+
+                                status = `
+                                    <span class="badge badge-warning px-3 py-2">
+                                        <i class="fas fa-wallet mr-1"></i>
+                                        Menunggu Pembayaran Lunas
+                                    </span>
+                                `;
+
+                            }
+
+                            // ==========================================
+                            // MASA SEWA
+                            // ==========================================
+                            else if (
+                                d.status == 0 &&
+                                d.status_bayar === 'dp_paid'
+                            ) {
+
+                                status = `
                                     <span class="badge badge-secondary px-3 py-2">
-                                        <i class="fas fa-check-circle mr-1"></i>
+                                        <i class="fas fa-user-clock mr-1"></i>
                                         Masa Sewa
                                     </span>
                                     <br>
-                                    <span class="badge badge-success px-3 py-2 mt-1">
+                                    <span class="badge badge-success mt-1 px-3 py-2">
                                         <i class="fas fa-money-check-alt mr-1"></i>
                                         Sudah DP
                                     </span>
                                 `;
-                                }
-                            } else if (d.status == 1) {
+
+                            } else if (
+                                d.status == 0 &&
+                                d.status_bayar === 'paid'
+                            ) {
+
                                 status = `
-                                    <span class="badge badge-warning px-3 py-2 ">
-                                        <i class="fas fa-user-check"></i>
+                                    <span class="badge badge-secondary px-3 py-2">
+                                        <i class="fas fa-user-clock mr-1"></i>
+                                        Masa Sewa
+                                    </span>
+                                    <br>
+                                    <span class="badge badge-primary mt-1 px-3 py-2">
+                                        <i class="fas fa-check-circle mr-1"></i>
+                                        Lunas
+                                    </span>
+                                `;
+
+                            }
+
+                            // ==========================================
+                            // MENUNGGU VERIFIKASI
+                            // ==========================================
+                            else if (d.status == 1) {
+
+                                status = `
+                                    <span class="badge badge-warning px-3 py-2">
+                                        <i class="fas fa-user-check mr-1"></i>
                                         Menunggu Verifikasi
                                     </span>
                                 `;
-                            } else if (d.status == 2) {
+                            }
+                            // ==========================================
+                            // SETELAH VERIFIKASI
+                            // ==========================================
+                            else if (
+                                d.status == 2 &&
+                                d.status_bayar === 'dp_paid'
+                            ) {
+
                                 status = `
                                     <span class="badge badge-primary px-3 py-2">
-                                        <i class="fas fa-money-bill-wave"></i>
+                                        <i class="fas fa-money-bill-wave mr-1"></i>
                                         Menunggu Pelunasan
                                     </span>
                                 `;
-                            } else if (d.status == 3) {
+                            }
+                            // ==========================================
+                            // MENUNGGU PEMBAYARAN DENDA
+                            // ==========================================
+                            else if (
+                                d.status == 2 &&
+                                d.status_bayar === 'paid' &&
+                                Number(d.denda) > 0
+                            ) {
+
+                                status = `
+                                    <span class="badge badge-danger px-3 py-2">
+                                        <i class="fas fa-exclamation-circle mr-1"></i>
+                                        Menunggu Pembayaran Denda
+                                    </span>
+                                `;
+
+                            }
+
+                            // ==========================================
+                            // PELUNASAN SUDAH LUNAS
+                            // ==========================================
+                            else if (
+                                d.status == 2 &&
+                                d.status_bayar === 'paid'
+                            ) {
+
                                 status = `
                                     <span class="badge badge-success px-3 py-2">
-                                        <i class="fas fa-check-circle"></i>
+                                        <i class="fas fa-check-circle mr-1"></i>
                                         Selesai
                                     </span>
                                 `;
+
                             }
+
+                            // ==========================================
+                            // TRANSAKSI SELESAI
+                            // ==========================================
+                            else if (d.status == 3) {
+
+                                status = `
+                                    <span class="badge badge-success px-3 py-2">
+                                        <i class="fas fa-check-circle mr-1"></i>
+                                        Selesai
+                                    </span>
+                                `;
+
+                            }
+
                             return status;
                         }
                     },
@@ -211,15 +315,23 @@
                             }
                             /* ===== PENYEWA AJUKAN ===== */
                             let returnBtn = '';
-                            if (role === 'penyewa' && data.status == 0 && data.status_bayar ===
-                                'dp_paid') {
+                            if (
+                                role === 'penyewa' &&
+                                data.status == 0 &&
+                                (
+                                    data.status_bayar === 'dp_paid' ||
+                                    data.status_bayar === 'paid'
+                                )
+                            ) {
                                 returnBtn = `
-                            <button class="btn btn-warning btn-sm mb-1 w-100 btn-request" data-id="${id}">
-                                <i class="fas fa-paper-plane"></i> Ajukan Pengembalian
-                            </button>
-                        `;
+                                    <button
+                                        class="btn btn-warning btn-sm mb-1 w-100 btn-request"
+                                        data-id="${id}">
+                                        <i class="fas fa-paper-plane"></i>
+                                        Ajukan Pengembalian
+                                    </button>
+                                `;
                             }
-
                             /* ===== ADMIN VERIFIKASI ===== */
                             if (role === 'admin' && data.status == 1) {
 
@@ -231,16 +343,25 @@
                             }
                             /* ===== PEMBAYARAN ===== */
                             let bayarBtn = '';
-                            if (role === 'penyewa' && data.status == 2 && data.status_bayar !==
-                                'paid') {
-                                const label = data.status_bayar === 'dp_paid' ?
-                                    'Lanjutkan Pelunasan' : 'Lanjutkan Pembayaran';
+                            if (
+                                role === 'penyewa' &&
+                                data.status == 2 &&
+                                (
+                                    data.status_bayar === 'dp_paid' ||
+                                    (data.status_bayar === 'paid' && Number(data.denda) > 0)
+                                )
+                            ) {
+                                const label =
+                                    data.status_bayar === 'dp_paid' ?
+                                    'Lanjutkan Pelunasan' :
+                                    'Bayar Denda';
                                 bayarBtn = `
-                            <a href="/pembayaran/${id}/bayar"
-                            class="btn btn-primary btn-sm mb-1 w-100">
-                            <i class="fas fa-credit-card"></i> ${label}
-                            </a>
-                        `;
+                                    <a href="/pembayaran/${id}/bayar"
+                                       class="btn btn-primary btn-sm mb-1 w-100">
+                                        <i class="fas fa-credit-card"></i>
+                                        ${label}
+                                    </a>
+                                `;
                             }
                             /* ===== DELETE ADMIN ===== */
                             let editBtn = '';
@@ -344,25 +465,25 @@
                 Swal.fire({
                     title: 'Verifikasi Kostum',
                     html: `
-        <label>Kondisi Kostum</label>
-        <select id="kondisi" class="form-control">
-            <option value="baik">Baik</option>
-            <option value="rusak">Rusak</option>
-        </select>
-
-        <div id="form-rusak" style="display:none;">
-            <label class="mt-2">Denda</label>
-            <input type="number" id="denda"
-                   class="form-control"
-                   value="0"
-                   min="0">
-
-            <label class="mt-2">Catatan Kerusakan</label>
-            <textarea id="catatan"
-                      class="form-control"
-                      placeholder="Isi jika ada kerusakan"></textarea>
-        </div>
-    `,
+                      <label>Kondisi Kostum</label>
+                      <select id="kondisi" class="form-control">
+                          <option value="baik">Baik</option>
+                          <option value="rusak">Rusak</option>
+                      </select>
+                    
+                      <div id="form-rusak" style="display:none;">
+                          <label class="mt-2">Denda</label>
+                          <input type="number" id="denda"
+                                 class="form-control"
+                                 value="0"
+                                 min="0">
+                        
+                          <label class="mt-2">Catatan Kerusakan</label>
+                          <textarea id="catatan"
+                                    class="form-control"
+                                    placeholder="Isi jika ada kerusakan"></textarea>
+                      </div>
+                  `,
                     showCancelButton: true,
                     confirmButtonText: 'Simpan',
 
@@ -445,24 +566,72 @@
                 }
             });
             /* ===============================
-                NOTIFIKASI PENYEWA
-            =============================== */
+               NOTIFIKASI PENYEWA
+            ================================ */
             let notified = false;
-            table.on('xhr', function() {
+
+            table.on('xhr.dt', function() {
+
                 if (notified) return;
-                let data = table.ajax.json().data;
-                data.forEach(function(d) {
-                    if (role === 'penyewa' && d.status == 2 && d.status_bayar === 'dp_paid') {
+
+                let json = table.ajax.json();
+                if (!json || !json.data) return;
+
+                json.data.forEach(function(d) {
+
+                    if (role !== 'penyewa') return;
+
+                    // ============================
+                    // DP -> Admin sudah verifikasi
+                    // ============================
+                    if (d.status == 2 &&
+                        d.status_bayar === 'dp_paid') {
+
                         notified = true;
+
                         Swal.fire({
                             icon: 'info',
                             title: 'Pengembalian Diverifikasi',
-                            text: 'Admin sudah memverifikasi pengembalian kostum. Silakan lanjutkan pembayaran.',
-                            confirmButtonText: 'OK',
-                            showConfirmButton: true
+                            text: 'Pengembalian telah diverifikasi Admin',
+                            confirmButtonText: 'OK'
                         });
+
+                        return;
                     }
+
+                    // ============================
+                    // Lunas -> Admin sudah verifikasi
+                    // ============================
+                    if (d.status == 2 &&
+                        d.status_bayar === 'paid') {
+
+                        notified = true;
+
+                        if (Number(d.denda) > 0) {
+
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Pengembalian Diverifikasi',
+                                text: 'Pengembalian telah diverifikasi Admin',
+                                confirmButtonText: 'OK'
+                            });
+
+                        } else {
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Pengembalian Selesai',
+                                text: 'Pengembalian telah diverifikasi Admin',
+                                confirmButtonText: 'OK'
+                            });
+
+                        }
+
+                        return;
+                    }
+
                 });
+
             });
             /* ===============================
                 NOTIFIKASI ADMIN

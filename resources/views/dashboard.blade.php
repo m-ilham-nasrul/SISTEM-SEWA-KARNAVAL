@@ -214,32 +214,76 @@
 
                                     <td>
 
-                                        @if ($item->status_bayar->value === 'pending')
+                                        {{-- Menunggu DP --}}
+                                        @if ($item->status_bayar->value === 'pending' && $item->metode_pembayaran === 'dp')
                                             <span class="badge badge-danger px-3 py-2">
-                                                <i class="fas fa-clock mr-1"></i>
-                                                Menunggu DP
+                                                <i class="fas fa-hourglass-half mr-1"></i>
+                                                Menunggu Pembayaran DP
                                             </span>
-                                        @elseif ($item->status == 0)
+
+                                            {{-- Menunggu Lunas --}}
+                                        @elseif ($item->status_bayar->value === 'pending' && $item->metode_pembayaran === 'lunas')
+                                            <span class="badge badge-warning px-3 py-2">
+                                                <i class="fas fa-wallet mr-1"></i>
+                                                Menunggu Pembayaran Lunas
+                                            </span>
+
+                                            {{-- Masa Sewa + DP --}}
+                                        @elseif ($item->status == 0 && $item->status_bayar->value === 'dp_paid')
                                             <span class="badge badge-secondary px-3 py-2">
-                                                <i class="fas fa-check-circle mr-1"></i>
+                                                <i class="fas fa-user-clock mr-1"></i>
                                                 Masa Sewa
                                             </span>
+
                                             <br>
-                                            <span class="badge badge-success px-3 py-2 mt-1">
+
+                                            <span class="badge badge-success mt-1 px-3 py-2">
                                                 <i class="fas fa-money-check-alt mr-1"></i>
                                                 Sudah DP
                                             </span>
+
+                                            {{-- Masa Sewa Lunas --}}
+                                        @elseif ($item->status == 0 && $item->status_bayar->value === 'paid')
+                                            <span class="badge badge-secondary px-3 py-2">
+                                                <i class="fas fa-user-clock mr-1"></i>
+                                                Masa Sewa
+                                            </span>
+
+                                            <br>
+
+                                            <span class="badge badge-primary mt-1 px-3 py-2">
+                                                <i class="fas fa-check-circle mr-1"></i>
+                                                Lunas
+                                            </span>
+
+                                            {{-- Menunggu Verifikasi --}}
                                         @elseif ($item->status == 1)
                                             <span class="badge badge-warning px-3 py-2">
-                                                <i class="fas fa-user-check"></i>
+                                                <i class="fas fa-user-check mr-1"></i>
                                                 Menunggu Verifikasi
                                             </span>
+
+                                            {{-- Menunggu Pelunasan --}}
                                         @elseif ($item->status == 2 && $item->status_bayar->value === 'dp_paid')
                                             <span class="badge badge-primary px-3 py-2">
                                                 <i class="fas fa-money-bill-wave mr-1"></i>
                                                 Menunggu Pelunasan
                                             </span>
-                                        @elseif ($item->status == 3 && $item->status_bayar->value === 'paid')
+
+                                            {{-- Paid tetapi masih ada denda --}}
+                                        @elseif ($item->status == 2 && $item->status_bayar->value === 'paid' && $item->denda > 0)
+                                            <span class="badge badge-danger px-3 py-2">
+                                                <i class="fas fa-exclamation-circle mr-1"></i>
+                                                Menunggu Pembayaran Denda
+                                            </span>
+
+                                            {{-- Selesai --}}
+                                        @elseif ($item->status == 2 && $item->status_bayar->value === 'paid' && $item->denda == 0)
+                                            <span class="badge badge-success px-3 py-2">
+                                                <i class="fas fa-check-circle mr-1"></i>
+                                                Selesai
+                                            </span>
+                                        @elseif ($item->status == 3)
                                             <span class="badge badge-success px-3 py-2">
                                                 <i class="fas fa-check-circle mr-1"></i>
                                                 Selesai

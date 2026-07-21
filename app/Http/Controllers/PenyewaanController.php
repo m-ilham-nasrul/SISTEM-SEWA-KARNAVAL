@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Enums\StatusBayar;
 use App\Models\Sewa;
 use App\Models\Penyewa;
@@ -33,6 +34,8 @@ class PenyewaanController extends Controller
                         ?? 'SEWA-' . str_pad($sewa->id, 4, '0', STR_PAD_LEFT),
                     'status' => $sewa->status,
                     'status_bayar' => $sewa->status_bayar,
+                    'metode_pembayaran' => $sewa->metode_pembayaran,
+                    'denda' => $sewa->denda,
                     'penyewa' => [
                         'user' => [
                             'name' => optional($sewa->penyewa->user)->name
@@ -53,8 +56,6 @@ class PenyewaanController extends Controller
 
         return view('pages.penyewaan.index');
     }
-
-
 
     public function create(Request $request)
     {
@@ -81,19 +82,19 @@ class PenyewaanController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-
         $request->validate(
             [
                 'kostum_id'       => 'required|array',
                 'kostum_id.*'     => 'exists:kostums,id',
-                'tanggal_sewa'    => 'required|date',
-                'tanggal_kembali' => 'required|date|after_or_equal:tanggal_sewa',
+                'tanggal_sewa' => 'required|date|after_or_equal:today',
+                // tanggal_kembali tidak perlu divalidasi dari input
                 'catatan'         => 'nullable|string',
+                'metode_pembayaran' => 'required|in:dp,lunas',
             ],
             [
                 'required' => ':attribute wajib diisi.',
                 'date' => ':attribute tidak valid.',
-                'after_or_equal' => ':attribute harus sama atau setelah Tanggal Sewa.',
+                'after_or_equal' => ':attribute tidak boleh sebelum hari ini.',
                 'array' => ':attribute wajib dipilih.',
                 'exists' => ':attribute tidak ditemukan.',
             ],
@@ -116,21 +117,30 @@ class PenyewaanController extends Controller
         $kostumList = Kostum::whereIn('id', $request->kostum_id)->get();
         $total = $kostumList->sum('harga');
 
-        $dp = $total * 0.5;
-        $sisaBayar = $total - $dp;
+        if ($request->metode_pembayaran == 'dp') {
+
+            $dp = $total * 0.5;
+            $sisaBayar = $total - $dp;
+        } else {
+
+            $dp = 0;
+            $sisaBayar = 0;
+        }
+
+        $statusBayar = StatusBayar::PENDING;
 
         $sewa = Sewa::create([
             'kode_sewa'       => 'SEWA-' . now()->format('YmdHis'),
             'penyewa_id'      => $penyewaId,
             'tanggal_sewa'    => $request->tanggal_sewa,
-            'tanggal_kembali' => $request->tanggal_kembali,
+            'tanggal_kembali' => Carbon::parse($request->tanggal_sewa)->addDays(7),
             'total_biaya'     => $total,
             'dp'              => $dp,
             'sisa_bayar'      => $sisaBayar,
             'catatan'         => $request->catatan,
-
+            'metode_pembayaran' => $request->metode_pembayaran,
             'status'          => 0,
-            'status_bayar'    => 'pending',
+            'status_bayar' => $statusBayar,
 
             'denda'           => 0,
         ]);
@@ -171,7 +181,8 @@ class PenyewaanController extends Controller
 
     public function edit($id)
     {
-        $sewa = Sewa::findOrFail($id);
+        $sewa = Sewa::with(['details.kostum', 'penyewa.user'])
+            ->findOrFail($id);
 
         if ($sewa->status_bayar !== StatusBayar::PENDING) {
             return redirect()->route('penyewaan.index')
@@ -180,17 +191,31 @@ class PenyewaanController extends Controller
 
         $currentIds = $sewa->details->pluck('kostum_id')->toArray();
 
+        $totalBayar = $sewa->total_biaya;
+        $dp         = $sewa->dp;
+        $sisaBayar  = $sewa->sisa_bayar;
+
+        $metode = old(
+            'metode_pembayaran',
+            $sewa->metode_pembayaran
+        );
+
         return view('pages.penyewaan.edit', [
-            'sewa'      => $sewa,
-            'kostums'   => Kostum::all(),
-            'selected'  => $currentIds,
-            'penyewas'  => Penyewa::all(),
+            'sewa'        => $sewa,
+            'kostums'     => Kostum::all(),
+            'selected'    => $currentIds,
+            'penyewas'    => Penyewa::all(),
+
+            'totalBayar'  => $totalBayar,
+            'dp'          => $dp,
+            'sisaBayar'   => $sisaBayar,
+            'metode'      => $metode,
         ]);
     }
 
     public function update(Request $request, $id)
     {
-        $sewa = Sewa::with('details')->findOrFail($id);
+        $sewa = Sewa::with(['details.kostum', 'penyewa.user'])->findOrFail($id);
         $user = Auth::user();
 
         // penyewa tidak boleh update jika sudah dikembalikan
@@ -203,16 +228,16 @@ class PenyewaanController extends Controller
             [
                 'kostum_id'        => 'required|array',
                 'kostum_id.*'      => 'exists:kostums,id',
-                'tanggal_sewa'     => 'required|date',
-                'tanggal_kembali'  => 'required|date|after_or_equal:tanggal_sewa',
+                'tanggal_sewa' => 'required|date|after_or_equal:today',
+                // tanggal_kembali tidak perlu divalidasi dari input
                 'catatan'          => 'nullable|string',
-                'status'           => 'nullable|integer',
-                'dp'               => 'nullable|numeric|min:0',
+                'status'             => 'nullable|integer',
+                'metode_pembayaran'  => 'required|in:dp,lunas',
             ],
             [
                 'required' => ':attribute wajib diisi.',
                 'date' => ':attribute tidak valid.',
-                'after_or_equal' => ':attribute harus sama atau setelah Tanggal Sewa.',
+                'after_or_equal' => ':attribute tidak boleh sebelum hari ini.',
                 'array' => ':attribute wajib dipilih.',
                 'exists' => ':attribute tidak ditemukan.',
                 'numeric' => ':attribute harus berupa angka.',
@@ -226,6 +251,15 @@ class PenyewaanController extends Controller
                 'dp' => 'DP',
             ]
         );
+        if ($user->role === 'penyewa') {
+            $penyewaId = $user->penyewa->id;
+        } else {
+            $request->validate([
+                'penyewa_id' => 'required|exists:penyewas,id'
+            ]);
+
+            $penyewaId = $request->penyewa_id;
+        }
 
         // =========================
         // 1. Ambil kostum lama dari detail
@@ -233,47 +267,71 @@ class PenyewaanController extends Controller
         $oldKostumIds = $sewa->details->pluck('kostum_id')->toArray();
 
         // =========================
-        // 2. Kembalikan status kostum lama
+        // 2. Validasi kostum baru
+        // =========================
+        foreach ($request->kostum_id as $idKostum) {
+
+            $kostum = Kostum::findOrFail($idKostum);
+
+            if ($kostum->sedangDipakai($sewa->id)) {
+
+                return back()
+                    ->withInput()
+                    ->with('error', "Kostum {$kostum->nama_kostum} sedang digunakan.");
+            }
+        }
+        // =========================
+        // 3. Kembalikan status kostum lama
         // =========================
         Kostum::whereIn('id', $oldKostumIds)->update([
             'status' => 0
         ]);
 
         // =========================
-        // 3. Hapus detail lama
+        // 4. Hapus detail lama
         // =========================
         $sewa->details()->delete();
 
         // =========================
-        // 4. Ambil kostum baru
+        // 5. Ambil kostum baru
         // =========================
         $newKostums = Kostum::whereIn('id', $request->kostum_id)->get();
 
         // =========================
-        // 5. Hitung total
+        // 6. Hitung total
         // =========================
-        $total = $newKostums->sum('harga') + ($request->denda ?? 0);
-        $dp = $total * 0.5;
-        $sisaBayar = $total - $dp;
+        $total = $newKostums->sum('harga');
+        if ($request->metode_pembayaran == 'dp') {
+
+            $dp = $total * 0.5;
+            $sisaBayar = $total - $dp;
+        } else {
+
+            $dp = 0;
+            $sisaBayar = 0;
+        }
+        $statusBayar = StatusBayar::PENDING;
 
         // =========================
-        // 6. Update sewa utama
+        // 7. Update sewa utama
         // =========================
         $sewa->update([
-            'penyewa_id'      => $request->penyewa_id,
+            'penyewa_id'      => $penyewaId,
             'tanggal_sewa'    => $request->tanggal_sewa,
-            'tanggal_kembali' => $request->tanggal_kembali,
+            'tanggal_kembali' => Carbon::parse($request->tanggal_sewa)->addDays(7),
             'catatan'         => $request->catatan,
+            'metode_pembayaran' => $request->metode_pembayaran,
             'status'          => $request->status,
             'denda'           => $request->denda ?? 0,
 
             'total_biaya'     => $total,
             'dp'              => $dp,
             'sisa_bayar'      => $sisaBayar,
+            'status_bayar'    => $statusBayar,
         ]);
 
         // =========================
-        // 7. Insert detail baru
+        // 8. Insert detail baru
         // =========================
         foreach ($newKostums as $kostum) {
             $sewa->details()->create([
@@ -287,7 +345,7 @@ class PenyewaanController extends Controller
             $kostum->update(['status' => 1]);
         }
 
-        return redirect()->route('pengembalian.index')
+        return redirect()->route('penyewaan.index')
             ->with('success', 'Penyewaan berhasil diperbarui!');
     }
 
@@ -302,21 +360,16 @@ class PenyewaanController extends Controller
                 'message' => 'Penyewaan tidak dapat dibatalkan karena DP sudah dibayar'
             ], 403);
         }
-
         try {
             $ids = $sewa->details->pluck('kostum_id');
-
             // kembalikan status kostum
             Kostum::whereIn('id', $ids)->update([
                 'status' => 0
             ]);
-
             // hapus detail
             $sewa->details()->delete();
-
             // hapus sewa
             $sewa->delete();
-
             return response()->json([
                 'status' => true,
                 'message' => 'Penyewaan berhasil dibatalkan'

@@ -27,7 +27,11 @@ class DashboardController extends Controller
             $penyewa = Penyewa::count();
             $kostum = Kostum::count();
 
-            $sewa = Sewa::where('status', '!=', 3)
+            $sewa = Sewa::where('status', 0)
+                ->whereIn('status_bayar', [
+                    StatusBayar::DP_PAID,
+                    StatusBayar::PAID,
+                ])
                 ->count();
             $total_sewa = Sewa::count();
 
@@ -55,7 +59,11 @@ class DashboardController extends Controller
             if ($user->penyewa) {
 
                 $sewa = Sewa::where('penyewa_id', $user->penyewa->id)
-                    ->where('status', '!=', 3)
+                    ->where('status', 0)
+                    ->whereIn('status_bayar', [
+                        StatusBayar::DP_PAID,
+                        StatusBayar::PAID,
+                    ])
                     ->count();
 
                 $total_transaksi = Sewa::where('penyewa_id', $user->penyewa->id)
@@ -97,7 +105,11 @@ class DashboardController extends Controller
             return response()->json([
                 'penyewa' => Penyewa::count(),
                 'kostum' => Kostum::count(),
-                'sewa' => Sewa::where('status', '!=', 3)
+                'sewa' => Sewa::where('status', 0)
+                    ->whereIn('status_bayar', [
+                        StatusBayar::DP_PAID,
+                        StatusBayar::PAID,
+                    ])
                     ->count(),
 
                 'total_sewa' => Sewa::count(),
@@ -119,7 +131,11 @@ class DashboardController extends Controller
         if ($user->penyewa) {
             return response()->json([
                 'sewa' => Sewa::where('penyewa_id', $user->penyewa->id)
-                    ->where('status', '!=', 3)
+                    ->where('status', 0)
+                    ->whereIn('status_bayar', [
+                        StatusBayar::DP_PAID,
+                        StatusBayar::PAID,
+                    ])
                     ->count(),
                 'total_transaksi' => Sewa::where('penyewa_id', $user->penyewa->id)
                     ->whereIn('status_bayar', [

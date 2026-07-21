@@ -24,15 +24,15 @@ class SewaController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'penyewa_id' => 'required|integer',
-            'items' => 'required|array|min:1',
+            'penyewa_id' => 'required|exists:penyewas,id',
 
+            'items' => 'required|array|min:1',
             'items.*.kostum_id' => 'required|exists:kostums,id',
             'items.*.qty' => 'required|integer|min:1',
             'items.*.harga' => 'required|numeric|min:0',
 
-            'tanggal_sewa' => 'required|date',
-            'tanggal_kembali' => 'required|date|after_or_equal:tanggal_sewa'
+            'tanggal_sewa' => 'required|date|after_or_equal:today',
+            'tanggal_kembali' => 'required|date|after:tanggal_sewa',
         ]);
 
         if ($validator->fails()) {
@@ -72,8 +72,8 @@ class SewaController extends Controller
                 'tanggal_sewa' => $request->tanggal_sewa,
                 'tanggal_kembali' => $request->tanggal_kembali,
                 'total_biaya' => $total,
-                'dp' => 0,
-                'sisa_bayar' => 0,
+                'dp' => $total * 0.5,
+                'sisa_bayar' => $total * 0.5,
                 'denda' => 0,
                 'status' => 0,
                 'status_bayar' => \App\Enums\StatusBayar::PENDING,
@@ -158,10 +158,35 @@ class SewaController extends Controller
                 'message' => 'Field pembayaran tidak boleh diubah manual'
             ], 403);
         }
-
+        if ($sewa->status_bayar != \App\Enums\StatusBayar::PENDING) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data tidak dapat diubah karena pembayaran DP sudah dilakukan.'
+            ], 403);
+        }
         try {
             DB::beginTransaction();
 
+            $validator = Validator::make($request->all(), [
+                'penyewa_id' => 'required|exists:penyewas,id',
+                'tanggal_sewa' => 'required|date|after_or_equal:today',
+                'tanggal_kembali' => 'required|date|after:tanggal_sewa',
+
+                'items' => 'required|array|min:1',
+                'items.*.kostum_id' => 'required|exists:kostums,id',
+                'items.*.qty' => 'required|integer|min:1',
+                'items.*.harga' => 'required|numeric|min:0',
+            ]);
+
+            if ($validator->fails()) {
+
+                DB::rollBack();
+
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors()
+                ], 422);
+            }
             $data = $request->only([
                 'penyewa_id',
                 'tanggal_sewa',
@@ -184,6 +209,12 @@ class SewaController extends Controller
 
                 $total = 0;
 
+                $ids = collect($request->items)->pluck('kostum_id');
+
+                if ($ids->count() !== $ids->unique()->count()) {
+                    throw new \Exception("Tidak boleh memilih kostum yang sama lebih dari sekali");
+                }
+
                 foreach ($request->items as $item) {
 
                     $kostum = Kostum::find($item['kostum_id']);
@@ -205,7 +236,11 @@ class SewaController extends Controller
                     $kostum->update(['status' => 1]);
                 }
 
-                $sewa->update(['total_biaya' => $total]);
+                $sewa->update([
+                    'total_biaya' => $total,
+                    'dp' => $total * 0.5,
+                    'sisa_bayar' => $total * 0.5,
+                ]);
             }
 
             DB::commit();
@@ -235,6 +270,13 @@ class SewaController extends Controller
                 'success' => false,
                 'message' => 'Data penyewaan tidak ditemukan'
             ], 404);
+        }
+
+        if ($sewa->status_bayar != \App\Enums\StatusBayar::PENDING) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data tidak dapat dihapus karena pembayaran sudah dilakukan.'
+            ], 403);
         }
 
         DB::beginTransaction();

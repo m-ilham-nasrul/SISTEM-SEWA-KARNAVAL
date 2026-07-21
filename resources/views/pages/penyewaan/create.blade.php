@@ -1,5 +1,4 @@
 @extends('layout.app')
-
 @section('title', 'Tambah Penyewaan')
 
 @section('content')
@@ -27,7 +26,8 @@
 
                                 @if (Auth::user()->role === 'admin')
                                     <!-- ADMIN BOLEH PILIH -->
-                                    <select name="penyewa_id" class="form-control @error('penyewa_id') is-invalid @enderror">
+                                    <select name="penyewa_id"
+                                        class="form-control @error('penyewa_id') is-invalid @enderror">
                                         <option value="">[ Pilih Penyewa ]</option>
 
                                         @forelse($penyewas as $penyewa)
@@ -104,15 +104,18 @@
                                     $sisaBayar = $totalBayar - $dp;
                                 @endphp
                                 <div class="mt-2 font-weight-bold text-success">
-                                    Total Bayar: Rp {{ number_format($totalBayar) }}
+                                    Total Biaya :
+                                    <span id="totalBayar">Rp {{ number_format($totalBayar) }}</span>
                                 </div>
 
                                 <div class="mt-2 font-weight-bold text-primary">
-                                    DP (50%): Rp {{ number_format($dp) }}
+                                    <span id="labelBayar">DP (50%)</span> :
+                                    <span id="nominalBayar">Rp {{ number_format($dp) }}</span>
                                 </div>
 
-                                <div class="mt-2 font-weight-bold text-danger">
-                                    Sisa Pembayaran: Rp {{ number_format($sisaBayar) }}
+                                <div class="mt-2 font-weight-bold text-warning">
+                                    Sisa Pembayaran :
+                                    <span id="sisaBayar">Rp {{ number_format($sisaBayar) }}</span>
                                 </div>
                             </div>
 
@@ -140,11 +143,13 @@
                                             </ul>
 
                                             <div class="alert alert-info text-center font-weight-bold">
-                                                DP (50%) : Rp {{ number_format($dp) }}
+                                                <span id="modalLabelBayar">DP (50%)</span> :
+                                                <span id="modalNominalBayar">Rp {{ number_format($dp) }}</span>
                                             </div>
 
                                             <div class="alert alert-warning text-center font-weight-bold">
-                                                Sisa Pembayaran : Rp {{ number_format($sisaBayar) }}
+                                                Sisa Pembayaran :
+                                                <span id="modalSisaBayar">Rp {{ number_format($sisaBayar) }}</span>
                                             </div>
                                         </div>
 
@@ -155,7 +160,7 @@
                             <!-- Tanggal Sewa -->
                             <div class="form-group">
                                 <label for="tanggal_sewa">Tanggal Sewa</label>
-                                <input type="date" name="tanggal_sewa" id="tanggal_sewa"
+                                <input type="date" name="tanggal_sewa" id="tanggal_sewa" min="{{ date('Y-m-d') }}"
                                     class="form-control @error('tanggal_sewa') is-invalid @enderror"
                                     value="{{ old('tanggal_sewa') }}">
                                 @error('tanggal_sewa')
@@ -168,7 +173,11 @@
                                 <label for="tanggal_kembali">Tanggal Kembali</label>
                                 <input type="date" name="tanggal_kembali" id="tanggal_kembali"
                                     class="form-control @error('tanggal_kembali') is-invalid @enderror"
-                                    value="{{ old('tanggal_kembali') }}">
+                                    value="{{ old('tanggal_kembali') }}" readonly>
+                                <small class="text-muted">
+                                    Tanggal kembali otomatis 7 hari setelah tanggal sewa.
+                                </small>
+
                                 @error('tanggal_kembali')
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror
@@ -183,18 +192,32 @@
                                 @enderror
                             </div>
 
+                            <!-- Metode Pembayaran -->
+                            <div class="form-group">
+                                <label>Metode Pembayaran</label>
+
+                                <select name="metode_pembayaran"
+                                    class="form-control @error('metode_pembayaran') is-invalid @enderror">
+
+                                    <option value="dp" {{ old('metode_pembayaran') == 'dp' ? 'selected' : '' }}>
+                                        Bayar DP (50%)
+                                    </option>
+
+                                    <option value="lunas" {{ old('metode_pembayaran') == 'lunas' ? 'selected' : '' }}>
+                                        Bayar Lunas
+                                    </option>
+                                </select>
+
+                                @error('metode_pembayaran')
+                                    <small class="text-danger">{{ $message }}</small>
+                                @enderror
+                            </div>
+
                             <!-- Status -->
                             <div class="form-group">
                                 <label>Status Sewa</label>
-                                <select name="status" class="form-control">
-                                    <option value="0" {{ old('status', 0) == 0 ? 'selected' : '' }}>Masa Sewa
-                                    </option>
-
-                                    @if (Auth::user()->role === 'admin')
-                                        <option value="1" {{ old('status') == 1 ? 'selected' : '' }}>Sudah Kembali
-                                        </option>
-                                    @endif
-                                </select>
+                                <input type="text" class="form-control" value="Masa Sewa" readonly>
+                                <input type="hidden" name="status" value="0">
                             </div>
 
                             <a href="{{ route('penyewaan.select') }}" class="btn btn-secondary">
@@ -214,4 +237,62 @@
         </div>
         <!-- END FORM -->
     </div>
+    @push('scripts')
+        <script>
+            document.getElementById('tanggal_sewa').addEventListener('change', function() {
+
+                if (!this.value) return;
+
+                let tanggal = new Date(this.value);
+
+                tanggal.setDate(tanggal.getDate() + 7);
+
+                let tahun = tanggal.getFullYear();
+                let bulan = String(tanggal.getMonth() + 1).padStart(2, '0');
+                let hari = String(tanggal.getDate()).padStart(2, '0');
+
+                document.getElementById('tanggal_kembali').value =
+                    `${tahun}-${bulan}-${hari}`;
+            });
+
+            const metode = document.querySelector('[name="metode_pembayaran"]');
+
+            const total = {{ $totalBayar }};
+            const dp = total * 0.5;
+            const sisa = total - dp;
+
+            function formatRupiah(angka) {
+                return 'Rp ' + angka.toLocaleString('id-ID');
+            }
+
+            function updatePembayaran() {
+
+                if (metode.value === 'dp') {
+
+                    document.getElementById('labelBayar').innerText = 'DP (50%)';
+                    document.getElementById('nominalBayar').innerText = formatRupiah(dp);
+                    document.getElementById('sisaBayar').innerText = formatRupiah(sisa);
+
+                    document.getElementById('modalLabelBayar').innerText = 'DP (50%)';
+                    document.getElementById('modalNominalBayar').innerText = formatRupiah(dp);
+                    document.getElementById('modalSisaBayar').innerText = formatRupiah(sisa);
+
+                } else {
+
+                    document.getElementById('labelBayar').innerText = 'Bayar Sekarang';
+                    document.getElementById('nominalBayar').innerText = formatRupiah(total);
+                    document.getElementById('sisaBayar').innerText = formatRupiah(0);
+
+                    document.getElementById('modalLabelBayar').innerText = 'Bayar Sekarang';
+                    document.getElementById('modalNominalBayar').innerText = formatRupiah(total);
+                    document.getElementById('modalSisaBayar').innerText = formatRupiah(0);
+
+                }
+            }
+
+            metode.addEventListener('change', updatePembayaran);
+
+            updatePembayaran();
+        </script>
+    @endpush
 @endsection

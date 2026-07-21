@@ -66,6 +66,8 @@ Route::middleware('CheckAuth')->group(function () {
     Route::get('/pembayaran/{id}/bayar', [PembayaranController::class, 'bayar'])->name('pembayaran.bayar');
 
     Route::get('/pembayaran/{id}/snap-tokenDP', [PembayaranController::class, 'snapTokenDp']);
+    
+    Route::get('/pembayaran/{id}/snap-tokenLunas', [PembayaranController::class, 'snapTokenLunas']);
 
     Route::get('/pembayaran/{id}/snap-tokenPelunasan', [PembayaranController::class, 'snapTokenPelunasan']);
 

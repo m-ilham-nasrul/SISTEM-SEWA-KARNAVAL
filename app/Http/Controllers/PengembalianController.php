@@ -57,6 +57,7 @@ class PengembalianController extends Controller
                     'denda' => $sewa->denda,
                     'kondisi' => $sewa->kondisi,   // TAMBAHAN
                     'catatan' => $sewa->catatan,
+                    'metode_pembayaran' => $sewa->metode_pembayaran,
                     'status' => $sewa->status,
                     'status_bayar' => $sewa->status_bayar
                 ];
@@ -80,10 +81,16 @@ class PengembalianController extends Controller
                 abort(403);
             }
         }
-
+        if ($sewa->status != 0) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Pengembalian tidak dapat diajukan.'
+            ], 400);
+        }
         // status: 1 = diajukan pengembalian
         $sewa->update([
-            'status' => 1
+            'status' => 1,
+            'tanggal_pengembalian' => now(),
         ]);
 
         return response()->json([
@@ -105,6 +112,12 @@ class PengembalianController extends Controller
             'catatan' => 'required_if:kondisi,rusak|nullable|string'
         ]);
         $sewa = Sewa::with('details.kostum')->findOrFail($id);
+        if ($sewa->status != 1) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Pengembalian belum diajukan oleh penyewa.'
+            ], 400);
+        }
         // kembalikan semua kostum
         foreach ($sewa->details as $detail) {
             $detail->kostum->update([
@@ -112,15 +125,23 @@ class PengembalianController extends Controller
             ]);
         }
 
-        $tanggalKembali = Carbon::parse($sewa->tanggal_kembali);
-        $tanggalSekarang = Carbon::now();
+        $tanggalKembali = Carbon::parse($sewa->tanggal_kembali)->startOfDay();
+
+        if (!$sewa->tanggal_pengembalian) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Tanggal pengembalian belum tersedia.'
+            ], 400);
+        }
+
+        $tanggalPengembalian = Carbon::parse($sewa->tanggal_pengembalian)->startOfDay();
 
         $hariTerlambat = max(
             0,
-            $tanggalKembali->diffInDays($tanggalSekarang, false)
+            $tanggalKembali->diffInDays($tanggalPengembalian, false)
         );
 
-        $dendaTerlambat = $hariTerlambat * 10000; // Rp10.000 per hari
+        $dendaTerlambat = $hariTerlambat * 10000;
 
         $dendaKerusakan = $request->kondisi === 'rusak'
             ? ($request->denda ?? 0)

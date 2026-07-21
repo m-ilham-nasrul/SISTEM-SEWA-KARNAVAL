@@ -107,78 +107,172 @@
                     {
                         data: null,
                         render: d => {
+
                             let status = '';
                             let extra = '';
-                            if (d.status == 0 && d.status_bayar === 'pending') {
+
+                            // ===============================
+                            // Menunggu Pembayaran
+                            // ===============================
+                            if (d.status_bayar === 'pending' &&
+                                d.metode_pembayaran === 'dp') {
 
                                 status = `
-                                    <span class="badge badge-danger px-3 py-2">
-                                        <i class="fas fa-clock mr-1"></i>
-                                        Menunggu DP
-                                    </span>
-                                `;
-
-                            } else if (d.status == 0 && d.status_bayar === 'dp_paid') {
+                            <span class="badge badge-danger px-3 py-2">
+                                <i class="fas fa-hourglass-half mr-1"></i>
+                                Menunggu Pembayaran DP
+                            </span>
+                        `;
+                            } else if (d.status_bayar === 'pending' &&
+                                d.metode_pembayaran === 'lunas') {
 
                                 status = `
-                                    <span class="badge badge-secondary px-3 py-2">
-                                        <i class="fas fa-check-circle mr-1"></i>
-                                        Masa Sewa
-                                    </span>
-                                    <br>
-                                    <span class="badge badge-success px-3 py-2 mt-1">
-                                        <i class="fas fa-money-check-alt mr-1"></i>
-                                        Sudah DP
-                                    </span>
-                                `;
+                            <span class="badge badge-warning px-3 py-2">
+                                <i class="fas fa-wallet mr-1"></i>
+                                Menunggu Pembayaran Lunas
+                            </span>
+                        `;
+                            }
+
+                            // ===============================
+                            // Masa Sewa (DP)
+                            // ===============================
+                            else if (d.status == 0 &&
+                                d.status_bayar === 'dp_paid') {
+
+                                status = `
+                            <span class="badge badge-secondary px-3 py-2">
+                                <i class="fas fa-user-clock mr-1"></i>
+                                Masa Sewa
+                            </span>
+                            <br>
+                            <span class="badge badge-success mt-1 px-3 py-2">
+                                <i class="fas fa-money-check-alt mr-1"></i>
+                                Sudah DP
+                            </span>
+                        `;
+                            }
+
+                            // ===============================
+                            // Masa Sewa (Lunas)
+                            // ===============================
+                            else if (d.status == 0 &&
+                                d.status_bayar === 'paid') {
+
+                                status = `
+                            <span class="badge badge-secondary px-3 py-2">
+                                <i class="fas fa-user-clock mr-1"></i>
+                                Masa Sewa
+                            </span>
+                            <br>
+                            <span class="badge badge-primary mt-1 px-3 py-2">
+                                <i class="fas fa-check-circle mr-1"></i>
+                                Lunas
+                            </span>
+                        `;
+                            }
+
+                            // ===============================
+                            // Menunggu Verifikasi
+                            // ===============================
+                            else if (d.status == 1) {
+
+                                status = `
+                            <span class="badge badge-warning px-3 py-2">
+                                <i class="fas fa-user-check mr-1"></i>
+                                Menunggu Verifikasi
+                            </span>
+                        `;
+                            }
+
+                            // ===============================
+                            // Menunggu Pelunasan
+                            // ===============================
+                            else if (d.status == 2 &&
+                                d.status_bayar === 'dp_paid') {
+
+                                status = `
+                            <span class="badge badge-primary px-3 py-2">
+                                <i class="fas fa-money-bill-wave mr-1"></i>
+                                Menunggu Pelunasan
+                            </span>
+                        `;
+                            }
+
+                            // ===============================
+                            // Sudah Lunas tetapi ada Denda
+                            // ===============================
+                            else if (d.status == 2 &&
+                                d.status_bayar === 'paid' &&
+                                Number(d.denda) > 0) {
+
+                                status = `
+                            <span class="badge badge-danger px-3 py-2">
+                                <i class="fas fa-exclamation-circle mr-1"></i>
+                                Menunggu Pembayaran Denda
+                            </span>
+                        `;
+                            }
+
+                            // ===============================
+                            // Lunas tanpa Denda
+                            // ===============================
+                            else if (d.status == 2 &&
+                                d.status_bayar === 'paid') {
+
+                                status = `
+                            <span class="badge badge-success px-3 py-2">
+                                <i class="fas fa-check-circle mr-1"></i>
+                                Selesai
+                            </span>
+                        `;
+                            }
+
+                            // ===============================
+                            // Selesai
+                            // ===============================
+                            else if (d.status == 3) {
+
+                                status = `
+                            <span class="badge badge-success px-3 py-2">
+                                <i class="fas fa-check-circle mr-1"></i>
+                                Selesai
+                            </span>
+                        `;
+                            }
+
+                            // ===============================
+                            // Cek keterlambatan
+                            // ===============================
+
+                            if (d.status == 0 &&
+                                (d.status_bayar === 'dp_paid' || d.status_bayar === 'paid')) {
+
                                 const today = moment();
                                 const kembali = moment(d.tanggal_kembali);
-                                if (today.isAfter(kembali)) {
-                                    extra = `
-                                        <br>
-                                        <span class="badge badge-danger">
-                                            <i class="fas fa-exclamation-triangle"></i>
-                                            Terlambat
-                                        </span>
-                                    `;
-                            } else if (today.isSame(kembali, 'day')) {
 
-                                extra = `
+                                if (today.isAfter(kembali, 'day')) {
+
+                                    extra = `
                                     <br>
-                                    <span class="badge badge-warning">
+                                    <span class="badge badge-danger mt-1">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        Terlambat
+                                    </span>
+                                `;
+
+                                } else if (today.isSame(kembali, 'day')) {
+
+                                    extra = `
+                                    <br>
+                                    <span class="badge badge-warning mt-1">
                                         <i class="fas fa-clock"></i>
                                         Hari Terakhir
                                     </span>
                                 `;
+                                }
                             }
 
-                            } else if (d.status == 1) {
-
-                                status = `
-                                    <span class="badge badge-warning px-3 py-2">
-                                        <i class="fas fa-user-check"></i>
-                                        Menunggu Verifikasi
-                                    </span>
-                                `;
-
-                            } else if (d.status == 2) {
-
-                                status = `
-                                    <span class="badge badge-primary px-3 py-2">
-                                        <i class="fas fa-money-bill-wave mr-1"></i>
-                                        Menunggu Pelunasan
-                                    </span>
-                                `;
-
-                            } else if (d.status == 3) {
-
-                                status = `
-                                    <span class="badge badge-success px-3 py-2">
-                                        <i class="fas fa-check-circle mr-1"></i>
-                                        Selesai
-                                    </span>
-                                `;
-                            }
                             return status + extra;
                         }
                     },
@@ -189,62 +283,90 @@
                         render: data => {
                             let id = data.id;
                             let role = '{{ Auth::user()->role }}';
-                            let bayarDpBtn = (data.status == 0 && data.status_bayar === 'pending') ?
-                                `
+                            let bayarBtn = '';
+
+                            if (data.status == 0 &&
+                                data.status_bayar === 'pending' &&
+                                data.metode_pembayaran === 'dp') {
+
+                                bayarBtn = `
                             <button
                                 class="btn btn-warning btn-sm mb-1 w-100 btn-bayar"
                                 data-id="${id}">
                                 <i class="fas fa-money-bill-wave mr-1"></i>
                                 Bayar DP
                             </button>
-                            ` :
-                            (data.status == 0 && data.status_bayar === 'dp_paid') ?
-                                `
+                        `;
+                            } else if (data.status == 0 &&
+                                data.status_bayar === 'pending' &&
+                                data.metode_pembayaran === 'lunas') {
+
+                                bayarBtn = `
                             <button
-                                class="btn btn-success btn-sm mb-1 w-100">
+                                class="btn btn-success btn-sm mb-1 w-100 btn-bayar-lunas"
+                                data-id="${id}">
+                                <i class="fas fa-wallet mr-1"></i>
+                                Bayar Lunas
+                            </button>
+                        `;
+                            } else if (data.status_bayar === 'dp_paid') {
+
+                                bayarBtn = `
+                            <button class="btn btn-success btn-sm mb-1 w-100" disabled>
                                 <i class="fas fa-check-circle mr-1"></i>
                                 Sudah DP
                             </button>
-                            ` :
-                                '';
+                        `;
+                            } else if (data.status_bayar === 'paid') {
 
+                                bayarBtn = `
+                            <button
+                                class="btn btn-success btn-sm mb-1 w-100"
+                                disabled>
+                                <i class="fas fa-check-circle mr-1"></i>
+                                Lunas
+                            </button>
+                        `;
+                            }
                             let editBtn = '';
                             let deleteBtn = '';
                             // ===== EDIT =====
                             if (data.status_bayar === 'pending') {
                                 editBtn = `
-                                    <a href="/penyewaan/${id}/edit" class="dropdown-item">
-                                        <i class="fas fa-edit mr-2"></i> Edit
-                                    </a>
-                                `;
+                             <a href="/penyewaan/${id}/edit" class="dropdown-item">
+                                 <i class="fas fa-edit mr-2"></i> Edit
+                             </a>
+                         `;
                             }
                             // ===== BATALKAN =====
                             if (data.status_bayar === 'pending') {
                                 deleteBtn = `
-                                    <button class="dropdown-item text-danger btn-delete"
-                                            data-id="${id}">
-                                        <i class="fas fa-trash mr-2"></i> Batalkan
-                                    </button>
-                                `;
+                             <button class="dropdown-item text-danger btn-delete"
+                                     data-id="${id}">
+                                 <i class="fas fa-trash mr-2"></i> Batalkan
+                             </button>
+                         `;
                             }
                             return `
-                            ${bayarDpBtn}
-                            <div class="d-flex flex-column align-items-center">
-                                <div class="dropdown mt-1">
-                                    <button class="btn btn-light btn-sm w-100" data-toggle="dropdown">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    </button>
-                                    <div class="dropdown-menu dropdown-menu-right">
-                                        <a href="/penyewaan/${id}" class="dropdown-item">
-                                            <i class="fas fa-eye mr-2"></i> Detail
-                                        </a>
-
-                                        ${editBtn}
-                                        ${deleteBtn}
-                                    </div>
+                        ${bayarBtn}
+                                            
+                        <div class="d-flex flex-column align-items-center">
+                            <div class="dropdown mt-1">
+                                <button class="btn btn-light btn-sm w-100" data-toggle="dropdown">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                            
+                                <div class="dropdown-menu dropdown-menu-right">
+                                    <a href="/penyewaan/${id}" class="dropdown-item">
+                                        <i class="fas fa-eye mr-2"></i> Detail
+                                    </a>
+                                
+                                    ${editBtn}
+                                    ${deleteBtn}
                                 </div>
                             </div>
-                        `;
+                        </div>
+                    `;
                         }
                     }
                 ]
@@ -294,7 +416,7 @@
 
             let id = $(this).data('id');
             let btn = $(this);
-            
+
             // Show loading
             $('#loading').fadeIn();
 
@@ -310,7 +432,7 @@
                         // Restore button
                         btn.prop('disabled', false);
                         btn.html(`<i class="fas fa-money-bill-wave mr-1"></i>Bayar DP`);
-                        
+
                         Swal.fire(
                             'Gagal',
                             'Snap Token tidak ditemukan',
@@ -356,11 +478,13 @@
                                 title: 'Gagal',
                                 text: 'Pembayaran gagal'
                             });
-                            
+
                             // Restore button only on error
                             setTimeout(() => {
                                 btn.prop('disabled', false);
-                                btn.html(`<i class="fas fa-money-bill-wave mr-1"></i>Bayar DP`);
+                                btn.html(
+                                    `<i class="fas fa-money-bill-wave mr-1"></i>Bayar DP`
+                                    );
                             }, 500);
                         },
 
@@ -382,6 +506,101 @@
                         'error'
                     );
                 }
+            });
+        });
+
+        // Midtrans SnapToken Lunas Payment
+        $(document).on('click', '.btn-bayar-lunas', function() {
+
+            let id = $(this).data('id');
+            let btn = $(this);
+
+            $('#loading').fadeIn();
+
+            $.ajax({
+                url: `/pembayaran/${id}/snap-tokenLunas`,
+                type: 'GET',
+
+                success: function(res) {
+
+                    $('#loading').fadeOut();
+
+                    if (!res.snap_token) {
+
+                        Swal.fire(
+                            'Gagal',
+                            res.message || 'Snap Token tidak ditemukan',
+                            'error'
+                        );
+
+                        return;
+                    }
+
+                    snap.pay(res.snap_token, {
+
+                        onSuccess: function(result) {
+
+                            btn.removeClass('btn-success btn-bayar-lunas');
+                            btn.prop('disabled', true);
+                            btn.html(`
+                                <i class="fas fa-check-circle mr-1"></i>
+                                Lunas
+                            `);
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Pembayaran Berhasil',
+                                text: 'Pembayaran lunas berhasil.',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                table.ajax.reload(null, false);
+                            });
+
+                        },
+
+                        onPending: function(result) {
+
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Menunggu Pembayaran',
+                                text: 'Silakan selesaikan pembayaran.'
+                            });
+
+                        },
+
+                        onError: function(result) {
+
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal',
+                                text: 'Pembayaran gagal.'
+                            });
+
+                        },
+
+                        onClose: function() {
+
+                            // tidak perlu apa-apa
+                            // webhook Midtrans yang akan update status
+
+                        }
+
+                    });
+
+                },
+
+                error: function(xhr) {
+
+                    $('#loading').fadeOut();
+
+                    Swal.fire(
+                        'Gagal',
+                        xhr.responseJSON?.message || 'Gagal mengambil Snap Token',
+                        'error'
+                    );
+
+                }
+
             });
 
         });

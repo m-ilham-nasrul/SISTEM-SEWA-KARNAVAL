@@ -40,11 +40,16 @@ class Kostum extends Model
     }
 
     // cek apakah sedang dipakai
-    public function sedangDipakai(): bool
+    public function sedangDipakai($excludeSewaId = null): bool
     {
         return $this->detailSewas()
-            ->whereHas('sewa', function ($q) {
-                $q->where('status', 0); // status disewa
+            ->whereHas('sewa', function ($q) use ($excludeSewaId) {
+
+                $q->where('status', 0);
+
+                if ($excludeSewaId) {
+                    $q->where('id', '!=', $excludeSewaId);
+                }
             })
             ->exists();
     }

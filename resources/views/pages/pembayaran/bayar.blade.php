@@ -26,7 +26,23 @@
                         @php
                             $subtotal = $sewa->total_biaya;
                             $denda = $sewa->denda ?? 0;
-                            $totalBayar = $subtotal + $denda;
+
+                            $dpAmount = $sewa->dp ?? 0;
+                            $sisaBayar = $sewa->sisa_bayar ?? 0;
+
+                            // Nominal yang akan dibayar sekarang
+                            if ($sewa->status_bayar == \App\Enums\StatusBayar::PENDING) {
+                                if ($sewa->metode_pembayaran == 'dp') {
+                                    $nominalBayar = $dpAmount;
+                                } else {
+                                    $nominalBayar = $subtotal;
+                                }
+                            } elseif ($sewa->status_bayar == \App\Enums\StatusBayar::DP_PAID) {
+                                $nominalBayar = $sisaBayar + $denda;
+                            } else {
+                                // Sudah lunas
+                                $nominalBayar = $denda;
+                            }
                         @endphp
 
                         {{-- DETAIL --}}
@@ -63,7 +79,7 @@
                             <div class="col-md-4 font-weight-bold">Status Kondisi</div>
                             <div class="col-md-8">
                                 :
-                                @if ($sewa->kondisi === 'rusak')
+                                @if ($sewa->kondisi == 'rusak')
                                     <span class="badge badge-danger">Rusak</span>
                                 @else
                                     <span class="badge badge-success">Baik</span>
@@ -96,20 +112,41 @@
                         {{-- TOTAL --}}
                         @php
                             $dpAmount = $sewa->dp ?? 0;
-                            $sisaBayar = $sewa->sisa_bayar ?? max(0, $totalBayar - $dpAmount);
+                            $sisaBayar = $sewa->sisa_bayar ?? 0;
                         @endphp
-
                         <div class="mt-2 font-weight-bold text-success">
-                            Total Bayar: Rp {{ number_format($totalBayar) }}
+                            Total Biaya :
+                            <span class="text-success">
+                                Rp {{ number_format($subtotal) }}
+                            </span>
                         </div>
 
-                        <div class="mt-2 font-weight-bold text-primary">
-                            Sudah DP (50%): Rp {{ number_format($dpAmount) }}
-                        </div>
+                        @if ($dpAmount > 0)
+                             <div class="mt-2 font-weight-bold text-primary">
+                                Sudah DP (50%):
+                                <span class="text-primary">
+                                    Rp {{ number_format($dpAmount) }}
+                                </span>
+                            </div>
+                        @endif
 
-                        <div class="mt-2 font-weight-bold text-danger">
-                            Sisa Pembayaran: Rp {{ number_format($sisaBayar) }}
-                        </div>
+                        @if ($sisaBayar > 0)
+                            <div class="mt-2 font-weight-bold text-warning">
+                                Sisa Pembayaran :
+                                <span class="text-warning">
+                                    Rp {{ number_format($sisaBayar) }}
+                                </span>
+                            </div>
+                        @endif
+
+                        @if ($denda > 0)
+                            <div class="mt-2 font-weight-bold text-2xl text-danger">
+                                Denda :
+                                <span class="text-danger">
+                                    Rp {{ number_format($denda) }}
+                                </span>
+                            </div>
+                        @endif
 
                         {{-- BUTTON --}}
                         <div class="d-flex justify-content-between">
@@ -118,7 +155,7 @@
                             </a>
 
                             @php $sb = $sewa->status_bayar?->value ?? null; @endphp
-                            @if ($sb !== 'paid')
+                            @if ($sb != 'paid' || ($sb == 'paid' && $sewa->status == 2 && $sewa->denda > 0))
                                 <button id="btn-bayar" class="btn btn-success">
                                     <i class="fas fa-money-bill-wave"></i> Bayar Sekarang
                                 </button>
@@ -185,7 +222,7 @@
                             </li>
                         @endforeach
 
-                        @if ($sewa->kondisi === 'rusak')
+                        @if ($denda > 0)
                             <li class="list-group-item d-flex justify-content-between text-danger">
                                 <strong>Denda</strong>
                                 <strong>Rp {{ number_format($denda) }}</strong>
@@ -201,7 +238,10 @@
                     </ul>
 
                     <div class="alert alert-success text-center font-weight-bold">
-                        Total : Rp {{ number_format($totalBayar) }}
+                        <h6>Nominal yang harus dibayar sekarang</h6>
+                        <h4 class="mb-0">
+                            Rp {{ number_format($nominalBayar) }}
+                        </h4>
                     </div>
 
                 </div>
@@ -232,8 +272,47 @@
                 e.preventDefault();
 
                 let id = {{ $sewa->id }};
-                const sewaStatus = @json($sewa->status_bayar?->value ?? 'pending');
-                const snapEndpoint = sewaStatus === 'pending' ? `/pembayaran/${id}/snap-tokenDP` : `/pembayaran/${id}/snap-tokenPelunasan`;
+                const statusBayar = @json($sewa->status_bayar?->value);
+                const metode = @json($sewa->metode_pembayaran);
+                const status = {{ $sewa->status }};
+                const denda = {{ $sewa->denda ?? 0 }};
+
+                let snapEndpoint = '';
+
+                if (statusBayar === 'pending') {
+
+                    if (metode === 'dp') {
+
+                        snapEndpoint = `/pembayaran/${id}/snap-tokenDP`;
+
+                    } else {
+
+                        snapEndpoint = `/pembayaran/${id}/snap-tokenLunas`;
+
+                    }
+
+                } else if (statusBayar === 'dp_paid') {
+
+                    snapEndpoint = `/pembayaran/${id}/snap-tokenPelunasan`;
+
+                } else if (
+                    statusBayar === 'paid' &&
+                    status === 2 &&
+                    denda > 0
+                ) {
+
+                    snapEndpoint = `/pembayaran/${id}/snap-tokenPelunasan`;
+
+                } else {
+
+                    Swal.fire(
+                        'Informasi',
+                        'Tidak ada tagihan yang perlu dibayar.',
+                        'info'
+                    );
+
+                    return;
+                }
 
                 $('#loading').fadeIn();
 
@@ -245,7 +324,8 @@
                         $('#loading').fadeOut();
 
                         if (!res.status) {
-                            Swal.fire('Error', res.message || 'Gagal mendapatkan token pembayaran', 'error');
+                            Swal.fire('Error', res.message ||
+                                'Gagal mendapatkan token pembayaran', 'error');
                             return;
                         }
 
@@ -263,7 +343,8 @@
                                     confirmButtonText: 'OK',
                                     showConfirmButton: true
                                 }).then(() => {
-                                    window.location.href = "{{ route('pembayaran.index') }}";
+                                    window.location.href =
+                                        "{{ route('pembayaran.index') }}";
                                 });
                             },
                             onPending: function(result) {
@@ -274,7 +355,9 @@
                                 });
                             },
                             onError: function(result) {
-                                Swal.fire('Error', 'Pembayaran gagal. Silakan coba lagi', 'error');
+                                Swal.fire('Error',
+                                    'Pembayaran gagal. Silakan coba lagi',
+                                    'error');
                             },
                             onClose: function() {
                                 console.log('Payment popup ditutup');
@@ -283,7 +366,8 @@
                     },
                     error: function(xhr, status, error) {
                         $('#loading').fadeOut();
-                        Swal.fire('Error', xhr.responseJSON?.message || 'Gagal koneksi server. Silakan refresh halaman', 'error');
+                        Swal.fire('Error', xhr.responseJSON?.message ||
+                            'Gagal koneksi server. Silakan refresh halaman', 'error');
                     }
                 });
             });

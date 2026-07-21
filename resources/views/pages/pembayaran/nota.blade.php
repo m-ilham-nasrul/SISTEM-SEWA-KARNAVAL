@@ -52,11 +52,20 @@
                                 <td>Kondisi</td>
                                 <td>
                                     @if ($sewa->kondisi == 'baik')
-                                        <span class="badge badge-success">Baik</span>
+                                        <span class="badge badge-success px-3 py-2">
+                                            <i class="fas fa-check-circle mr-1"></i>
+                                            Baik
+                                        </span>
                                     @elseif($sewa->kondisi == 'rusak')
-                                        <span class="badge badge-danger">Rusak</span>
+                                        <span class="badge badge-danger px-3 py-2">
+                                            <i class="fas fa-times-circle mr-1"></i>
+                                            Rusak
+                                        </span>
                                     @else
-                                        <span class="badge badge-secondary">Belum Dicek</span>
+                                        <span class="badge badge-secondary px-3 py-2">
+                                            <i class="fas fa-clock mr-1"></i>
+                                            Belum Dicek
+                                        </span>
                                     @endif
                                 </td>
                             </tr>
@@ -70,23 +79,81 @@
                                 <td>Metode Pembayaran</td>
                                 <td>{{ $sewa->payment_type ? ucfirst($sewa->payment_type) : '-' }}</td>
                             </tr>
-                            <tr>
-                                <td>Order ID DP</td>
-                                <td>{{ $sewa->midtrans_order_id_dp ?? '-' }}</td>
-                            </tr>
-                            <tr>
-                                <td>Order ID Pelunasan</td>
-                                <td>{{ $sewa->midtrans_order_id_pelunasan ?? '-' }}</td>
-                            </tr>
+                            @if ($sewa->status_bayar == \App\Enums\StatusBayar::PENDING)
+
+                                {{-- DP --}}
+                                @if ($sewa->metode_pembayaran == 'dp' && $sewa->midtrans_order_id_dp)
+                                    <tr>
+                                        <td>Order ID DP</td>
+                                        <td>{{ $sewa->midtrans_order_id_dp }}</td>
+                                    </tr>
+                                @endif
+
+                                {{-- Lunas --}}
+                                @if ($sewa->metode_pembayaran == 'lunas' && $sewa->midtrans_order_id_lunas)
+                                    <tr>
+                                        <td>Order ID Lunas</td>
+                                        <td>{{ $sewa->midtrans_order_id_lunas }}</td>
+                                    </tr>
+                                @endif
+                            @elseif ($sewa->status_bayar == \App\Enums\StatusBayar::DP_PAID)
+                                {{-- Hanya tampil jika metode DP --}}
+                                @if ($sewa->metode_pembayaran == 'dp')
+                                    <tr>
+                                        <td>Order ID DP</td>
+                                        <td>{{ $sewa->midtrans_order_id_dp }}</td>
+                                    </tr>
+                                @endif
+
+                                @if ($sewa->midtrans_order_id_pelunasan)
+                                    <tr>
+                                        <td>Order ID Pelunasan</td>
+                                        <td>{{ $sewa->midtrans_order_id_pelunasan }}</td>
+                                    </tr>
+                                @endif
+                            @elseif ($sewa->status_bayar == \App\Enums\StatusBayar::PAID)
+                                {{-- Jika metode lunas --}}
+                                @if ($sewa->metode_pembayaran == 'lunas' && $sewa->midtrans_order_id_lunas)
+                                    <tr>
+                                        <td>Order ID Lunas</td>
+                                        <td>{{ $sewa->midtrans_order_id_lunas }}</td>
+                                    </tr>
+                                @endif
+
+                                {{-- Jika metode DP --}}
+                                @if ($sewa->metode_pembayaran == 'dp' && $sewa->midtrans_order_id_dp)
+                                    <tr>
+                                        <td>Order ID DP</td>
+                                        <td>{{ $sewa->midtrans_order_id_dp }}</td>
+                                    </tr>
+                                @endif
+
+                                @if ($sewa->midtrans_order_id_pelunasan)
+                                    <tr>
+                                        <td>Order ID Pelunasan</td>
+                                        <td>{{ $sewa->midtrans_order_id_pelunasan }}</td>
+                                    </tr>
+                                @endif
+
+                            @endif
                             <tr>
                                 <td>Status</td>
                                 <td>
                                     @if ($sewa->status_bayar->value == 'paid')
-                                        <span class="badge badge-success">Terbayar Lunas</span>
+                                        <span class="badge badge-success px-3 py-2">
+                                            <i class="fas fa-check-circle mr-1"></i>
+                                            Lunas
+                                        </span>
                                     @elseif ($sewa->status_bayar->value == 'dp_paid')
-                                        <span class="badge badge-info">DP Dibayar</span>
+                                        <span class="badge badge-info px-3 py-2">
+                                            <i class="fas fa-info-circle mr-1"></i>
+                                            DP Dibayar
+                                        </span>
                                     @else
-                                        <span class="badge badge-danger">Belum Bayar</span>
+                                        <span class="badge badge-danger px-3 py-2">
+                                            <i class="fas fa-times-circle mr-1"></i>
+                                            Belum Bayar
+                                        </span>
                                     @endif
                                 </td>
                             </tr>
@@ -94,19 +161,22 @@
 
                         <!-- TOTAL -->
                         <table class="table table-sm">
+
                             <tr>
-                                <td>DP (50%)</td>
+                                <td>Total Biaya</td>
                                 <td class="text-right">
-                                    Rp {{ number_format($sewa->dp) }}
+                                    Rp {{ number_format($sewa->total_biaya) }}
                                 </td>
                             </tr>
 
-                            <tr>
-                                <td>Pelunasan</td>
-                                <td class="text-right">
-                                    Rp {{ number_format($sewa->sisa_bayar) }}
-                                </td>
-                            </tr>
+                            @if ($sewa->metode_pembayaran == 'dp')
+                                <tr>
+                                    <td>DP</td>
+                                    <td class="text-right">
+                                        Rp {{ number_format($sewa->dp) }}
+                                    </td>
+                                </tr>
+                            @endif
 
                             @if ($sewa->denda > 0)
                                 <tr>
@@ -118,11 +188,12 @@
                             @endif
 
                             <tr class="font-weight-bold">
-                                <td>Total Dibayar</td>
+                                <td>Total Tagihan</td>
                                 <td class="text-right">
-                                    Rp {{ number_format($sewa->dp + $sewa->sisa_bayar + $sewa->denda) }}
+                                    Rp {{ number_format($sewa->total_biaya + $sewa->denda) }}
                                 </td>
                             </tr>
+
                         </table>
 
                         <div class="text-center mt-4">

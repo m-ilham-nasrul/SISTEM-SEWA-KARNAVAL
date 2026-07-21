@@ -31,6 +31,15 @@ class UsersSeeder extends Seeder
                 'role' => 'penyewa',
                 'created_at' => now(),
                 'updated_at' => now(),
+            ],
+            [
+                'id' => 3,
+                'name' => 'Muhammad Nasrul',
+                'email' => 'nasrulmuhammad@gmail.com',
+                'password' => bcrypt('12345678'),
+                'role' => 'penyewa',
+                'created_at' => now(),
+                'updated_at' => now(),
             ]
         ]);
     }

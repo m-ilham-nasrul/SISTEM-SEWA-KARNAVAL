@@ -108,64 +108,172 @@
                             <tr>
                                 <th>Status Penyewaan</th>
                                 <td>
-                                    @if ($sewa->status == 0)
+
+                                    @if ($sewa->status_bayar->value == 'pending')
+
+                                        @if ($sewa->metode_pembayaran == 'dp')
+                                            <span class="badge badge-danger px-3 py-2">
+                                                <i class="fas fa-hourglass-half mr-1"></i>
+                                                Menunggu Pembayaran DP
+                                            </span>
+                                        @else
+                                            <span class="badge badge-warning px-3 py-2">
+                                                <i class="fas fa-wallet mr-1"></i>
+                                                Menunggu Pembayaran Lunas
+                                            </span>
+                                        @endif
+                                    @elseif($sewa->status == 0 && $sewa->status_bayar->value == 'dp_paid')
                                         <span class="badge badge-secondary px-3 py-2">
-                                            <i class="fas fa-check-circle mr-1"></i>
+                                            <i class="fas fa-user-clock mr-1"></i>
                                             Masa Sewa
                                         </span>
+
                                         <br>
-                                        <span class="badge badge-success px-3 py-2 mt-1">
+
+                                        <span class="badge badge-success mt-1 px-3 py-2">
                                             <i class="fas fa-money-check-alt mr-1"></i>
                                             Sudah DP
                                         </span>
-                                    @elseif ($sewa->status == 1)
+                                    @elseif($sewa->status == 0 && $sewa->status_bayar->value == 'paid')
+                                        <span class="badge badge-secondary px-3 py-2">
+                                            <i class="fas fa-user-clock mr-1"></i>
+                                            Masa Sewa
+                                        </span>
+
+                                        <br>
+
+                                        <span class="badge badge-primary mt-1 px-3 py-2">
+                                            <i class="fas fa-check-circle mr-1"></i>
+                                            Lunas
+                                        </span>
+                                    @elseif($sewa->status == 1)
                                         <span class="badge badge-warning px-3 py-2">
-                                            <i class="fas fa-user-check"></i> Menunggu Verifikasi Admin
+                                            <i class="fas fa-user-check mr-1"></i>
+                                            Menunggu Verifikasi
                                         </span>
-                                    @elseif ($sewa->status == 2)
-                                        <span class="badge badge-info px-3 py-2">
-                                            <i class="fas fa-user-check"></i> Pengembalian Diverifikasi
+                                    @elseif($sewa->status == 2 && $sewa->status_bayar->value == 'dp_paid')
+                                        <span class="badge badge-primary px-3 py-2">
+                                            <i class="fas fa-money-bill-wave mr-1"></i>
+                                            Menunggu Pelunasan
                                         </span>
-                                    @elseif ($sewa->status == 3)
+                                    @elseif($sewa->status == 2 && $sewa->status_bayar->value == 'paid')
+                                        @if ($sewa->denda > 0)
+                                            <span class="badge badge-danger px-3 py-2">
+                                                <i class="fas fa-exclamation-circle mr-1"></i>
+                                                Menunggu Pembayaran Denda
+                                            </span>
+                                        @else
+                                            <span class="badge badge-success px-3 py-2">
+                                                <i class="fas fa-check-circle mr-1"></i>
+                                                Selesai
+                                            </span>
+                                        @endif
+                                    @elseif($sewa->status == 3)
                                         <span class="badge badge-success px-3 py-2">
-                                            <i class="fas fa-check-circle"></i> Selesai
+                                            <i class="fas fa-check-circle mr-1"></i>
+                                            Selesai
                                         </span>
+
                                     @endif
+
                                 </td>
                             </tr>
                             <tr>
                                 <th>Status Pembayaran</th>
                                 <td>
+
                                     @if ($sewa->status_bayar->value == 'pending')
-                                        <span class="badge badge-danger px-3 py-2">
-                                            <i class="fas fa-clock mr-1"></i> Menunggu DP
-                                        </span>
-                                    @elseif ($sewa->status_bayar->value == 'dp_paid')
-                                        <span class="badge badge-primary px-3 py-2">
-                                            <i class="fas fa-money-bill-wave"></i> Menunggu Pelunasan
-                                        </span>
-                                    @elseif ($sewa->status_bayar->value == 'paid')
+
+                                        @if ($sewa->metode_pembayaran == 'dp')
+                                            <span class="badge badge-danger px-3 py-2">
+                                                <i class="fas fa-hourglass-half mr-1"></i>
+                                                Menunggu DP
+                                            </span>
+                                        @else
+                                            <span class="badge badge-warning px-3 py-2">
+                                                <i class="fas fa-wallet mr-1"></i>
+                                                Menunggu Pembayaran
+                                            </span>
+                                        @endif
+                                    @elseif($sewa->status_bayar->value == 'dp_paid')
                                         <span class="badge badge-success px-3 py-2">
-                                            <i class="fas fa-check-circle"></i> Terbayar Lunas
+                                            <i class="fas fa-money-check-alt mr-1"></i>
+                                            DP Dibayar
                                         </span>
-                                    @else
-                                        <span class="badge badge-secondary px-3 py-2">-</span>
+
+                                        <br>
+
+                                        <small>
+                                            DP :
+                                            <strong>
+                                                Rp {{ number_format($sewa->dp, 0, ',', '.') }}
+                                            </strong>
+                                        </small>
+                                    @elseif($sewa->status_bayar->value == 'paid')
+                                        @if ($sewa->denda > 0 && $sewa->status == 2)
+                                            <span class="badge badge-danger px-3 py-2">
+                                                <i class="fas fa-exclamation-circle mr-1"></i>
+                                                Belum Membayar Denda
+                                            </span>
+                                        @else
+                                            <span class="badge badge-success px-3 py-2">
+                                                <i class="fas fa-check-circle mr-1"></i>
+                                                Lunas
+                                            </span>
+                                        @endif
+
                                     @endif
+
                                 </td>
                             </tr>
                             <tr>
                                 <th>Harga Paket</th>
                                 <td>Rp {{ number_format($hargaPaket, 0, ',', '.') }}</td>
                             </tr>
+                            <tr>
+                                <th>DP</th>
+                                <td>
+                                    Rp {{ number_format($sewa->dp, 0, ',', '.') }}
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th>Sisa Pembayaran</th>
+                                <td>
+
+                                    @if ($sewa->status_bayar->value == 'pending')
+                                        Rp {{ number_format($hargaPaket, 0, ',', '.') }}
+                                    @elseif($sewa->status_bayar->value == 'dp_paid')
+                                        <span class="text-warning font-weight-bold">
+                                            Rp {{ number_format($sewa->sisa_bayar, 0, ',', '.') }}
+                                        </span>
+                                    @elseif($sewa->status_bayar->value == 'paid')
+                                        <span class="text-success font-weight-bold">
+                                            Rp 0
+                                        </span>
+                                    @endif
+
+                                </td>
+                            </tr>
 
                             <tr>
                                 <th>Denda Kerusakan</th>
-                                <td>Rp {{ number_format($denda, 0, ',', '.') }}</td>
+                                <td>
+                                    @if ($denda > 0)
+                                        <span class="text-danger font-weight-bold">
+                                            Rp {{ number_format($denda, 0, ',', '.') }}
+                                        </span>
+                                    @else
+                                        <span class="text-success font-weight-bold">
+                                            Rp {{ number_format($denda, 0, ',', '.') }}
+                                        </span>
+                                    @endif
+                                </td>
                             </tr>
 
                             <tr class="bg-light font-weight-bold">
                                 <th>Total Biaya</th>
-                                <td class="text-primary font-weight-bold">
+                                <td class="text-success font-weight-bold">
                                     Rp {{ number_format($total, 0, ',', '.') }}
                                 </td>
                             </tr>
@@ -191,15 +299,17 @@
                         <div class="mt-4 mb-3">
 
                             {{-- Pelunasan --}}
-                            @if ($sewa->status == 2 && $sewa->status_bayar->value === 'dp_paid')
+                            @if (
+                                ($sewa->status == 2 && $sewa->status_bayar->value === 'dp_paid') ||
+                                    ($sewa->status == 2 && $sewa->status_bayar->value === 'paid' && $sewa->denda > 0))
                                 <a href="/pembayaran/{{ $sewa->id }}/bayar" class="btn btn-primary btn-sm mr-2">
-                                    <i class="fas fa-credit-card"></i>
-                                    Lanjutkan Pelunasan
+                                    <i class="fas fa-wallet"></i>
+                                    {{ $sewa->denda > 0 ? 'Bayar Denda' : 'Lanjutkan Pelunasan' }}
                                 </a>
                             @endif
 
                             {{-- Nota --}}
-                            @if ($sewa->status_bayar->value === 'paid')
+                            @if ($sewa->status_bayar->value === 'paid' && ($sewa->status == 3 || ($sewa->status == 2 && $sewa->denda == 0)))
                                 <a href="/pembayaran/{{ $sewa->id }}/nota" class="btn btn-info btn-sm mr-2">
                                     <i class="fas fa-file-invoice"></i>
                                     Lihat Nota

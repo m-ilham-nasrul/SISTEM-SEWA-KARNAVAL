@@ -67,10 +67,17 @@
                 <!-- Filter -->
                 <div class="mx-auto mb-3">
                     <div class="btn-group" role="group">
-                        <button class="btn btn-dark filter-btn" data-status="">All</button>
-                        <button class="btn btn-warning filter-btn" data-status="pending">Menunggu Pembayaran</button>
-                        <button class="btn btn-success filter-btn" data-status="paid">Telah Terbayar</button>
-                    </div>
+                    <button class="btn btn-dark filter-btn" data-status="">All</button>
+                    <button class="btn btn-warning filter-btn" data-status="pending">
+                        Menunggu Pembayaran
+                    </button>
+                    <button class="btn btn-info filter-btn" data-status="dp_paid">
+                        Sudah DP
+                    </button>
+                    <button class="btn btn-success filter-btn" data-status="paid">
+                        Telah Terbayar
+                    </button>
+                </div>
 
                 </div>
 
@@ -160,7 +167,15 @@ $(document).ready(function() {
         {
             data: 'denda',
             render: denda => {
-                return `Rp. ${Number(denda || 0).toLocaleString()}`
+                denda = Number(denda || 0);
+                if (denda > 0) {
+                    return `<span class="text-danger font-weight-bold">
+                                Rp. ${denda.toLocaleString()}
+                            </span>`;
+                }
+                return `<span class="text-success font-weight-bold">
+                            Rp. ${denda.toLocaleString()}
+                        </span>`;
             }
         },
         {
@@ -172,68 +187,204 @@ $(document).ready(function() {
         },
         {
             data: null,
-            render: data => {       
-            let status = '';
-            if (data.status == 0 && data.status_bayar === 'pending') {
-                status = `
-                    <span class="badge badge-danger px-3 py-2">
-                        <i class="fas fa-clock"></i>
-                        Menunggu DP
-                    </span>
-                `;
-            } else if (data.status == 0 && data.status_bayar === 'dp_paid') {
-                 status = `
-                    <span class="badge badge-secondary px-3 py-2">
-                        <i class="fas fa-check-circle mr-1"></i>
-                        Masa Sewa
-                    </span>
-                    <br>
-                    <span class="badge badge-success px-3 py-2 mt-1">
-                        <i class="fas fa-money-check-alt mr-1"></i>
-                        Sudah DP
-                    </span>
-                `;
-            } else if (data.status == 1) {
-                status = `
-                    <span class="badge badge-warning px-3 py-2">
-                        <i class="fas fa-user-check"></i>
-                        Menunggu Verifikasi
-                    </span>
-                        `;
-            } else if (data.status == 2 && data.status_bayar === 'dp_paid') {
-                status = `
-                    <span class="badge badge-primary px-3 py-2">
-                        <i class="fas fa-money-bill-wave"></i>
-                        Menunggu Pelunasan
-                    </span>
-                `;
-            } else if (data.status == 3 && data.status_bayar === 'paid') {
-                status = `
-                    <span class="badge badge-success px-3 py-2">
-                        <i class="fas fa-check-circle"></i>
-                        Selesai
-                    </span>
-                `;
-            }
-            return status;
-            }
-        }, 
-        {
-            data: null,
-            orderable: false,
-            searchable: false,
             render: data => {
-                let id = data.id;
-                let role = '{{ Auth::user()->role }}';
-                /* tombol bayar */
-                let bayarBtn = '';
-                if (data.status == 2 && data.status_bayar !== 'paid') {
-                    const label = data.status_bayar === 'dp_paid' ? 'Lanjutkan Pelunasan' : 'Bayar';
-                    bayarBtn = `<a href="/pembayaran/${id}/bayar"
-                        class="btn btn-warning btn-sm mb-1 w-100">
-                        <i class="fas fa-money-bill-wave mr-1"></i> ${label}
-                    </a>`;
+
+                let status = '';
+
+                // =====================================
+                // MENUNGGU PEMBAYARAN DP
+                // =====================================
+
+                if (
+                    data.status_bayar === 'pending' &&
+                    data.metode_pembayaran === 'dp'
+                ) {
+                
+                    status = `
+                        <span class="badge badge-danger px-3 py-2">
+                            <i class="fas fa-hourglass-half mr-1"></i>
+                            Menunggu Pembayaran DP
+                        </span>
+                    `;
                 }
+            
+                // =====================================
+                // MENUNGGU PEMBAYARAN LUNAS
+                // =====================================
+            
+                else if (
+                    data.status_bayar === 'pending' &&
+                    data.metode_pembayaran === 'lunas'
+                ) {
+                
+                    status = `
+                        <span class="badge badge-warning px-3 py-2">
+                            <i class="fas fa-wallet mr-1"></i>
+                            Menunggu Pembayaran Lunas
+                        </span>
+                    `;
+                }
+            
+                // =====================================
+                // MASA SEWA + SUDAH DP
+                // =====================================
+            
+                else if (
+                    data.status == 0 &&
+                    data.status_bayar === 'dp_paid'
+                ) {
+                
+                    status = `
+                        <span class="badge badge-secondary px-3 py-2">
+                            <i class="fas fa-user-clock mr-1"></i>
+                            Masa Sewa
+                        </span>
+                        <br>
+                        <span class="badge badge-success mt-1 px-3 py-2">
+                            <i class="fas fa-money-check-alt mr-1"></i>
+                            Sudah DP
+                        </span>
+                    `;
+                }
+            
+                // =====================================
+                // MASA SEWA + LUNAS
+                // =====================================
+            
+                else if (
+                    data.status == 0 &&
+                    data.status_bayar === 'paid'
+                ) {
+                
+                    status = `
+                        <span class="badge badge-secondary px-3 py-2">
+                            <i class="fas fa-user-clock mr-1"></i>
+                            Masa Sewa
+                        </span>
+                        <br>
+                        <span class="badge badge-primary mt-1 px-3 py-2">
+                            <i class="fas fa-check-circle mr-1"></i>
+                            Lunas
+                        </span>
+                    `;
+                }
+            
+                // =====================================
+                // MENUNGGU VERIFIKASI
+                // =====================================
+            
+                else if (data.status == 1) {
+                
+                    status = `
+                        <span class="badge badge-warning px-3 py-2">
+                            <i class="fas fa-user-check mr-1"></i>
+                            Menunggu Verifikasi
+                        </span>
+                    `;
+                }
+            
+                // =====================================
+                // MENUNGGU PELUNASAN
+                // =====================================
+            
+                else if (
+                    data.status == 2 &&
+                    data.status_bayar === 'dp_paid'
+                ) {
+                
+                    status = `
+                        <span class="badge badge-primary px-3 py-2">
+                            <i class="fas fa-money-bill-wave mr-1"></i>
+                            Menunggu Pelunasan
+                        </span>
+                    `;
+                }
+            
+                // =====================================
+                // MENUNGGU PEMBAYARAN DENDA
+                // =====================================
+            
+                else if (
+                    data.status == 2 &&
+                    data.status_bayar === 'paid' &&
+                    Number(data.denda) > 0
+                ) {
+                
+                    status = `
+                        <span class="badge badge-danger px-3 py-2">
+                            <i class="fas fa-exclamation-circle mr-1"></i>
+                            Menunggu Pembayaran Denda
+                        </span>
+                    `;
+                }
+            
+                // =====================================
+                // PELUNASAN SELESAI
+                // =====================================
+            
+                else if (
+                    data.status == 2 &&
+                    data.status_bayar === 'paid'
+                ) {
+                
+                    status = `
+                        <span class="badge badge-success px-3 py-2">
+                            <i class="fas fa-check-circle mr-1"></i>
+                            Selesai
+                        </span>
+                    `;
+                }
+            
+                // =====================================
+                // TRANSAKSI SELESAI
+                // =====================================
+            
+                else if (data.status == 3) {
+                
+                    status = `
+                        <span class="badge badge-success px-3 py-2">
+                            <i class="fas fa-check-circle mr-1"></i>
+                            Selesai
+                        </span>
+                    `;
+                }
+            
+                return status;
+            }
+                    }, 
+                    {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        render: data => {
+                            let id = data.id;
+                            let role = '{{ Auth::user()->role }}';
+                            /* tombol bayar */
+                            let bayarBtn = '';
+                        
+            if (
+                (data.status == 2 && data.status_bayar === 'dp_paid') ||
+                (data.status == 2 && data.status_bayar === 'paid' && Number(data.denda) > 0)
+            ) {
+            
+                const label =
+                    data.status_bayar === 'dp_paid'
+                        ? 'Bayar Pelunasan'
+                        : 'Bayar Denda';
+            
+                const icon =
+                    data.status_bayar === 'dp_paid'
+                        ? 'fa-wallet'
+                        : 'fa-exclamation-circle';
+            
+                bayarBtn = `
+                    <a href="/pembayaran/${id}/bayar"
+                        class="btn btn-primary btn-sm mb-1 w-100">
+                        <i class="fas ${icon} mr-1"></i>
+                        ${label}
+                    </a>
+                `;
+            }
                 /* tombol nota */
                 let notaBtn = '';
                 if (data.status_bayar === 'paid') {
@@ -287,10 +438,18 @@ $(document).ready(function() {
     statusBayar = $(this).data('status');
     // update title
     let title = '';
-    if (statusBayar === 'paid') title = 'Terbayar';
-    else if (statusBayar === 'pending') title = 'Menunggu Pembayaran';
-    else title = 'All';
-    $('.card-header .badge').text(title);
+        
+    if (statusBayar === 'pending') {
+        title = 'Menunggu Pembayaran';
+    } else if (statusBayar === 'dp_paid') {
+        title = 'Sudah DP';
+    } else if (statusBayar === 'paid') {
+        title = 'Telah Terbayar';
+    } else {
+        title = 'All';
+    }
+    
+$('.card-header .badge').text(title);
     table.ajax.reload();
     });
     /* ================================

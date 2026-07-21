@@ -79,6 +79,7 @@ class PembayaranController extends Controller
                     'tanggal_kembali' => $sewa->tanggal_kembali,
                     'denda' => $sewa->denda ?? 0,
                     'total_biaya' => $sewa->total_biaya,
+                    'metode_pembayaran' => $sewa->metode_pembayaran,
                     'status' => $sewa->status,
                     'status_bayar' => $sewa->status_bayar,
                 ];
@@ -109,8 +110,10 @@ class PembayaranController extends Controller
             }
         }
 
-        // Jika sudah lunas
-        if ($sewa->status_bayar === StatusBayar::PAID) {
+        if (
+            $sewa->status_bayar === StatusBayar::PAID &&
+            !($sewa->status == 2 && $sewa->denda > 0)
+        ) {
             return redirect()->route('pembayaran.index')
                 ->with('success', 'Transaksi sudah lunas.');
         }
@@ -158,19 +161,6 @@ class PembayaranController extends Controller
             ]);
         }
 
-        // CEK TOKEN LAMA
-        if ($sewa->snap_token && $sewa->snap_token_created_at) {
-
-            $hours = $sewa->snap_token_created_at->diffInHours(now());
-
-            if ($hours < 24) {
-                return response()->json([
-                    'status' => true,
-                    'snap_token' => $sewa->snap_token
-                ]);
-            }
-        }
-
         Config::$serverKey = config('midtrans.server_key');
         Config::$isProduction = config('midtrans.is_production', false);
         Config::$isSanitized = true;
@@ -188,12 +178,12 @@ class PembayaranController extends Controller
             $phone = '62' . substr($phone, 1);
         }
 
-        // Jika DP = 0, gunakan 50% dari total
-        $dpAmount = (int) $sewa->dp;
-        if ($dpAmount === 0) {
-            $dpAmount = (int) ($sewa->total_biaya * 0.5);
-            $sewa->update(['dp' => $dpAmount]);
-        }
+        $dpAmount = (int) round($sewa->total_biaya * 0.5);
+
+        $sewa->update([
+            'dp' => $dpAmount,
+            'sisa_bayar' => $sewa->total_biaya - $dpAmount
+        ]);
 
         // Validate DP amount
         if ($dpAmount < 1) {
@@ -258,6 +248,117 @@ class PembayaranController extends Controller
         }
     }
 
+    /* ================= MIDTRANS LUNAS ================= */
+    public function snapTokenLunas($id)
+    {
+        $sewa = Sewa::with(['penyewa.user'])->findOrFail($id);
+
+        // ================= AUTH =================
+        if (Auth::check() && Auth::user()->role === 'penyewa') {
+
+            $penyewaId = optional(Auth::user()->penyewa)->id;
+
+            if (!$penyewaId || $sewa->penyewa_id != $penyewaId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Unauthorized'
+                ], 403);
+            }
+        }
+
+        // ================= VALIDASI =================
+        if ($sewa->status_bayar !== StatusBayar::PENDING) {
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Transaksi sudah dibayar'
+            ]);
+        }
+
+        Config::$serverKey = config('midtrans.server_key');
+        Config::$isProduction = config('midtrans.is_production', false);
+        Config::$isSanitized = true;
+        Config::$is3ds = true;
+
+        $orderId = 'LUNAS-' . $sewa->id . '-' . time();
+
+        $phone = preg_replace(
+            '/[^0-9]/',
+            '',
+            optional($sewa->penyewa)->no_telp ?? ''
+        );
+
+        if (substr($phone, 0, 1) === '0') {
+            $phone = '62' . substr($phone, 1);
+        }
+
+        $totalBayar = (int) $sewa->total_biaya;
+
+        if ($totalBayar < 1) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Jumlah pembayaran tidak valid.'
+            ], 400);
+        }
+
+        $params = [
+
+            'transaction_details' => [
+                'order_id' => $orderId,
+                'gross_amount' => $totalBayar
+            ],
+
+            'customer_details' => [
+                'first_name' => optional($sewa->penyewa->user)->name,
+                'email' => optional($sewa->penyewa->user)->email ?? 'customer@email.com',
+                'phone' => $phone,
+                'billing_address' => [
+                    'address' => optional($sewa->penyewa)->alamat ?? '-'
+                ],
+                'shipping_address' => [
+                    'address' => optional($sewa->penyewa)->alamat ?? '-'
+                ]
+            ],
+
+            'item_details' => [
+                [
+                    'id' => 'LUNAS',
+                    'price' => $totalBayar,
+                    'quantity' => 1,
+                    'name' => 'Pembayaran Lunas Penyewaan'
+                ]
+            ],
+
+            'callbacks' => [
+                'finish' => url('/penyewaan')
+            ]
+        ];
+
+        try {
+
+            $snapToken = Snap::getSnapToken($params);
+
+            $sewa->update([
+                'midtrans_order_id_lunas' => $orderId,
+                'snap_token' => $snapToken,
+                'snap_token_created_at' => now(),
+                'dp' => 0,
+                'sisa_bayar' => 0
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'snap_token' => $snapToken
+            ]);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     /* ================= MIDTRANS Pelunasan ================= */
     public function snapTokenPelunasan($id)
     {
@@ -276,19 +377,15 @@ class PembayaranController extends Controller
             }
         }
 
-        // CEK DP
-        if ($sewa->status_bayar !== StatusBayar::DP_PAID) {
-            return response()->json([
-                'status' => false,
-                'message' => 'DP belum dibayar'
-            ]);
-        }
+        // VALIDASI STATUS BAYAR
+        if (
+            $sewa->status_bayar !== StatusBayar::DP_PAID &&
+            $sewa->status_bayar !== StatusBayar::PAID
+        ) {
 
-        // CEK SUDAH LUNAS
-        if ($sewa->status_bayar === StatusBayar::PAID) {
             return response()->json([
                 'status' => false,
-                'message' => 'Sudah lunas'
+                'message' => 'Status pembayaran tidak valid'
             ]);
         }
 
@@ -298,19 +395,6 @@ class PembayaranController extends Controller
                 'status' => false,
                 'message' => 'Pengembalian belum diverifikasi admin'
             ]);
-        }
-
-        // CEK TOKEN LAMA
-        if ($sewa->snap_token && $sewa->snap_token_created_at) {
-
-            $hours = $sewa->snap_token_created_at->diffInHours(now());
-
-            if ($hours < 24) {
-                return response()->json([
-                    'status' => true,
-                    'snap_token' => $sewa->snap_token
-                ]);
-            }
         }
 
         Config::$serverKey = config('midtrans.server_key');
@@ -330,16 +414,55 @@ class PembayaranController extends Controller
             $phone = '62' . substr($phone, 1);
         }
 
-        $totalPelunasan =
-            (int) $sewa->sisa_bayar +
-            (int) $sewa->denda;
+        if ($sewa->status_bayar == StatusBayar::DP_PAID) {
 
+            $sisaBayar = max(0, $sewa->total_biaya - $sewa->dp);
+        } else {
+
+            // Sudah bayar lunas
+            $sisaBayar = 0;
+        }
+
+        $sewa->update([
+            'sisa_bayar' => $sisaBayar
+        ]);
+
+        $totalPelunasan = $sisaBayar + $sewa->denda;
+        // Validasi total pelunasan
+        if ($totalPelunasan <= 0) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Tidak ada tagihan pelunasan.'
+            ]);
+        }
         // Validate total amount
         if ($totalPelunasan < 1) {
             return response()->json([
                 'status' => false,
                 'message' => 'Jumlah pelunasan tidak valid. Minimal harus Rp 1'
             ], 400);
+        }
+
+        $itemDetails = [];
+
+        if ($sisaBayar > 0) {
+
+            $itemDetails[] = [
+                'id' => 'PELUNASAN',
+                'price' => (int)$sisaBayar,
+                'quantity' => 1,
+                'name' => 'Pelunasan Penyewaan'
+            ];
+        }
+
+        if ($sewa->denda > 0) {
+
+            $itemDetails[] = [
+                'id' => 'DENDA',
+                'price' => (int)$sewa->denda,
+                'quantity' => 1,
+                'name' => 'Denda'
+            ];
         }
 
         $params = [
@@ -360,21 +483,7 @@ class PembayaranController extends Controller
                     'address' => optional($sewa->penyewa)->alamat ?? '-'
                 ]
             ],
-
-            'item_details' => [
-                [
-                    'id' => 'PELUNASAN',
-                    'price' => (int) $sewa->sisa_bayar,
-                    'quantity' => 1,
-                    'name' => 'Pelunasan Penyewaan'
-                ],
-                [
-                    'id' => 'DENDA',
-                    'price' => (int) $sewa->denda,
-                    'quantity' => 1,
-                    'name' => 'Denda'
-                ]
-            ],
+            'item_details' => $itemDetails,
 
             'callbacks' => [
                 'finish' => url('/penyewaan')
@@ -433,6 +542,7 @@ class PembayaranController extends Controller
             // CARI DATA SEWA
             // =============================
             $sewa = Sewa::where('midtrans_order_id_dp', $orderId)
+                ->orWhere('midtrans_order_id_lunas', $orderId)
                 ->orWhere('midtrans_order_id_pelunasan', $orderId)
                 ->first();
 
@@ -453,13 +563,28 @@ class PembayaranController extends Controller
 
                 // ===== PEMBAYARAN DP =====
                 if (str_starts_with($orderId, 'DP-')) {
+
                     $sisaBayar = max(0, $sewa->total_biaya - $sewa->dp);
+
                     $sewa->update([
-                        'status_bayar'      => StatusBayar::DP_PAID,
-                        'sisa_bayar'        => $sisaBayar,
+                        'status_bayar' => StatusBayar::DP_PAID,
+                        'sisa_bayar' => $sisaBayar,
                         'transaction_status' => $transactionStatus,
-                        'payment_type'      => $notif->payment_type,
-                        'snap_token'        => null
+                        'payment_type' => $notif->payment_type,
+                        'snap_token' => null,
+                    ]);
+                }
+                // ===== PEMBAYARAN LUNAS =====
+                if (str_starts_with($orderId, 'LUNAS-')) {
+
+                    $sewa->update([
+                        'status_bayar'       => StatusBayar::PAID,
+                        'status'             => 0, // masih masa sewa
+                        'dp'                 => 0,
+                        'sisa_bayar'         => 0,
+                        'transaction_status' => $transactionStatus,
+                        'payment_type'       => $notif->payment_type,
+                        'snap_token'         => null
                     ]);
                 }
                 // ===== PELUNASAN =====
@@ -468,6 +593,7 @@ class PembayaranController extends Controller
                     $sewa->update([
                         'status_bayar'      => StatusBayar::PAID,
                         'status'            => 3, // selesai
+                        'sisa_bayar'        => 0,
                         'transaction_status' => $transactionStatus,
                         'payment_type'      => $notif->payment_type,
                         'snap_token'        => null
