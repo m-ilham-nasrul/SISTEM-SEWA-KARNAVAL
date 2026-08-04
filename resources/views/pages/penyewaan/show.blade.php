@@ -257,7 +257,7 @@
                             </tr>
 
                             <tr>
-                                <th>Denda Kerusakan</th>
+                                <th>Denda</th>
                                 <td>
                                     @if ($denda > 0)
                                         <span class="text-danger font-weight-bold">
