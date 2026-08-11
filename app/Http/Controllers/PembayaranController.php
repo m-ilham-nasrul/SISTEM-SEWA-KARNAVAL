@@ -553,6 +553,10 @@ class PembayaranController extends Controller
                     'message' => 'Order not found'
                 ], 404);
             }
+
+             // Load detail kostum
+             $sewa->load('details.kostum');
+
             // =============================
             // PEMBAYARAN BERHASIL
             // =============================
@@ -573,6 +577,12 @@ class PembayaranController extends Controller
                         'payment_type' => $notif->payment_type,
                         'snap_token' => null,
                     ]);
+                    // Kostum mulai dianggap disewa
+                    foreach ($sewa->details as $detail) {
+                        $detail->kostum->update([
+                            'status' => 1
+                        ]);
+                    }
                 }
                 // ===== PEMBAYARAN LUNAS =====
                 if (str_starts_with($orderId, 'LUNAS-')) {
@@ -586,6 +596,12 @@ class PembayaranController extends Controller
                         'payment_type'       => $notif->payment_type,
                         'snap_token'         => null
                     ]);
+                    // Kostum mulai dianggap disewa
+                    foreach ($sewa->details as $detail) {
+                        $detail->kostum->update([
+                            'status' => 1
+                        ]);
+                    }
                 }
                 // ===== PELUNASAN =====
                 if (str_starts_with($orderId, 'PELUNASAN-')) {
@@ -598,6 +614,9 @@ class PembayaranController extends Controller
                         'payment_type'      => $notif->payment_type,
                         'snap_token'        => null
                     ]);
+                    // Tidak mengubah status kostum.
+                    // Kostum seharusnya sudah dikembalikan
+                    // pada proses pengembalian.
                 }
             }
             // =============================

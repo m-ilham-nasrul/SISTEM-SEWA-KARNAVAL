@@ -50,9 +50,21 @@
                                     <div class="nama-kostum fw-bold">{{ $item->nama_kostum }}</div>
                                     <div class="harga text-muted">Rp {{ number_format($item->harga) }}</div>
                                     @if ($item->status == 1)
-                                        <div class="badge badge-danger d-block w-100">Sedang Digunakan</div>
+                                    <div class="badge badge-danger d-block w-100 mb-2">
+                                        <i class="fas fa-times-circle"></i> Sedang Digunakan
+                                    </div>
+                                    @if ($item->tanggal_sewa && $item->tanggal_kembali)
+                                        <div class="small text-muted mb-2">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            {{ \Carbon\Carbon::parse($item->tanggal_sewa)->translatedFormat('d F Y') }}
+                                            -
+                                            {{ \Carbon\Carbon::parse($item->tanggal_kembali)->translatedFormat('d F Y') }}
+                                        </div>
+                                    @endif
                                     @else
-                                        <div class="badge badge-success d-block w-100">Tersedia</div>
+                                        <div class="badge badge-success d-block w-100">
+                                            <i class="fas fa-check-circle"></i> Tersedia
+                                        </div>
                                     @endif
                                     <div class="mt-2">
                                         <a href="{{ route('penyewaan.kostum.detail', $item->id) }}"

@@ -39,15 +39,22 @@
                                 <input type="hidden" name="user_id" value="{{ Auth::id() }}">
                             @endif
 
-                            <!-- No Telp -->
+                            <!-- Nomor Telepon -->
                             <div class="mb-3">
-                                <label class="form-label">Nomor Telepon</label>
-                                <input type="text" name="no_telp"
+                                <label for="no_telp" class="form-label">Nomor Telepon</label>
+                                <input type="tel"
                                     class="form-control @error('no_telp') is-invalid @enderror"
-                                    value="{{ old('no_telp', $penyewa->no_telp) }}" required>
-                                @error('no_telp')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                    id="no_telp"
+                                    name="no_telp"
+                                    value="{{ old('no_telp', $penyewa->no_telp) }}"
+                                    inputmode="numeric"
+                                    maxlength="15"
+                                    pattern="[0-9]*"
+                                    oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                    required>
+                            @error('no_telp')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                             </div>
 
                             <!-- Alamat -->

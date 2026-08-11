@@ -30,7 +30,7 @@ class PenyewaController extends Controller
     {
         $request->validate([
             'user_id' => 'nullable|exists:users,id',
-            'no_telp' => 'required|string|max:20',
+            'no_telp' => ['required', 'regex:/^[0-9]+$/', 'min:10', 'max:15'],
             'alamat'  => 'required|string',
         ]);
 
@@ -67,7 +67,7 @@ class PenyewaController extends Controller
     {
         $request->validate([
             'user_id' => 'nullable|exists:users,id',
-            'no_telp' => 'required|string|max:20',
+            'no_telp' => ['required', 'regex:/^[0-9]+$/', 'min:10', 'max:15'],
             'alamat'  => 'required|string',
         ]);
 

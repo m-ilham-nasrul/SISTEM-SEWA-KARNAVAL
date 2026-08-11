@@ -54,8 +54,15 @@
                             <!-- Nomor Telepon -->
                             <div class="mb-3">
                                 <label for="no_telp" class="form-label">Nomor Telepon</label>
-                                <input type="text" class="form-control @error('no_telp') is-invalid @enderror"
-                                    id="no_telp" name="no_telp" value="{{ old('no_telp') }}" required>
+                                <input type="tel"
+                                    class="form-control @error('no_telp') is-invalid @enderror"
+                                    id="no_telp"
+                                    name="no_telp"
+                                    value="{{ old('no_telp') }}"
+                                    inputmode="numeric"
+                                    maxlength="15"
+                                    required>
+                            
                                 @error('no_telp')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -99,4 +106,9 @@
             });
         </script>
     @endif
+    <script>
+        document.getElementById('no_telp').addEventListener('input', function () {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    </script>
 @endsection

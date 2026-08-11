@@ -76,6 +76,27 @@ class PenyewaanController extends Controller
     public function select()
     {
         $kostums = Kostum::all();
+    
+        // Ambil semua penyewaan yang masih aktif
+        $sewasAktif = Sewa::with('details')
+            ->where('status', 0)
+            ->get();
+    
+        // Pasangkan tanggal sewa dan tanggal kembali ke masing-masing kostum
+        foreach ($kostums as $kostum) {
+            $sewaAktif = $sewasAktif->first(function ($sewa) use ($kostum) {
+                return $sewa->details->contains('kostum_id', $kostum->id);
+            });
+    
+            if ($sewaAktif) {
+                $kostum->tanggal_sewa = $sewaAktif->tanggal_sewa;
+                $kostum->tanggal_kembali = $sewaAktif->tanggal_kembali;
+            } else {
+                $kostum->tanggal_sewa = null;
+                $kostum->tanggal_kembali = null;
+            }
+        }
+    
         return view('pages.penyewaan.select', compact('kostums'));
     }
 
@@ -153,7 +174,6 @@ class PenyewaanController extends Controller
                 'subtotal'  => $kostum->harga,
             ]);
 
-            $kostum->update(['status' => 1]);
         }
 
         return redirect()->route('penyewaan.index')
@@ -341,8 +361,6 @@ class PenyewaanController extends Controller
                 'subtotal'  => $kostum->harga,
             ]);
 
-            // ubah status jadi dipakai
-            $kostum->update(['status' => 1]);
         }
 
         return redirect()->route('penyewaan.index')
